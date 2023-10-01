@@ -1,30 +1,38 @@
+import { geneCode, getValueByKey, randomColor } from '~/utils/common.utils'
+import { createToken } from './../utils/auth.utils'
 import argon2 from 'argon2'
+import { Passenger } from '~/entities'
 import { User } from '~/entities/user.entity'
-import { AppError } from '~/exceptions/AppError'
-import { HttpCode } from '~/exceptions/HttpCode'
 import { RegisterInput } from '~/types/RegisterInput'
-import { UserType } from '~/utils/enums'
+import { Gender, UserType } from '~/utils/enums'
+import { JwtPayload } from '~/types/JwtPayload'
+import { AppDataSource } from '~/config/database'
 
 const register = async (registerInput: RegisterInput) => {
-    const { phoneNumber, email, firstName, lastName, imageUrl, country, gender, dateOfBirth, password } = registerInput
-
-    const existingUser = await User.findOne({ where: [{ phoneNumber }, { email }] })
-
-    if (existingUser) {
-        throw new AppError({
-            code: HttpCode.BAD_REQUEST,
-            error: { message: 'Số điện thoại hoặc Email đã được đăng ký trước đó' }
-        })
-    }
-
+    const { gender, password } = registerInput
     const hashedPassword = await argon2.hash(password)
-
-    const newUser = User.create({
-        phoneNumber,
-        email,
+    const newUser = await User.create({
+        ...registerInput,
         password: hashedPassword,
         userType: UserType.CUSTOMER
     })
-
-    return await newUser.save()
+    const newPassenger = await Passenger.create({
+        ...registerInput,
+        passengerCode: geneCode('P'),
+        gender: getValueByKey(gender, Gender) as Gender,
+        color: randomColor
+    })
+    await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
+        await transactionalEntityManager.save(newUser).then((user) => {
+            newPassenger.user = user
+        })
+        await transactionalEntityManager.save(newPassenger)
+    })
+    const payload: JwtPayload = {
+        _id: newUser.id,
+        userRole: newUser.userType
+    }
+    return createToken(payload)
 }
+
+export const AuthService = { register }

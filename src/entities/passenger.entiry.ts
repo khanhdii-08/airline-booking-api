@@ -5,9 +5,9 @@ import { User } from './user.entity'
 
 @Entity()
 export class Passenger extends Model {
-    @OneToOne(() => User)
+    @OneToOne(() => User, { lazy: true, nullable: false })
     @JoinColumn({ name: 'user_id' })
-    profile: User
+    user: User
 
     @Column({ name: 'passenger_code' })
     passengerCode: string
@@ -15,7 +15,7 @@ export class Passenger extends Model {
     @Column({ name: 'color' })
     color: string
 
-    @Column({ name: 'image_url' })
+    @Column({ name: 'image_url', nullable: true })
     imageUrl: string
 
     @Column({ name: 'first_name' })
@@ -36,12 +36,12 @@ export class Passenger extends Model {
     @Column({ name: 'date_of_birth ', type: 'date' })
     dateOfBirth: string
 
-    @Column({ name: 'email' })
+    @Column({ name: 'email', nullable: true })
     email: string
 
-    @Column({ name: 'is_passerby' })
+    @Column({ name: 'is_passerby', nullable: true })
     isPasserby: boolean
 
-    @Column({ name: 'status' })
+    @Column({ name: 'status', default: 'PEN' })
     status: Status
 }

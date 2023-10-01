@@ -9,8 +9,8 @@ export class User extends BaseEntity {
     @Column({ unique: true, name: 'phone_number' })
     phoneNumber!: string
 
-    @Column({ unique: true, name: 'email' })
-    email!: string
+    @Column({ name: 'email', nullable: true })
+    email: string
 
     @Column()
     password!: string
