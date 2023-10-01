@@ -6,7 +6,7 @@
   "author": "duyplk",
   "license": "MIT",
   "scripts": {
-    "gen:key": "ts-node src/messages/GenMessage.ts",
+    "gen:key": "rm -rf src/messages/MessageKeys.ts && ts-node src/messages/GenMessage.ts && prettier --write src/messages/MessageKeys.ts",
     "clean": "rm -rf dist && mkdir dist",
     "build": "yarn run clean && tsc && tsc-alias",
     "start": "node dist/server.js",
@@ -28,14 +28,18 @@
     "pg": "^8.11.3",
     "pg-hstore": "^2.3.4",
     "typeorm": "^0.3.17",
+    "validator": "^13.11.0",
     "winston": "^3.10.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.14",
     "@types/express": "^4.17.17",
+    "@types/express-serve-static-core": "^4.17.37",
     "@types/i18n": "^0.13.6",
+    "@types/jsonwebtoken": "^9.0.3",
     "@types/morgan": "^1.9.5",
     "@types/node": "^20.6.0",
+    "@types/validator": "^13.11.2",
     "@typescript-eslint/eslint-plugin": "^6.7.0",
     "@typescript-eslint/parser": "^6.7.0",
     "eslint": "^8.49.0",

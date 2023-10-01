@@ -5,16 +5,23 @@ import { SeatRoutes } from './seatClass.route'
 import { errorHandler } from '~/exceptions/ErrorHandler'
 import { logger } from '~/config/logger'
 import i18n from '~/config/i18n'
+import { AuthRoutes } from './auth.route'
+import { AppSettingRoutes } from './appsetting.route'
 
 const router = express.Router()
 const root: string = '/v1'
 
+/** Set language for i18n  */
 router.use((req, res, next) => {
     i18n.setLocale(req.locale)
     next()
 })
 
+/** v1 appsetting */
+router.use(root + '/app', AppSettingRoutes)
+
 /** v1 auth */
+router.use(root + '/auth', AuthRoutes)
 
 /**  v1/airport */
 router.use(root + '/airport', AirportRoutes)
@@ -22,10 +29,10 @@ router.use(root + '/airport', AirportRoutes)
 /**  v1/seat */
 router.use(root + '/seat', SeatRoutes)
 
-router.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+router.use((error: Error, req: Request, res: Response, next: NextFunction) => {
     // 1. Log the error or send it to a 3rd party error monitoring software
-    logger.error(err)
-    next(err)
+    logger.error(error)
+    next(error)
 })
 
 router.use((error: Error, req: Request, res: Response, next: NextFunction) => {

@@ -3,6 +3,6 @@ import { SeatController } from '~/controllers/seat.controller'
 
 const router: Router = express.Router()
 
-router.get('/all', SeatController.getAllSeat)
+router.route('/all').get(SeatController.getAllSeat)
 
 export const SeatRoutes = router

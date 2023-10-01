@@ -1,4 +1,22 @@
-{
-    "error1": "Error in English 1",
-    "error2": "Error in English 2"
+{   
+    "e.enum.v000.invalid" : "The %s value passed is not valid.",
+
+    "e.passenger.v000.firstNameBlank": "First Name cannot be blank.",
+    "e.passenger.v001.firstNameTooLong": "First Name must be less than 60 characters.",
+    "e.passenger.v002.lastNameBlank": "Last Name cannot be blank.",
+    "e.passenger.v003.lastNameTooLong": "Last Name must be less than 60 characters.",
+    "e.passenger.v004.dateOfBirthBlank": "Date Of Birth cannot be blank.",
+    "e.passenger.v005.dateOfBirthCorrectFormat": "Date Of Birth is not in correct format.",
+    "e.passenger.v006.countryBlank": "Country cannot be blank.",
+    "e.passenger.v007.countryExist": "Country does not exist.",
+    "e.passenger.v008.phonenumberBlank" : "Phone number can not be left blank.",
+    "e.passenger.v009.phonenumberCorrectFormat" : "Phone number is not in the correct format.",
+    "e.passenger.v010.emailBlank" : "Email cannot be blank.",
+    "e.passenger.v011.emailCorrectFormat" : "Email is not in correct format.",
+    "e.passenger.v012.passwordBlank" : "Password can not be blank.",
+    "e.passenger.V013.passwordLength" : "Password must be longer than 8 characters.",
+    "e.passenger.v014.passwordTooLong": "Password must be less than 60 characters.",
+
+    "e.passenger.b000.phoneDuplicated": "The phone number was used for previous registration.",
+    "e.passenger.b001.emailDuplicated": "Email was used for previous registration."
 }

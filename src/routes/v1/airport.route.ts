@@ -3,6 +3,6 @@ import { AirportController } from '~/controllers/airport.controller'
 
 const router: Router = express.Router()
 
-router.get('/all', AirportController.getAllAirPort)
+router.route('/all').get(AirportController.getAllAirPort)
 
 export const AirportRoutes = router

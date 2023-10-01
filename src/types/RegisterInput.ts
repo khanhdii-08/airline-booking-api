@@ -9,11 +9,9 @@ export class RegisterInput {
 
     lastName: string
 
+    dateOfBirth: string
+
     gender: string
 
-    imageUrl: string
-
     country: string
-
-    dateOfBirth: string
 }

@@ -1,4 +1,22 @@
 {
-    "error1": "Lỗi tiếng Việt 1",
-    "error2": "Lỗi tiếng Việt 2"
+    "e.enum.v000.invalid" : "Giá trị %s được truyền không hợp lệ.",
+
+    "e.passenger.v000.firstNameBlank": "Tên đệm và Tên không được để trống.",
+    "e.passenger.v001.firstNameTooLong": "Tên đệm và Tên phải bé hơn 60 ký tự.",
+    "e.passenger.v002.lastNameBlank": "Họ không được để trống.",
+    "e.passenger.v003.lastNameTooLong": "Họ phải bé hơn 60 ký tự.",
+    "e.passenger.v004.dateOfBirthBlank": "Ngày sinh không được để trống.",
+    "e.passenger.v005.dateOfBirthCorrectFormat": "Ngày sinh không đúng định dạng.",
+    "e.passenger.v006.countryBlank": "Quốc gia không dduocj để trống.",
+    "e.passenger.v007.countryExist": "Quốc gia không tồn tại.",
+    "e.passenger.v008.phonenumberBlank" : "Số điện thoại không được để trống.",
+    "e.passenger.v009.phonenumberCorrectFormat" : "Số điện thoại không đúng định dạng.",
+    "e.passenger.v010.emailBlank" : "Email không được để trống.",
+    "e.passenger.v011.emailCorrectFormat" : "Email  không đúng định dạng.",
+    "e.passenger.v012.passwordBlank" : "Mật khẩu không được để trống.",
+    "e.passenger.V013.passwordLength" : "Mật khẩu phải dài hơn 8 ký tự.",
+    "e.passenger.v014.passwordTooLong": "Mật khẩu phải bé hơn 60 ký tự.",
+    
+    "e.passenger.b000.phoneDuplicated": "Só điện thoại đã được sử dụng để đăng ký trước đó.",
+    "e.passenger.b001.emailDuplicated": "Email đã được sử dụng để đăng ký trước đó."
 }
