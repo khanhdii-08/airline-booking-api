@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import validator from 'validator'
-import i18n from '~/config/i18n'
+import i18n from '~/config/i18n.config'
 import { HttpStatus } from '~/constants/httpStatus'
 import { User } from '~/entities'
 import { AppError } from '~/exceptions/AppError'

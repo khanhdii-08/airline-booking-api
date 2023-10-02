@@ -1,5 +1,5 @@
 import { DataSource } from 'typeorm'
-import { env } from './environment'
+import { env } from './environment.config'
 import { Aircraft, Airline, Airport, City, Passenger, Seat, User } from '~/entities'
 
 const Entities = [City, Airport, Seat, User, Passenger, Airline, Aircraft]

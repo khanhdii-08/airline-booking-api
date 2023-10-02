@@ -6,7 +6,7 @@ import { User } from '~/entities/user.entity'
 import { RegisterInput } from '~/types/RegisterInput'
 import { Gender, UserType } from '~/utils/enums'
 import { JwtPayload } from '~/types/JwtPayload'
-import { AppDataSource } from '~/config/database'
+import { AppDataSource } from '~/config/database.config'
 
 const register = async (registerInput: RegisterInput) => {
     const { gender, password } = registerInput
