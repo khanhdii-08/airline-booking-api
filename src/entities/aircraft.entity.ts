@@ -1,14 +1,20 @@
-import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm'
-import { Airline } from '~/entities'
+import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm'
+import { AircraftSeat, Airline, Flight } from '~/entities'
 
-@Entity()
+@Entity({ name: 'aircraft' })
 export class Aircraft extends BaseEntity {
-    @PrimaryGeneratedColumn()
+    @PrimaryGeneratedColumn('uuid')
     id: string
 
-    @ManyToOne(() => Airline, (airline: Airline) => airline.id)
+    @ManyToOne(() => Airline, (airline: Airline) => airline.aircrafts)
     @JoinColumn({ name: 'airline_id' })
-    airlineId: string
+    airline: Airline
+
+    @OneToMany(() => Flight, (flight: Flight) => flight.aircraft)
+    flights: Flight[]
+
+    @OneToMany(() => AircraftSeat, (aircraftSeat: AircraftSeat) => aircraftSeat.aircraft)
+    aircraftSeats: AircraftSeat[]
 
     @Column({ name: 'aircraft_code' })
     aircraftCode: string

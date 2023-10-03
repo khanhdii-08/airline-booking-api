@@ -1,7 +1,8 @@
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
+import { BaseEntity, Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm'
 import { UserType } from '~/utils/enums'
+import { Booking, Employee, Passenger } from '~/entities'
 
-@Entity()
+@Entity({ name: 'user' })
 export class User extends BaseEntity {
     @PrimaryGeneratedColumn('uuid')
     id!: string
@@ -23,4 +24,15 @@ export class User extends BaseEntity {
 
     @Column({ default: 0 })
     tokenVersion: number
+
+    @OneToOne(() => Passenger, (passenger: Passenger) => passenger.user, { lazy: true })
+    @JoinColumn()
+    passenger: Passenger
+
+    @OneToOne(() => Employee, (employee: Employee) => employee.user, { lazy: true })
+    @JoinColumn()
+    employee: Employee
+
+    @OneToMany(() => Booking, (booking: Booking) => booking.user)
+    bookings: Booking[]
 }
