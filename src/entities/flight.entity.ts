@@ -1,14 +1,31 @@
-import { Airport } from '~/entities'
-import { Entity, Column, ManyToMany, JoinColumn } from 'typeorm'
+import { Entity, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm'
 import Model from './model.entity'
+import { Aircraft, Airline, Airport, Booking, FlightSeatPrice } from '~/entities'
+import { Status } from '~/utils/enums'
 
 @Entity({ name: 'flight' })
 export class Flight extends Model {
-    @ManyToMany(() => Airport, (airport: Airport) => airport.id)
+    @ManyToOne(() => Airline, (airline: Airline) => airline.id)
     @JoinColumn({ name: 'airline_id' })
-    airport: Airport
+    airline: Airline
 
-    // @
+    @ManyToOne(() => Aircraft, (aircraft: Aircraft) => aircraft.flights)
+    @JoinColumn({ name: 'aircraft_id' })
+    aircraft: Aircraft
+
+    @ManyToOne(() => Airport, (airport: Airport) => airport.sourceFlights)
+    @JoinColumn({ name: 'source_airport_id' })
+    sourceAirport: Airport
+
+    @ManyToOne(() => Airport, (airport: Airport) => airport.destinationFlights)
+    @JoinColumn({ name: 'destination_airport_id' })
+    destinationAirport: Airport
+
+    @OneToMany(() => FlightSeatPrice, (flightSeatPrice: FlightSeatPrice) => flightSeatPrice.flight)
+    flightSeatPrices: FlightSeatPrice[]
+
+    @OneToMany(() => Booking, (booking: Booking) => booking.flight)
+    bookings: Booking[]
 
     @Column({ name: 'flight_code ' })
     flightCode: string
@@ -16,10 +33,11 @@ export class Flight extends Model {
     @Column({ name: 'flight_name ' })
     flightName: string
 
+    @Column({ name: 'departure_time' })
     departureTime: Date
 
+    @Column({ name: 'arrival_time' })
     arrivalTime: Date
 
-    // @OneToMany(() => Airport, (airport: Airport) => airport.city)
-    // airports: Airport[]
+    status: Status
 }

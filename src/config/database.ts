@@ -1,8 +1,42 @@
 import { DataSource } from 'typeorm'
 import { env } from './environment'
-import { Aircraft, Airline, Airport, City, Passenger, Seat, User } from '~/entities'
+import {
+    Aircraft,
+    Airline,
+    Airport,
+    City,
+    Flight,
+    FlightSeatPrice,
+    Passenger,
+    Seat,
+    ServiceOption,
+    User,
+    AircraftSeat,
+    Booking,
+    BookingSeat,
+    BookingService,
+    Employee,
+    PaymentTransaction
+} from '~/entities'
 
-const Entities = [City, Airport, Seat, User, Passenger, Airline, Aircraft]
+const Entities = [
+    City,
+    Airport,
+    Seat,
+    User,
+    Passenger,
+    Airline,
+    Aircraft,
+    Flight,
+    ServiceOption,
+    FlightSeatPrice,
+    AircraftSeat,
+    Booking,
+    BookingSeat,
+    BookingService,
+    Employee,
+    PaymentTransaction
+]
 
 export const AppDataSource = new DataSource({
     type: env.DB_TYPE,
