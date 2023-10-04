@@ -38,7 +38,7 @@ const register = async (req: Request<ParamsDictionary, any, RegisterInput>, res:
         throw new ValidationException(i18n.__(MessageKeys.E_PASSENGER_V008_PHONENUMBERBLANK))
     else if (!validator.isMobilePhone(phoneNumber, 'vi-VN'))
         throw new ValidationException(i18n.__(MessageKeys.E_PASSENGER_V009_PHONENUMBERCORRECTFORMAT))
-    else if (!email === undefined && !validator.isEmpty(email)) {
+    else if (email !== undefined && !validator.isEmpty(email)) {
         if (!validator.isEmail(email))
             throw new ValidationException(i18n.__(MessageKeys.E_PASSENGER_V011_EMAILCORRECTFORMAT))
     } else if (password === undefined || validator.isEmpty(password))

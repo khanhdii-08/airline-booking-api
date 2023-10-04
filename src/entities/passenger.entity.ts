@@ -5,7 +5,7 @@ import { Booking, User } from '~/entities'
 
 @Entity({ name: 'passenger' })
 export class Passenger extends Model {
-    @OneToOne(() => User, (user: User) => user.passenger, { lazy: true })
+    @OneToOne(() => User, { lazy: true })
     @JoinColumn({ name: 'user_id' })
     user: User
 
