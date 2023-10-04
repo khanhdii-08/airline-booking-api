@@ -25,14 +25,6 @@ export class User extends BaseEntity {
     @Column({ default: 0 })
     tokenVersion: number
 
-    @OneToOne(() => Passenger, (passenger: Passenger) => passenger.user, { lazy: true })
-    @JoinColumn()
-    passenger: Passenger
-
-    @OneToOne(() => Employee, (employee: Employee) => employee.user, { lazy: true })
-    @JoinColumn()
-    employee: Employee
-
     @OneToMany(() => Booking, (booking: Booking) => booking.user)
     bookings: Booking[]
 }
