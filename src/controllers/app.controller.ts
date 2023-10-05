@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { HttpStatus } from '~/constants/httpStatus'
+import { HttpStatus } from '~/utils/httpStatus'
 import { AppService } from '~/services/app.service'
 
 const getCountries = async (req: Request, res: Response) => {

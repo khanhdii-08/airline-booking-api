@@ -1,5 +1,4 @@
-import { error } from 'console'
-import { HttpStatus } from '~/constants/httpStatus'
+import { HttpStatus } from '~/utils/httpStatus'
 import { AppError } from './AppError'
 import { ErrorResponse } from '~/types/ErrorResponse'
 
