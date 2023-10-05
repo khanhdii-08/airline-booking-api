@@ -1,4 +1,4 @@
-import { Flight, Seat } from '~/entities'
+import { Flight, Seat, TaxService } from '~/entities'
 import { SeatClass } from '~/utils/enums'
 import Model from './model.entity'
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm'
@@ -12,6 +12,10 @@ export class FlightSeatPrice extends Model {
     @ManyToOne(() => Seat, (seat: Seat) => seat.flightSeatPrices)
     @JoinColumn({ name: 'seat_id' })
     seat: Seat
+
+    @ManyToOne(() => TaxService, (taxService: TaxService) => taxService.flightSeatPrices)
+    @JoinColumn({ name: 'tax_service_id' })
+    taxService: TaxService
 
     @Column({ name: 'infant_price', type: 'float8' })
     infantPrice: number

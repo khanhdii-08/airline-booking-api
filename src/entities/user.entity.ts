@@ -1,6 +1,6 @@
-import { BaseEntity, Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from 'typeorm'
+import { BaseEntity, Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm'
 import { UserType } from '~/utils/enums'
-import { Booking, Employee, Passenger } from '~/entities'
+import { Booking } from '~/entities'
 
 @Entity({ name: 'user' })
 export class User extends BaseEntity {
