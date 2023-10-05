@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
-import { HttpStatus } from '~/constants/httpStatus'
+import { HttpStatus } from '~/utils/httpStatus'
 import { AuthService } from '~/services/auth.service'
 import { RegisterInput } from '~/types/RegisterInput'
 

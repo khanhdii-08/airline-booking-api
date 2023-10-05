@@ -27,10 +27,10 @@ export class Flight extends Model {
     @OneToMany(() => Booking, (booking: Booking) => booking.flight)
     bookings: Booking[]
 
-    @Column({ name: 'flight_code ' })
+    @Column({ name: 'flight_code' })
     flightCode: string
 
-    @Column({ name: 'flight_name ' })
+    @Column({ name: 'flight_name' })
     flightName: string
 
     @Column({ name: 'departure_time' })
@@ -39,5 +39,6 @@ export class Flight extends Model {
     @Column({ name: 'arrival_time' })
     arrivalTime: Date
 
+    @Column({ name: 'status', nullable: true })
     status: Status
 }

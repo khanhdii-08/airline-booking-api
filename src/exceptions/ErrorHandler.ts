@@ -1,6 +1,6 @@
 import { Response } from 'express'
 import { AppError } from './AppError'
-import { HttpStatus } from '~/constants/httpStatus'
+import { HttpStatus } from '~/utils/httpStatus'
 
 class ErrorHandler {
     public handleError(error: Error | AppError, response?: Response): void {
