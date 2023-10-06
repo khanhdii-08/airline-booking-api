@@ -37,7 +37,7 @@ export class Passenger extends Model {
     @Column({ name: 'phone_number' })
     phoneNumber: string
 
-    @Column({ name: 'date_of_birth ', type: 'date' })
+    @Column({ name: 'date_of_birth', type: 'date' })
     dateOfBirth: string
 
     @Column({ name: 'email', nullable: true })

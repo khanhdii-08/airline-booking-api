@@ -27,6 +27,9 @@ export class Flight extends Model {
     @OneToMany(() => Booking, (booking: Booking) => booking.flight)
     bookings: Booking[]
 
+    @OneToMany(() => Booking, (booking: Booking) => booking.returnFlight)
+    returnBookings: Booking[]
+
     @Column({ name: 'flight_code' })
     flightCode: string
 

@@ -25,6 +25,10 @@ export class Booking extends Model {
     @OneToMany(() => Passenger, (passenger: Passenger) => passenger.booking)
     passengers: Passenger[]
 
+    @ManyToOne(() => Flight, (flight: Flight) => flight.returnBookings)
+    @JoinColumn({ name: 'return_flight_id' })
+    returnFlight: Flight
+
     @Column({ name: 'booking_code' })
     bookingCode: string
 
@@ -34,15 +38,12 @@ export class Booking extends Model {
     @Column({ name: 'booking_date', type: 'date' })
     bookingDate: string
 
-    @Column({ name: 'total_amoun', type: 'float8' })
-    totalAmoun: number
+    @Column({ name: 'total_amount', type: 'float' })
+    totalAmount: number
 
     @Column({ name: 'payment_status' })
     paymentStatus: PaymentStatus
 
     @Column({ name: 'journey_type' })
     journeyType: JourneyType
-
-    @Column({ name: 'total_seat' })
-    totalSeat: number
 }

@@ -1,4 +1,4 @@
-import { Entity, JoinColumn, ManyToOne } from 'typeorm'
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm'
 import Model from './model.entity'
 import { Aircraft, Seat } from '~/entities'
 
@@ -11,4 +11,7 @@ export class AircraftSeat extends Model {
     @ManyToOne(() => Seat, (seat: Seat) => seat.aircraftSeats)
     @JoinColumn({ name: 'seat_id' })
     seat: Seat
+
+    @Column({ name: 'seat_number', nullable: true })
+    seatNumber: number
 }

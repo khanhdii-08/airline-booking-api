@@ -31,15 +31,6 @@ export class Aircraft extends BaseEntity {
     @Column({ name: 'column_numbers' })
     columnNumbers: number
 
-    @Column({ name: 'business_number' })
-    businessNumber: number
-
-    @Column({ name: 'economy_number' })
-    economyNumber: number
-
-    @Column({ name: 'premium_economy_number' })
-    premiumEconomyNumber: number
-
     @Column({ name: 'type' })
     type: string
 }
