@@ -2,14 +2,18 @@ import { FlightCriteria } from '~/types/FlightCriteria'
 import { Flight } from '~/entities/flight.entity'
 
 const search = async (criteria: FlightCriteria) => {
-    const queryResult = await Flight.createQueryBuilder('flight')
-        .leftJoinAndSelect('flight.airline', 'airline')
-        .leftJoinAndSelect('flight.aircraft', 'aircraft')
-        .leftJoinAndSelect('flight.sourceAirport', 'sourceAirport')
-        .leftJoinAndSelect('flight.destinationAirport', 'destinationAirport')
-        .leftJoinAndSelect('flight.flightSeatPrices', 'flightSeatPrices')
-        .leftJoin('aircraft.aircraftSeats', 'as2') // Join AircraftSeat
-        .leftJoin('as2.seat', 's') // Join Seat
+    const queryFlightResult = await Flight.createQueryBuilder('flight')
+        .innerJoinAndSelect('flight.airline', 'airline')
+        .innerJoinAndSelect('flight.aircraft', 'aircraft')
+        .innerJoinAndSelect('flight.sourceAirport', 'sourceAirport')
+        .innerJoinAndSelect('sourceAirport.city', 'sourceCity')
+        .innerJoinAndSelect('flight.destinationAirport', 'destinationAirport')
+        .innerJoinAndSelect('destinationAirport.city', 'destinationCity')
+        .innerJoinAndSelect('flight.flightSeatPrices', 'flightSeatPrice')
+        .innerJoinAndSelect('flightSeatPrice.taxService', 'taxService')
+        .innerJoin('flight.bookings', 'booking')
+        .innerJoin('aircraft.aircraftSeats', 'aircraftSeat')
+        .innerJoin('aircraftSeat.seat', 'seat')
         .where('sourceAirport.id = :sourceAirportId', {
             sourceAirportId: criteria.sourceAirportId
         })
@@ -19,12 +23,35 @@ const search = async (criteria: FlightCriteria) => {
         .andWhere('DATE(flight.departureTime) = DATE(:departureDate)', {
             departureDate: criteria.departureDate
         })
-        .andWhere('s.seatClass = :seatClass', {
-            seatClass: criteria.seatClass
+        .andWhere('seat.id = :seatId', { seatId: criteria.seatId })
+        .andWhere('flightSeatPrice.seat.id = :seatId', { seatId: criteria.seatId })
+        .andWhere((qb) => {
+            const subQuery = qb
+                .subQuery()
+                .select('COALESCE(SUM("booking"."total_amount"), 0)', 'sum')
+                .from('Booking', 'booking')
+                .innerJoin('booking.bookingSeats', 'bookingSeat')
+                .where('booking.flight.id = flight.id')
+                .andWhere('bookingSeat.seat.id = :seatId', { seatId: criteria.seatId })
+                .getQuery()
+            return `(${subQuery} + :numAdults + :numInfants) <= aircraftSeat.seatNumber`
+        })
+        .setParameters({
+            numAdults: criteria.numAdults,
+            numInfants: criteria.numInfants
         })
         .getMany()
 
-    return queryResult
+    const result = queryFlightResult.map((value) => {
+        const { flightSeatPrices, ...flightWithoutSeatPrices } = value
+
+        return {
+            ...flightWithoutSeatPrices,
+            flightSeatPrice: flightSeatPrices[0]
+        }
+    })
+
+    return result
 }
 
 export const FlightService = { search }
