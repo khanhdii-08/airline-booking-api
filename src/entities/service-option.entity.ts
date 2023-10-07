@@ -1,31 +1,34 @@
-import { Airline, BookingService } from '~/entities'
+import { Airline, BookingService, Seat } from '~/entities'
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm'
 import Model from './model.entity'
 import { LuggageType, OptionType, SeatClass, Status } from '~/utils/enums'
 
-@Entity({ name: 'service-option' })
+@Entity({ name: 'service_option' })
 export class ServiceOption extends Model {
     @ManyToOne(() => Airline, (airline: Airline) => airline.serviceOptions)
     @JoinColumn({ name: 'airline_id' })
     airline: Airline
 
     @OneToMany(() => BookingService, (bookingService: BookingService) => bookingService.serviceOption)
-    @JoinColumn({ name: 'booking_service_id' })
     bookingServices: BookingService[]
+
+    @ManyToOne(() => Seat, (seat: Seat) => seat.serviceOptions)
+    @JoinColumn({ name: 'seat_id' })
+    seat: Seat
 
     @Column({ name: 'option_code' })
     optionCode: string
 
-    @Column({ name: 'option_name' })
+    @Column({ name: 'option_name', nullable: true })
     optionName: string
 
-    @Column({ name: 'option_description' })
+    @Column({ name: 'option_description', nullable: true })
     optionDescription: string
 
-    @Column({ name: 'option_image' })
+    @Column({ name: 'option_image', nullable: true })
     optionImage: string
 
-    @Column({ name: 'value', type: 'float8' })
+    @Column({ name: 'value', type: 'float', nullable: true })
     value: number
 
     @Column({ name: 'option_type' })
@@ -34,9 +37,12 @@ export class ServiceOption extends Model {
     @Column({ name: 'status' })
     status: Status
 
-    @Column({ name: 'seat_class' })
+    @Column({ name: 'seat_class', nullable: true })
     seatClass: SeatClass
 
-    @Column({ name: 'luggage_type' })
+    @Column({ name: 'luggage_type', nullable: true })
     luggageType: LuggageType
+
+    @Column({ name: 'option_price', type: 'float', nullable: true })
+    optionPrice: number
 }
