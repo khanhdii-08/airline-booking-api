@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken'
-import { env } from '~/config/environment'
+import { env } from '~/config/environment.config'
 import { JwtPayload } from '~/types/JwtPayload'
 
 export const createToken = (payload: JwtPayload): string => {

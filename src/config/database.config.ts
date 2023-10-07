@@ -1,5 +1,5 @@
 import { DataSource } from 'typeorm'
-import { env } from './environment'
+import { env } from './environment.config'
 import {
     Aircraft,
     Airline,

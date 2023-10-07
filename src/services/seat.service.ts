@@ -1,4 +1,4 @@
-import { AppDataSource } from '~/config/database'
+import { AppDataSource } from '~/config/database.config'
 import { Seat } from '~/entities'
 
 const seatRepository = AppDataSource.getRepository(Seat)
