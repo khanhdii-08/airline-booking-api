@@ -1,7 +1,8 @@
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
+import { BaseEntity, Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm'
 import { UserType } from '~/utils/enums'
+import { Booking } from '~/entities'
 
-@Entity()
+@Entity({ name: 'user' })
 export class User extends BaseEntity {
     @PrimaryGeneratedColumn('uuid')
     id!: string
@@ -23,4 +24,7 @@ export class User extends BaseEntity {
 
     @Column({ default: 0 })
     tokenVersion: number
+
+    @OneToMany(() => Booking, (booking: Booking) => booking.user)
+    bookings: Booking[]
 }

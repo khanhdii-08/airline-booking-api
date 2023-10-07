@@ -1,5 +1,5 @@
 import { ErrorResponse } from '~/types/ErrorResponse'
-import { HttpStatus } from '~/constants/httpStatus'
+import { HttpStatus } from '~/utils/httpStatus'
 import { AppError } from './AppError'
 
 export class UnauthorizedExeption extends AppError {

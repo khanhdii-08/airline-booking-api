@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import validator from 'validator'
 import i18n from '~/config/i18n.config'
-import { HttpStatus } from '~/constants/httpStatus'
+import { HttpStatus } from '~/utils/httpStatus'
 import { User } from '~/entities'
 import { AppError } from '~/exceptions/AppError'
 import { ValidationException } from '~/exceptions/ValidationException'
@@ -38,7 +38,7 @@ const register = async (req: Request<ParamsDictionary, any, RegisterInput>, res:
         throw new ValidationException(i18n.__(MessageKeys.E_PASSENGER_V008_PHONENUMBERBLANK))
     else if (!validator.isMobilePhone(phoneNumber, 'vi-VN'))
         throw new ValidationException(i18n.__(MessageKeys.E_PASSENGER_V009_PHONENUMBERCORRECTFORMAT))
-    else if (!email === undefined && !validator.isEmpty(email)) {
+    else if (email !== undefined && !validator.isEmpty(email)) {
         if (!validator.isEmail(email))
             throw new ValidationException(i18n.__(MessageKeys.E_PASSENGER_V011_EMAILCORRECTFORMAT))
     } else if (password === undefined || validator.isEmpty(password))

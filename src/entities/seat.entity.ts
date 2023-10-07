@@ -1,10 +1,20 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm'
+import { AircraftSeat, BookingSeat, FlightSeatPrice } from '~/entities'
+import { BaseEntity, Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm'
 import { SeatClass, Status } from '~/utils/enums'
 
 @Entity({ name: 'seat' })
-export class Seat {
+export class Seat extends BaseEntity {
     @PrimaryGeneratedColumn('uuid')
     id: string
+
+    @OneToMany(() => AircraftSeat, (aircraftSeat: AircraftSeat) => aircraftSeat.seat)
+    aircraftSeats: AircraftSeat[]
+
+    @OneToMany(() => FlightSeatPrice, (flightSeatPrice: FlightSeatPrice) => flightSeatPrice.seat)
+    flightSeatPrices: FlightSeatPrice[]
+
+    @OneToMany(() => BookingSeat, (bookingSeat: BookingSeat) => bookingSeat.seat)
+    bookingSeats: BookingSeat[]
 
     @Column({ name: 'sseat_code' })
     seatCode: string

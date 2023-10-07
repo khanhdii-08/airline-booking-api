@@ -1,5 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, BaseEntity } from 'typeorm'
-import { City } from '~/entities'
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, BaseEntity, OneToMany } from 'typeorm'
+import { Airline, City, Flight } from '~/entities'
 
 @Entity({ name: 'airport' })
 export class Airport extends BaseEntity {
@@ -18,4 +18,14 @@ export class Airport extends BaseEntity {
     @ManyToOne(() => City, (city: City) => city.airports)
     @JoinColumn({ name: 'city_id' })
     city: City
+
+    @ManyToOne(() => Airline, (airline: Airline) => airline.airports)
+    @JoinColumn({ name: 'airline_id' })
+    airline: Airline
+
+    @OneToMany(() => Flight, (flight: Flight) => flight.sourceAirport)
+    sourceFlights: Flight[]
+
+    @OneToMany(() => Flight, (flight: Flight) => flight.destinationAirport)
+    destinationFlights: Flight[]
 }

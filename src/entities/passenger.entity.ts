@@ -1,13 +1,17 @@
 import Model from './model.entity'
-import { Column, Entity, JoinColumn, OneToOne } from 'typeorm'
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from 'typeorm'
 import { Gender, Status } from '~/utils/enums'
-import { User } from './user.entity'
+import { Booking, User } from '~/entities'
 
-@Entity()
+@Entity({ name: 'passenger' })
 export class Passenger extends Model {
-    @OneToOne(() => User, { lazy: true, nullable: false })
+    @OneToOne(() => User, { lazy: true })
     @JoinColumn({ name: 'user_id' })
     user: User
+
+    @ManyToOne(() => Booking, (booking: Booking) => booking.passengers)
+    @JoinColumn({ name: 'booking_id' })
+    booking: Booking
 
     @Column({ name: 'passenger_code' })
     passengerCode: string
@@ -33,7 +37,7 @@ export class Passenger extends Model {
     @Column({ name: 'phone_number' })
     phoneNumber: string
 
-    @Column({ name: 'date_of_birth ', type: 'date' })
+    @Column({ name: 'date_of_birth', type: 'date' })
     dateOfBirth: string
 
     @Column({ name: 'email', nullable: true })
