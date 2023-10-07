@@ -11,7 +11,6 @@ const search = async (criteria: FlightCriteria) => {
         .innerJoinAndSelect('destinationAirport.city', 'destinationCity')
         .innerJoinAndSelect('flight.flightSeatPrices', 'flightSeatPrice')
         .innerJoinAndSelect('flightSeatPrice.taxService', 'taxService')
-        .innerJoin('flight.bookings', 'booking')
         .innerJoin('aircraft.aircraftSeats', 'aircraftSeat')
         .innerJoin('aircraftSeat.seat', 'seat')
         .where('sourceAirport.id = :sourceAirportId', {

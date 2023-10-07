@@ -1,5 +1,11 @@
 // MessageKey.ts
 export const MessageKeys = {
+    E_EXPRESS_V000_ISEMPTY: 'e.express.v000.isEmpty',
+    E_EXPRESS_V001_NOTSTRING: 'e.express.v001.notString',
+    E_EXPRESS_V002_NOTNUMBER: 'e.express.v002.notNumber',
+    E_EXPRESS_V003_NOTDATE: 'e.express.v003.notDate',
+    E_EXPRESS_V004_ISMIN: 'e.express.v004.isMin',
+    E_EXPRESS_V005_ISMAX: 'e.express.v005.isMax',
     E_ENUM_V000_INVALID: 'e.enum.v000.invalid',
     E_PASSENGER_V000_FIRSTNAMEBLANK: 'e.passenger.v000.firstNameBlank',
     E_PASSENGER_V001_FIRSTNAMETOOLONG: 'e.passenger.v001.firstNameTooLong',
