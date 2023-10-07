@@ -8,7 +8,8 @@ import i18n from '~/config/i18n.config'
 import { AuthRoutes } from './auth.route'
 import { AppSettingRoutes } from './appsetting.route'
 import { FlightRoutes } from './flight.route'
-import { AIRPORT, APP, AUTH, FLIGHT, SEAT, V1 } from '~/utils/constants'
+import { AIRPORT, APP, AUTH, FLIGHT, SEAT, SERVICE_OPTION, V1 } from '~/utils/constants'
+import { ServiceOpt } from './serviceOption.route'
 
 const router = express.Router()
 
@@ -32,6 +33,9 @@ router.use(V1 + SEAT, SeatRoutes)
 
 /** v1/flight */
 router.use(V1 + FLIGHT, FlightRoutes)
+
+/** v1/service-option */
+router.use(V1 + SERVICE_OPTION, ServiceOpt)
 
 router.use((error: Error, req: Request, res: Response, next: NextFunction) => {
     // 1. Log the error or send it to a 3rd party error monitoring software
