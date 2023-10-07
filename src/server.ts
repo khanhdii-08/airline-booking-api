@@ -1,18 +1,27 @@
 import express from 'express'
 import cors from 'cors'
 import morgan from 'morgan'
-import i18n from '~/config/i18n'
-import { env } from '~/config/environment'
-import { logger } from '~/config/logger'
-import { AppDataSource } from './config/database'
+import i18n from '~/config/i18n.config'
+import { env } from '~/config/environment.config'
+import { logger } from '~/config/logger.config'
+import { AppDataSource } from './config/database.config'
 import { apiV1 } from './routes/v1'
+import { client } from '~/config/redis.config'
 
 // connection database
 AppDataSource.initialize()
     .then(() => {
-        logger.info('Connection has been established successfully.')
+        logger.info('Connection database has been established successfully.')
     })
-    .then(() => main())
+    .then(() =>
+        client
+            .connect()
+            .then(() => {
+                logger.info('Connection redis has been established successfully.')
+            })
+            .then(() => main())
+            .catch((error) => logger.error('Unable to connect to the reids:', error))
+    )
     .catch((error) => logger.error('Unable to connect to the database:', error))
 
 // main server

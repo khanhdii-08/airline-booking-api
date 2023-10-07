@@ -1,4 +1,11 @@
 {
+    "e.express.v000.isEmpty" : "Trường %s không được để trống.",
+    "e.express.v001.notString" : "Trường %s phải là một chuỗi.",
+    "e.express.v002.notNumber" : "Trường %s phải là số.",
+    "e.express.v003.notDate" : "Trường %s phải là ngày.",
+    "e.express.v004.isMin" : "Trường %s không được nhỏ hơn %s.",
+    "e.express.v005.isMax" : "Trường %s không được lớn hơn %s.",
+
     "e.enum.v000.invalid" : "Giá trị %s được truyền không hợp lệ.",
 
     "e.passenger.v000.firstNameBlank": "Tên đệm và Tên không được để trống.",

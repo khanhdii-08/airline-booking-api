@@ -1,4 +1,11 @@
 {   
+    "e.express.v000.isEmpty" : "Field %s cannot be empty.",
+    "e.express.v001.notString" : "Field %s must be a string.",
+    "e.express.v002.notNumber" : "Field %s must be numeric.",
+    "e.express.v003.notDate" : "Field %s must be a date.",
+    "e.express.v004.isMin" : "Field %s cannot be less than %s.",
+    "e.express.v005.isMax" : "Field %s cannot be greater than %s.",
+
     "e.enum.v000.invalid" : "The %s value passed is not valid.",
 
     "e.passenger.v000.firstNameBlank": "First Name cannot be blank.",

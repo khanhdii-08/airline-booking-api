@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { logger } from '~/config/logger'
+import { logger } from '~/config/logger.config'
 import { SeatService } from '~/services'
 
 const getAllSeat = async (req: Request, res: Response) => {

@@ -1,4 +1,4 @@
-import { logger } from '../config/logger'
+import { logger } from '../config/logger.config'
 import fs from 'fs'
 
 const enJson = JSON.parse(fs.readFileSync('src/messages/languages/en.json', 'utf8'))
