@@ -1,6 +1,7 @@
-import { Entity, JoinColumn, ManyToOne } from 'typeorm'
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm'
 import Model from './model.entity'
 import { Booking, Seat } from '~/entities'
+import { SeatClass } from '~/utils/enums'
 
 @Entity({ name: 'booking_seat' })
 export class BookingSeat extends Model {
@@ -11,4 +12,10 @@ export class BookingSeat extends Model {
     @ManyToOne(() => Seat, (seat: Seat) => seat.bookingSeats)
     @JoinColumn({ name: 'seat_id' })
     seat: Seat
+
+    @Column({ name: 'seat_code' })
+    seatCode: string
+
+    @Column({ name: 'seat_class' })
+    seatClass: SeatClass
 }
