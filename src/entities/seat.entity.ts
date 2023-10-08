@@ -19,9 +19,6 @@ export class Seat extends BaseEntity {
     @OneToMany(() => ServiceOption, (serviceOption: ServiceOption) => serviceOption.seat)
     serviceOptions: ServiceOption[]
 
-    @Column({ name: 'sseat_code' })
-    seatCode: string
-
     @Column({ name: 'seat_name' })
     seatName: string
 
