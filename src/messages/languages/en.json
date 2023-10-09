@@ -25,5 +25,12 @@
     "e.passenger.v014.passwordTooLong": "Password must be less than 60 characters.",
 
     "e.passenger.b000.phoneDuplicated": "The phone number was used for previous registration.",
-    "e.passenger.b001.emailDuplicated": "Email was used for previous registration."
+    "e.passenger.b001.emailDuplicated": "Email was used for previous registration.",
+
+    "e.airline.r000.airline" : "Airline not found.",
+
+    "e.flight.r000.notfound" : "Flight not found.",
+
+    "e.seat.r000.notfound" : "Seat not found."
+
 }
