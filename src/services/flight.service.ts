@@ -27,17 +27,17 @@ const search = async (criteria: FlightCriteria) => {
         .andWhere((qb) => {
             const subQuery = qb
                 .subQuery()
-                .select('COALESCE(SUM("booking"."total_amount"), 0)', 'sum')
+                .select('COALESCE(SUM(booking.totalAmount), 0)', 'sum')
                 .from('Booking', 'booking')
                 .innerJoin('booking.bookingSeats', 'bookingSeat')
                 .where('booking.flight.id = flight.id')
                 .andWhere('bookingSeat.seat.id = :seatId', { seatId: criteria.seatId })
                 .getQuery()
-            return `(${subQuery} + :numAdults + :numInfants) <= aircraftSeat.seatNumber`
+            return `(${subQuery} + :numAdults + :numChildren) <= aircraftSeat.seatNumber`
         })
         .setParameters({
             numAdults: criteria.numAdults,
-            numInfants: criteria.numInfants
+            numChildren: criteria.numChildren
         })
         .getMany()
 
