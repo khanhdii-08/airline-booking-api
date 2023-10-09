@@ -25,5 +25,11 @@
     "e.passenger.v014.passwordTooLong": "Mật khẩu phải bé hơn 60 ký tự.",
     
     "e.passenger.b000.phoneDuplicated": "Só điện thoại đã được sử dụng để đăng ký trước đó.",
-    "e.passenger.b001.emailDuplicated": "Email đã được sử dụng để đăng ký trước đó."
+    "e.passenger.b001.emailDuplicated": "Email đã được sử dụng để đăng ký trước đó.",
+
+    "e.airline.r000.airline" : "Không tìm thấy hãng hàng không.",
+
+    "e.flight.r000.notfound" : "Không tìm thấy chuyến bay.",
+
+    "e.seat.r000.notfound" : "Không tìm thấy ghế."
 }

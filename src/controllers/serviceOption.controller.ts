@@ -3,12 +3,12 @@ import { ParamsDictionary } from 'express-serve-static-core'
 import { ServiceOptService } from '~/services'
 
 const getAllServiceOpt = async (
-    req: Request<ParamsDictionary, any, any, { airlineId: string; seatId: string }>,
+    req: Request<ParamsDictionary, any, any, { flightId: string; airlineId: string; seatId: string }>,
     res: Response
 ) => {
-    const { airlineId, seatId } = req.query
+    const { flightId, airlineId, seatId } = req.query
 
-    const result = await ServiceOptService.getAllServiceOpt(airlineId, seatId)
+    const result = await ServiceOptService.getAllServiceOpt(flightId, airlineId, seatId)
     return res.status(200).json(result)
 }
 
