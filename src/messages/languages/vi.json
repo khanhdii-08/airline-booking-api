@@ -26,6 +26,7 @@
     
     "e.passenger.b000.phoneDuplicated": "Só điện thoại đã được sử dụng để đăng ký trước đó.",
     "e.passenger.b001.emailDuplicated": "Email đã được sử dụng để đăng ký trước đó.",
+    "e.passenger.b002.optInvalid" : "Otp không hợp lệ.",
 
     "e.airline.r000.airline" : "Không tìm thấy hãng hàng không.",
 
