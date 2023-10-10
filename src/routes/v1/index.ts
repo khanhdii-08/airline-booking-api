@@ -10,12 +10,24 @@ import { AppSettingRoutes } from './appsetting.route'
 import { FlightRoutes } from './flight.route'
 import { AIRPORT, APP, AUTH, FLIGHT, SEAT, SERVICE_OPTION, V1 } from '~/utils/constants'
 import { ServiceOpt } from './serviceOption.route'
+import { BadRequestException } from '~/exceptions/BadRequestException'
 
 const router = express.Router()
 
 /** Set language for i18n  */
 router.use((req, res, next) => {
     i18n.setLocale(req.locale)
+    next()
+})
+
+/** Middleware x-request-source */
+router.use((req, res, next) => {
+    const requestSource = req.headers['x-request-source']
+    if (!requestSource || (requestSource !== 'web' && requestSource !== 'mobile')) {
+        throw new BadRequestException({ error: { message: 'Invalid x-request-source header' } })
+    }
+    req.requestSource = requestSource
+
     next()
 })
 

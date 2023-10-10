@@ -1,5 +1,7 @@
+import { Request } from 'express'
 import jwt from 'jsonwebtoken'
 import { env } from '~/config/environment.config'
+import { UnauthorizedExeption } from '~/exceptions/UnauthorizedExeption'
 import { JwtPayload } from '~/types/JwtPayload'
 
 export const createToken = (payload: JwtPayload): string => {
@@ -7,7 +9,5 @@ export const createToken = (payload: JwtPayload): string => {
 }
 
 export const createRefreshToken = (payload: JwtPayload): string => {
-    return jwt.sign(payload, env.REFRESH_TOKEN_SECRET, { expiresIn: 300 })
+    return jwt.sign(payload, env.REFRESH_TOKEN_SECRET, { expiresIn: env.JWT_EXPRIED_REFRESH_TOKEN })
 }
-
-// export const getUserId = ()
