@@ -6,7 +6,7 @@ import { env } from '~/config/environment.config'
 import { logger } from '~/config/logger.config'
 import { AppDataSource } from './config/database.config'
 import { apiV1 } from './routes/v1'
-import { client } from '~/config/redis.config'
+import { redisClient } from '~/config/redis.config'
 
 // connection database
 AppDataSource.initialize()
@@ -14,7 +14,7 @@ AppDataSource.initialize()
         logger.info('Connection database has been established successfully.')
     })
     .then(() =>
-        client
+        redisClient
             .connect()
             .then(() => {
                 logger.info('Connection redis has been established successfully.')

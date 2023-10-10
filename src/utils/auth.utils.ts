@@ -7,5 +7,7 @@ export const createToken = (payload: JwtPayload): string => {
 }
 
 export const createRefreshToken = (payload: JwtPayload): string => {
-    return jwt.sign(payload, env.REFRESH_TOKEN_SECRET, { expiresIn: env.JWT_EXPRIED_REFRESH_TOKEN })
+    return jwt.sign(payload, env.REFRESH_TOKEN_SECRET, { expiresIn: 300 })
 }
+
+// export const getUserId = ()

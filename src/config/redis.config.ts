@@ -3,7 +3,7 @@ import dotenv from 'dotenv'
 
 dotenv.config()
 
-export const client = createClient({
+export const redisClient = createClient({
     password: process.env.REDIS_PASSWORD,
     socket: {
         host: process.env.REDIS_HOST,

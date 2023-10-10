@@ -24,6 +24,7 @@ export const MessageKeys = {
     E_PASSENGER_V014_PASSWORDTOOLONG: 'e.passenger.v014.passwordTooLong',
     E_PASSENGER_B000_PHONEDUPLICATED: 'e.passenger.b000.phoneDuplicated',
     E_PASSENGER_B001_EMAILDUPLICATED: 'e.passenger.b001.emailDuplicated',
+    E_PASSENGER_B002_OPTINVALID: 'e.passenger.b002.optInvalid',
     E_AIRLINE_R000_AIRLINE: 'e.airline.r000.airline',
     E_FLIGHT_R000_NOTFOUND: 'e.flight.r000.notfound',
     E_SEAT_R000_NOTFOUND: 'e.seat.r000.notfound'

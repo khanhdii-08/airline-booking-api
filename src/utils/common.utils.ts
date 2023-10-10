@@ -14,7 +14,7 @@ export const randomCode = (char: string, uuidStr: string): string => {
     return `${char}-${uuidInt}`
 }
 
-export function geneCode(char: string) {
+export const generateCode = (char: string) => {
     const totalNumbers = 100
     const availableNumbers = Array.from({ length: totalNumbers }, (_, i) => i + 1)
     const timestamp = Date.now().toString()
@@ -29,7 +29,3 @@ export function geneCode(char: string) {
 
     return uniqueCode
 }
-
-// const value1OrValue2 = (valOne : any, valTwo : any) => {
-//     return valOne
-// }

@@ -4,9 +4,11 @@ import { AppError } from './AppError'
 
 export class UnauthorizedExeption extends AppError {
     public readonly error?: ErrorResponse
-
-    constructor(errorResponse: ErrorResponse) {
-        super({ status: HttpStatus.UNAUTHORIZED, message: errorResponse.message })
-        this.error = errorResponse
+    constructor(message: string) {
+        super({
+            status: HttpStatus.UNAUTHORIZED,
+            message
+        })
+        this.error = { message }
     }
 }
