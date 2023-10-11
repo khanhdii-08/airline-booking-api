@@ -1,7 +1,7 @@
 import Model from './model.entity'
-import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from 'typeorm'
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne } from 'typeorm'
 import { Gender, Status } from '~/utils/enums'
-import { Booking, User } from '~/entities'
+import { Booking, BookingServiceOpt, User } from '~/entities'
 import { PassengerType } from '~/utils/enums/passengerType'
 
 @Entity({ name: 'passenger' })
@@ -14,10 +14,13 @@ export class Passenger extends Model {
     @JoinColumn({ name: 'booking_id' })
     booking: Booking
 
-    @Column({ name: 'passenger_code' })
+    @OneToMany(() => BookingServiceOpt, (bookingServiceOpts: BookingServiceOpt) => bookingServiceOpts.passenger)
+    bookingServiceOpts: BookingServiceOpt[]
+
+    @Column({ name: 'passenger_code', nullable: true })
     passengerCode: string
 
-    @Column({ name: 'color' })
+    @Column({ name: 'color', nullable: true })
     color: string
 
     @Column({ name: 'image_url', nullable: true })
@@ -48,7 +51,7 @@ export class Passenger extends Model {
     address: string
 
     @Column({ name: 'passenger_type', nullable: true })
-    type: PassengerType
+    passengerType: PassengerType
 
     @Column({ name: 'is_passerby', nullable: true })
     isPasserby: boolean

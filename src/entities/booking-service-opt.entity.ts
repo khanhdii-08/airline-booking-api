@@ -1,6 +1,6 @@
-import { Entity, JoinColumn, ManyToOne } from 'typeorm'
+import { Entity, JoinColumn, ManyToOne, OneToOne } from 'typeorm'
 import Model from './model.entity'
-import { ServiceOption, Booking } from '~/entities'
+import { ServiceOption, Booking, Passenger } from '~/entities'
 
 @Entity({ name: 'booking_service_opt' })
 export class BookingServiceOpt extends Model {
@@ -11,4 +11,8 @@ export class BookingServiceOpt extends Model {
     @ManyToOne(() => ServiceOption, (serviceOption: ServiceOption) => serviceOption.bookingServiceOpts)
     @JoinColumn({ name: 'service_option_id' })
     serviceOption: ServiceOption
+
+    @ManyToOne(() => Passenger, (passenger: Passenger) => passenger.bookingServiceOpts)
+    @JoinColumn({ name: 'passenger_id' })
+    passenger: Passenger
 }

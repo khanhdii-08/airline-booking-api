@@ -25,6 +25,9 @@ export class Seat extends BaseEntity {
     @Column({ name: 'seat_class' })
     seatClass: SeatClass
 
+    @Column({ name: 'service_price', type: 'float', nullable: true })
+    servicePrice: number
+
     @Column({ name: 'visual_index', nullable: true })
     visualIndex: number
 

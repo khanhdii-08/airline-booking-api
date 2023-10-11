@@ -1,13 +1,22 @@
-import { Booking, BookingSeat, BookingServiceOpt, Flight, Passenger, PaymentTransaction, User } from '~/entities'
+import {
+    Booking,
+    BookingSeat,
+    BookingServiceOpt,
+    Flight,
+    Passenger,
+    PaymentTransaction,
+    Seat,
+    ServiceOption,
+    User
+} from '~/entities'
 import { BookingInput } from './../types/BookingInput'
-import { generateCode, randomColor } from '~/utils/common.utils'
-import { PaymentStatus, Status } from '~/utils/enums'
+import { generateCode } from '~/utils/common.utils'
+import { PaymentStatus } from '~/utils/enums'
 import { NotFoundException } from '~/exceptions/NotFoundException'
 import { AppDataSource } from '~/config/database.config'
 
 const booking = async (bookingInput: BookingInput) => {
-    const { userId, flightId, passengers, bookingSeats, bookingServiceOpts, paymentTransaction, ...booking } =
-        bookingInput
+    const { userId, flightId, passengers, paymentTransaction, ...booking } = bookingInput
 
     const flight = await Flight.findOneBy({ id: flightId })
     if (!flight) {
@@ -41,22 +50,42 @@ const booking = async (bookingInput: BookingInput) => {
 
     await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
         await transactionalEntityManager.save(newBooking).then(async (booking) => {
-            const passengersToSave = passengers.map((passenger) => {
-                return Passenger.create({
+            const bookingSeatsToSave: BookingSeat[] = []
+            const bookingServiceOptsToSave: BookingServiceOpt[] = []
+
+            passengers.forEach(async (passenger) => {
+                const newPassenger = Passenger.create({
                     ...passenger,
-                    passengerCode: generateCode('P'),
-                    color: randomColor(),
                     isPasserby: true,
                     booking
                 })
-            })
 
-            const bookingSeatsToSave = bookingSeats.map((bookingSeat) => {
-                return BookingSeat.create({ ...bookingSeat, booking })
-            })
+                const newBookingSeat = BookingSeat.create({
+                    booking,
+                    seat: Seat.create({ id: passenger.seat.seatId }),
+                    ...passenger.seat
+                })
 
-            const bookingServiceOptsToSave = bookingServiceOpts.map((bookingServiceOpt) => {
-                return BookingServiceOpt.create({ ...bookingServiceOpt, booking })
+                passenger.serviceOptIds.forEach((id) => {
+                    bookingServiceOptsToSave.push(
+                        BookingServiceOpt.create({
+                            booking,
+                            serviceOption: ServiceOption.create({ id })
+                        })
+                    )
+                })
+
+                await transactionalEntityManager.save(newPassenger).then(async (passenger) => {
+                    newBookingSeat.passenger = passenger
+                    bookingSeatsToSave.push(newBookingSeat)
+
+                    bookingServiceOptsToSave.forEach((element) => {
+                        element.passenger = passenger
+                    })
+
+                    await transactionalEntityManager.save(bookingSeatsToSave)
+                    await transactionalEntityManager.save(bookingServiceOptsToSave)
+                })
             })
 
             const newPaymentTransaction = PaymentTransaction.create({
@@ -65,14 +94,11 @@ const booking = async (bookingInput: BookingInput) => {
                 booking
             })
 
-            await transactionalEntityManager.save(passengersToSave)
-            await transactionalEntityManager.save(bookingSeatsToSave)
-            await transactionalEntityManager.save(bookingServiceOptsToSave)
             await transactionalEntityManager.save(newPaymentTransaction)
         })
     })
 
-    return booking
+    return bookingInput
 }
 
 export const BookingService = { booking }
