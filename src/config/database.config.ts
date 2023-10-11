@@ -14,7 +14,7 @@ import {
     AircraftSeat,
     Booking,
     BookingSeat,
-    BookingService,
+    BookingServiceOpt,
     Employee,
     PaymentTransaction,
     TaxService
@@ -34,7 +34,7 @@ const Entities = [
     AircraftSeat,
     Booking,
     BookingSeat,
-    BookingService,
+    BookingServiceOpt,
     Employee,
     PaymentTransaction,
     TaxService

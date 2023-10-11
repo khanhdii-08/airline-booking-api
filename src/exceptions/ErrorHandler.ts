@@ -22,7 +22,7 @@ class ErrorHandler {
     private handleUntrustedError(error: Error, response?: Response): void {
         if (response) {
             response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-                code: HttpStatus.INTERNAL_SERVER_ERROR,
+                status: HttpStatus.INTERNAL_SERVER_ERROR,
                 error: { message: error.message || 'Internal server error' }
             })
         }

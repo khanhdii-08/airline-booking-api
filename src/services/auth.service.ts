@@ -34,7 +34,7 @@ const register = async (registerInput: RegisterInput) => {
     let passengerCode: string = ''
     do {
         passengerCode = generateCode('P')
-        const passenger = await Passenger.findOneBy({ passengerCode, status: Status.ACT })
+        const passenger = await Passenger.findOneBy({ passengerCode })
 
         if (passenger) {
             passengerCode = ''
@@ -46,7 +46,8 @@ const register = async (registerInput: RegisterInput) => {
         ...registerInput,
         passengerCode,
         gender: gender as Gender,
-        color: randomColor
+        color: randomColor(),
+        isPasserby: false
     })
     await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
         await transactionalEntityManager.save(newUser).then((user) => {

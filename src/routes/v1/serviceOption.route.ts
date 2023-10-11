@@ -6,4 +6,4 @@ const router: Router = express.Router()
 
 router.route('/').get(ServiceOptValidation.serviceOpt, ServiceOptController.getAllServiceOpt)
 
-export const ServiceOpt = router
+export const ServiceOptRoutes = router

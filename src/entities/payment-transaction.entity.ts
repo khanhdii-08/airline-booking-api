@@ -5,7 +5,7 @@ import { PaymentMethod, PaymentTransactionType } from '~/utils/enums'
 
 @Entity('payment_transaction')
 export class PaymentTransaction extends Model {
-    @Column({ name: 'transaction_code' })
+    @Column({ name: 'transaction_code', nullable: true })
     transactionCode: string
 
     @ManyToOne(() => Booking, (booking) => booking.paymentTransactions)
@@ -15,7 +15,7 @@ export class PaymentTransaction extends Model {
     @Column({ name: 'transaction_date', type: 'date' })
     transactionDate: Date
 
-    @Column({ name: 'transaction_amount', type: 'float8' })
+    @Column({ name: 'transaction_amount', type: 'float' })
     transactionAmount: number
 
     @Column({ name: 'payment_method' })
