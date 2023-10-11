@@ -1,7 +1,8 @@
 import Model from './model.entity'
-import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from 'typeorm'
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne } from 'typeorm'
 import { Gender, Status } from '~/utils/enums'
-import { Booking, User } from '~/entities'
+import { Booking, BookingServiceOpt, User } from '~/entities'
+import { PassengerType } from '~/utils/enums/passengerType'
 
 @Entity({ name: 'passenger' })
 export class Passenger extends Model {
@@ -13,10 +14,13 @@ export class Passenger extends Model {
     @JoinColumn({ name: 'booking_id' })
     booking: Booking
 
-    @Column({ name: 'passenger_code' })
+    @OneToMany(() => BookingServiceOpt, (bookingServiceOpts: BookingServiceOpt) => bookingServiceOpts.passenger)
+    bookingServiceOpts: BookingServiceOpt[]
+
+    @Column({ name: 'passenger_code', nullable: true })
     passengerCode: string
 
-    @Column({ name: 'color' })
+    @Column({ name: 'color', nullable: true })
     color: string
 
     @Column({ name: 'image_url', nullable: true })
@@ -34,7 +38,7 @@ export class Passenger extends Model {
     @Column({ name: 'country' })
     country: string
 
-    @Column({ name: 'phone_number' })
+    @Column({ name: 'phone_number', nullable: true })
     phoneNumber: string
 
     @Column({ name: 'date_of_birth', type: 'date' })
@@ -42,6 +46,12 @@ export class Passenger extends Model {
 
     @Column({ name: 'email', nullable: true })
     email: string
+
+    @Column({ name: 'address', nullable: true })
+    address: string
+
+    @Column({ name: 'passenger_type', nullable: true })
+    passengerType: PassengerType
 
     @Column({ name: 'is_passerby', nullable: true })
     isPasserby: boolean

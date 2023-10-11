@@ -1,4 +1,4 @@
-import { Airline, BookingService, Seat } from '~/entities'
+import { Airline, BookingServiceOpt, Seat } from '~/entities'
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm'
 import Model from './model.entity'
 import { LuggageType, OptionType, SeatClass, Status } from '~/utils/enums'
@@ -9,8 +9,8 @@ export class ServiceOption extends Model {
     @JoinColumn({ name: 'airline_id' })
     airline: Airline
 
-    @OneToMany(() => BookingService, (bookingService: BookingService) => bookingService.serviceOption)
-    bookingServices: BookingService[]
+    @OneToMany(() => BookingServiceOpt, (bookingServiceOpt: BookingServiceOpt) => bookingServiceOpt.serviceOption)
+    bookingServiceOpts: BookingServiceOpt[]
 
     @ManyToOne(() => Seat, (seat: Seat) => seat.serviceOptions)
     @JoinColumn({ name: 'seat_id' })

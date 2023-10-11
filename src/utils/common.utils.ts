@@ -6,7 +6,7 @@ export const getValueByKey = (value: string, T: any) => {
 
 export const genId = (): string => 'a'
 
-export const randomColor = `#${Math.floor(Math.random() * 16777215).toString(16)}`
+export const randomColor = () => `#${Math.floor(Math.random() * 16777215).toString(16)}`
 
 export const randomCode = (char: string, uuidStr: string): string => {
     const uuidHex: string = uuidStr.replace(/-/g, '')

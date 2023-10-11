@@ -14,13 +14,13 @@ const token = (req: Request) => {
 }
 
 const jwtPayload = (req: Request) => {
-    try {
-        const jwtPayload = jwt.verify(token(req), env.ACCESS_TOKEN_SECRET) as { [key: string]: any }
-        ;['iat', 'exp'].forEach((keyToRemove) => delete jwtPayload[keyToRemove])
-        return jwtPayload as JwtPayload
-    } catch (e) {
-        throw new UnauthorizedExeption('Not authorized1')
-    }
+    // try {
+    const jwtPayload = jwt.verify(token(req), env.ACCESS_TOKEN_SECRET) as { [key: string]: any }
+    ;['iat', 'exp'].forEach((keyToRemove) => delete jwtPayload[keyToRemove])
+    return jwtPayload as JwtPayload
+    // } catch (e) {
+    //     throw new UnauthorizedExeption('Not authorized1')
+    // }
 }
 
 export const TokenContext = { token, jwtPayload }

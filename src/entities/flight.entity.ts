@@ -36,10 +36,10 @@ export class Flight extends Model {
     @Column({ name: 'flight_name' })
     flightName: string
 
-    @Column({ name: 'departure_time' })
+    @Column({ name: 'departure_time', type: 'timestamptz', nullable: true })
     departureTime: Date
 
-    @Column({ name: 'arrival_time' })
+    @Column({ name: 'arrival_time', type: 'timestamptz', nullable: true })
     arrivalTime: Date
 
     @Column({ name: 'status', nullable: true })

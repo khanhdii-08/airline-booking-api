@@ -10,6 +10,7 @@ export const AIRPORT = '/airport'
 export const SEAT = '/seat'
 export const FLIGHT = '/flight'
 export const SERVICE_OPTION = '/service-option'
+export const BOOKING = '/booking'
 
 // key redis
 

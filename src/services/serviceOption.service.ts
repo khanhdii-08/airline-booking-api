@@ -7,7 +7,9 @@ const getAllServiceOpt = async (flightId: string, airlineId: string, seatId: str
         where: { id: flightId },
         relations: {
             aircraft: {
-                aircraftSeats: true
+                aircraftSeats: {
+                    seat: true
+                }
             },
             bookings: {
                 bookingSeats: true
@@ -21,7 +23,10 @@ const getAllServiceOpt = async (flightId: string, airlineId: string, seatId: str
     const aircraftSeat: { [key: string]: any } = {}
 
     aircraftSeats.forEach((element) => {
-        aircraftSeat[element.seatClass] = element.seatNumber
+        aircraftSeat[element.seatClass] = {
+            seatNumber: element.seatNumber,
+            servicePrice: element.seat.servicePrice
+        }
     })
 
     const seatsInBooking: string[] = []
