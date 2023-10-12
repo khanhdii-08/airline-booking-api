@@ -28,7 +28,9 @@
     "e.passenger.b001.emailDuplicated": "Email was used for previous registration.",
     "e.passenger.b002.optInvalid" : "Invalid Otp",
 
-    "e.airline.r000.airline" : "Airline not found.",
+    "e.passenger.r000.notfound" : "Passenger not found.",
+
+    "e.airline.r000.notfound" : "Airline not found.",
 
     "e.flight.r000.notfound" : "Flight not found.",
 

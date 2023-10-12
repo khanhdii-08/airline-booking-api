@@ -30,4 +30,10 @@ const login = async (req: Request<ParamsDictionary, any, LoginInput>, res: Respo
     return res.status(HttpStatus.OK).json(result)
 }
 
-export const AuthController = { register, verify, sendOtp, login }
+const userInfo = async (req: Request, res: Response) => {
+    const result = await AuthService.userInfo(req.jwtPayload._id)
+
+    return res.status(HttpStatus.OK).json(result)
+}
+
+export const AuthController = { register, verify, sendOtp, login, userInfo }

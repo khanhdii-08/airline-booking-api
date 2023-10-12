@@ -1,4 +1,6 @@
+import { UserType } from '~/utils/enums'
+
 export type JwtPayload = {
     _id: string
-    userRole: string
+    role: UserType
 }

@@ -32,7 +32,7 @@ const serviceOpt = async (req: Request, res: Response, next: NextFunction) => {
 
     const airline = await Airline.findOneBy({ id: airlineId as string })
     if (airline === undefined || airline === null) {
-        throw new NotFoundException({ message: i18n.__(MessageKeys.E_AIRLINE_R000_AIRLINE) })
+        throw new NotFoundException({ message: i18n.__(MessageKeys.E_AIRLINE_R000_NOTFOUND) })
     }
 
     const seat = await Seat.findOneBy({ id: seatId as string })

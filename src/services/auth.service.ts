@@ -15,6 +15,7 @@ import i18n from '~/config/i18n.config'
 import { BadRequestException } from '~/exceptions/BadRequestException'
 import { ACCESS_TOKEN_KEY, OTP_KEY, OTP_TIME_KEY, REFRESH_TOKEN_KEY } from '~/utils/constants'
 import { LoginInput } from '~/types/LoginInput'
+import { NotFoundException } from '~/exceptions/NotFoundException'
 
 const register = async (registerInput: RegisterInput) => {
     const { phoneNumber, gender, password } = registerInput
@@ -58,7 +59,7 @@ const register = async (registerInput: RegisterInput) => {
 
     const payload: JwtPayload = {
         _id: newUser.id,
-        userRole: newUser.userType
+        role: newUser.userType
     }
     sendOTP({ userId: newUser.id })
 
@@ -110,7 +111,7 @@ const verify = async (userId: string, source: string, otp: string) => {
     passenger.status = Status.ACT
     passenger.save()
 
-    const payload: JwtPayload = { _id: user.id, userRole: user.userType }
+    const payload: JwtPayload = { _id: user.id, role: user.userType }
 
     const accessToken = createToken(payload)
     const refreshToken = createRefreshToken(payload)
@@ -134,7 +135,7 @@ const login = async (source: string, loginInput: LoginInput) => {
         throw new BadRequestException({ error: { message: 'mật khẩu ko đúng' } })
     }
 
-    const payload: JwtPayload = { _id: user.id, userRole: user.userType }
+    const payload: JwtPayload = { _id: user.id, role: user.userType }
 
     const accessToken = createToken(payload)
     const refreshToken = createRefreshToken(payload)
@@ -145,4 +146,13 @@ const login = async (source: string, loginInput: LoginInput) => {
     return { access_token: accessToken, refresh_token: refreshToken }
 }
 
-export const AuthService = { register, verify, sendOTP, login }
+const userInfo = async (userId: string) => {
+    const passengerInfo = await Passenger.findOneBy({ user: { id: userId }, status: Status.ACT, isPasserby: false })
+    if (!passengerInfo) {
+        throw new NotFoundException({ message: i18n.__(MessageKeys.E_PASSENGER_R000_NOTFOUND) })
+    }
+    const { id, createdAt, updatedAt, isPasserby, status, ...info } = passengerInfo
+    return info
+}
+
+export const AuthService = { register, verify, sendOTP, login, userInfo }
