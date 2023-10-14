@@ -5,6 +5,8 @@ import { PassengerInput } from './PassengerInput'
 export class BookingInput {
     userId: string
 
+    bookingCode: string
+
     flightId: string
 
     returnFlightId: string

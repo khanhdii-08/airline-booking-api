@@ -16,5 +16,14 @@ export const env = {
     REFRESH_TOKEN_SECRET: process.env.REFRESH_TOKEN_SECRET as Secret,
     JWT_EXPRIED_REFRESH_TOKEN: process.env.JWT_EXPRIED_REFRESH_TOKEN,
     REDIS_HOST: process.env.REDIS_HOST as string,
-    OTP_EXPIRE_MINUTE: process.env.OTP_EXPIRE_MINUTE as unknown as number
+    OTP_EXPIRE_MINUTE: process.env.OTP_EXPIRE_MINUTE as unknown as number,
+    VNP_TMNCODE: process.env.VNP_TMNCODE,
+    VNP_HASHSECRET: process.env.VNP_HASHSECRET as string,
+    VNP_URL: process.env.VNP_URL as string,
+    VNP_API: process.env.VNP_API,
+    VNP_RETURN_URL: process.env.VNP_RETURN_URL,
+    MOMO_PARTNER_CODE: process.env.MOMO_PARTNER_CODE as string,
+    MOMO_ACCESS_KEY: process.env.MOMO_ACCESS_KEY,
+    MOMO_SECRET_KEY: process.env.MOMO_SECRET_KEY as string,
+    MOMO_URL: process.env.MOMO_URL as string
 }

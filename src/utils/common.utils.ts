@@ -14,18 +14,24 @@ export const randomCode = (char: string, uuidStr: string): string => {
     return `${char}-${uuidInt}`
 }
 
-export const generateCode = (char: string) => {
-    const totalNumbers = 100
-    const availableNumbers = Array.from({ length: totalNumbers }, (_, i) => i + 1)
+export const generateCode = (char: string, length: number = 6) => {
+    const charset = '0123456789'
+    const codeArray = []
+
+    for (let i = 0; i < length; i++) {
+        const randomIndex = Math.floor(Math.random() * charset.length)
+        codeArray.push(charset[randomIndex])
+    }
+
     const timestamp = Date.now().toString()
     const timestampDigits = Array.from(timestamp)
 
-    for (let i = availableNumbers.length - 1; i > 0; i--) {
+    for (let i = codeArray.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1))
-        ;[availableNumbers[i], availableNumbers[j]] = [availableNumbers[j], availableNumbers[i]]
+        ;[codeArray[i], codeArray[j]] = [codeArray[j], codeArray[i]]
     }
-    const randomNumbers = availableNumbers.slice(0, 3)
-    const uniqueCode = `${char}-${randomNumbers.join('')}${timestampDigits[0]}${timestampDigits[1]}`
+
+    const uniqueCode = `${char}-${codeArray.join('')}${timestampDigits[0]}${timestampDigits[1]}`
 
     return uniqueCode
 }
