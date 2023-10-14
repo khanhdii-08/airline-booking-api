@@ -2,7 +2,7 @@ import moment from 'moment'
 import crypto from 'crypto'
 import qs from 'qs'
 import { env } from '~/config/environment.config'
-import { generateCode } from '~/utils/common.utils'
+import { generateBookingCode, generateCode } from '~/utils/common.utils'
 import { AppError } from '~/exceptions/AppError'
 import { HttpStatus } from '~/utils/httpStatus'
 import { PaymentInput } from '~/types/PaymentInput'
@@ -10,7 +10,7 @@ import { Booking } from '~/entities'
 import { PaymentStatus } from '~/utils/enums'
 import { BadRequestException } from '~/exceptions/BadRequestException'
 
-const paymentVNPay = (paymentInput: PaymentInput) => {
+const paymentVNPay = async (paymentInput: PaymentInput) => {
     const { amount, ipAddr, language, returnUrl } = paymentInput
     let bookingCode = paymentInput.bookingCode
 
@@ -25,7 +25,13 @@ const paymentVNPay = (paymentInput: PaymentInput) => {
             () => new BadRequestException({ error: { message: 'đã đc thanh toán' } })
         )
     } else {
-        bookingCode = generateCode('').slice(1) + moment(date).format('DDHHmmss') + generateCode('').slice(1)
+        do {
+            bookingCode = generateBookingCode()
+            const booking = await Booking.findOneBy({ bookingCode })
+            if (booking) {
+                bookingCode = ''
+            }
+        } while (!bookingCode)
     }
 
     let vnp_Params: { [key: string]: any } = {}
