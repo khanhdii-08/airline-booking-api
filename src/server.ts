@@ -7,6 +7,7 @@ import { logger } from '~/config/logger.config'
 import { AppDataSource } from './config/database.config'
 import { apiV1 } from './routes/v1'
 import { redisClient } from '~/config/redis.config'
+import pageRoot from '~/routes/pages/root'
 
 // connection database
 AppDataSource.initialize()
@@ -39,6 +40,7 @@ const main = () => {
 
     // use APIs v1
     app.use('/api', apiV1)
+    app.use(pageRoot)
 
     // start server listening
     const port = env.APP_PORT || 5000
