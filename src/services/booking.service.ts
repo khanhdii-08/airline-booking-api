@@ -10,7 +10,6 @@ import {
     User
 } from '~/entities'
 import { BookingInput } from './../types/BookingInput'
-import { generateCode } from '~/utils/common.utils'
 import { PaymentStatus } from '~/utils/enums'
 import { NotFoundException } from '~/exceptions/NotFoundException'
 import { AppDataSource } from '~/config/database.config'
@@ -28,20 +27,9 @@ const booking = async (bookingInput: BookingInput) => {
         user = await User.findOneBy({ id: userId })
     }
 
-    let bookingCode: string = ''
-    do {
-        bookingCode = generateCode('B')
-        const booking = await Booking.findOneBy({ bookingCode })
-
-        if (booking) {
-            bookingCode = ''
-        }
-    } while (!bookingCode)
-
     const newBooking = await Booking.create({
         ...booking,
         flight,
-        bookingCode,
         bookingDate: new Date(),
         paymentStatus: PaymentStatus.SUCCESSFUL
     })

@@ -11,6 +11,7 @@ export const SEAT = '/seat'
 export const FLIGHT = '/flight'
 export const SERVICE_OPTION = '/service-option'
 export const BOOKING = '/booking'
+export const PAYMENT = '/payment'
 
 // key redis
 
@@ -21,3 +22,6 @@ export const OTP_TIME_KEY = 'otpTime'
 // token
 export const ACCESS_TOKEN_KEY = 'access_token'
 export const REFRESH_TOKEN_KEY = 'refresh_token'
+
+// payment
+export const MOMO_URL_CREATE = '/v2/gateway/api/create'
