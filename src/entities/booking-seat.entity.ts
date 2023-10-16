@@ -26,4 +26,7 @@ export class BookingSeat extends Model {
 
     @Column({ name: 'seat_class' })
     seatClass: SeatClass
+
+    @Column({ name: 'seat_price', type: 'float', nullable: true })
+    seatPrice: number
 }

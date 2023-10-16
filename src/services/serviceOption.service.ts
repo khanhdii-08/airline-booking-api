@@ -11,13 +11,20 @@ const getAllServiceOpt = async (flightId: string, airlineId: string, seatId: str
                     seat: true
                 }
             },
-            bookings: {
-                bookingSeats: true
+            bookingAways: {
+                bookingSeats: {
+                    flight: true
+                }
+            },
+            bookingReturns: {
+                bookingSeats: {
+                    flight: true
+                }
             }
         }
     })
 
-    const { aircraft, bookings } = flight
+    const { aircraft, bookingAways, bookingReturns } = flight
     const { aircraftSeats, ...aircraftWithoutAircraftSeats } = aircraft
 
     const aircraftSeat: { [key: string]: any } = {}
@@ -30,7 +37,13 @@ const getAllServiceOpt = async (flightId: string, airlineId: string, seatId: str
     })
 
     const seatsInBooking: string[] = []
-    bookings.forEach((e) => e.bookingSeats.forEach((be) => seatsInBooking.push(be.seatCode)))
+    bookingAways.concat(bookingReturns).forEach((e) =>
+        e.bookingSeats.forEach((seatInBooking) => {
+            if (seatInBooking.flight.id === flightId) {
+                seatsInBooking.push(seatInBooking.seatCode)
+            }
+        })
+    )
 
     const seatOptions = {
         seatsInBooking,

@@ -19,13 +19,21 @@ import { HttpStatus } from '~/utils/httpStatus'
 import { logger } from '~/config/logger.config'
 
 const booking = async (bookingInput: BookingInput) => {
-    const { userId, flightId, passengers, ...booking } = bookingInput
+    const { userId, flightAwayId, flightReturnId, passengers, ...booking } = bookingInput
 
     let bookingCode = bookingInput.bookingCode
 
-    const flight = await Flight.findOneBy({ id: flightId })
-    if (!flight) {
+    const flightAway = await Flight.findOneBy({ id: flightAwayId })
+    if (!flightAway) {
         throw new NotFoundException({ message: 'null' })
+    }
+
+    let flightReturn = null
+    if (flightReturnId) {
+        flightReturn = await Flight.findOneBy({ id: flightReturnId })
+        if (!flightReturn) {
+            throw new NotFoundException({ message: 'null' })
+        }
     }
 
     let user = null
@@ -36,7 +44,7 @@ const booking = async (bookingInput: BookingInput) => {
     let paymentStatus = PaymentStatus.SUCCESSFUL
     if (bookingCode) {
         paymentStatus = PaymentStatus.SUCCESSFUL
-        const paymentTransaction = PaymentTransaction.findOneBy({ bookingCode })
+        const paymentTransaction = await PaymentTransaction.findOneBy({ bookingCode })
         if (!paymentTransaction) {
             throw new NotFoundException({ message: 'null' })
         }
@@ -61,10 +69,12 @@ const booking = async (bookingInput: BookingInput) => {
     const newBooking = await Booking.create({
         ...booking,
         bookingCode,
-        flight,
+        flightAway,
         bookingDate: new Date(),
         paymentStatus
     })
+
+    if (flightReturn) newBooking.flightReturn = flightReturn
 
     if (user) newBooking.user = user
 
@@ -109,4 +119,26 @@ const booking = async (bookingInput: BookingInput) => {
     return bookingInput
 }
 
-export const BookingService = { booking }
+const bookingDetail = async (bookingId: string) => {
+    const booking = await Booking.findOne({
+        where: { id: bookingId },
+        relations: {
+            flightAway: {
+                sourceAirport: true,
+                destinationAirport: true
+            },
+            flightReturn: {
+                sourceAirport: true,
+                destinationAirport: true
+            },
+            passengers: true
+        }
+    })
+    if (!booking) {
+        throw new NotFoundException({ message: 'ko tìm thấy chuyến bay' })
+    }
+
+    return booking
+}
+
+export const BookingService = { booking, bookingDetail }

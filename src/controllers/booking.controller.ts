@@ -17,4 +17,9 @@ const booking = async (req: Request<ParamsDictionary, any, BookingInput>, res: R
     return res.status(HttpStatus.CREATED).json(result)
 }
 
-export const BookingController = { booking }
+const bookingDetail = async (req: Request<ParamsDictionary>, res: Response) => {
+    const result = await BookingService.bookingDetail(req.params.id)
+    return res.status(HttpStatus.OK).json(result)
+}
+
+export const BookingController = { booking, bookingDetail }
