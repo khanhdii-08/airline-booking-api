@@ -1,5 +1,6 @@
 import { PassengerType } from '~/utils/enums/passengerType'
 import { SeatInput } from './SeatInput'
+import { ServiceOptionInput } from './ServiceOptionInput'
 
 export class PassengerInput {
     passengerCode: string
@@ -24,7 +25,7 @@ export class PassengerInput {
 
     passengerType: PassengerType
 
-    seat: SeatInput
+    seats: SeatInput[]
 
-    serviceOptIds: string[]
+    serviceOpts: ServiceOptionInput[]
 }

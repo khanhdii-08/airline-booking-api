@@ -6,8 +6,8 @@ import { generateBookingCode, generateCode } from '~/utils/common.utils'
 import { AppError } from '~/exceptions/AppError'
 import { HttpStatus } from '~/utils/httpStatus'
 import { PaymentInput } from '~/types/PaymentInput'
-import { Booking } from '~/entities'
-import { PaymentStatus } from '~/utils/enums'
+import { Booking, PaymentTransaction } from '~/entities'
+import { PaymentMethod, PaymentStatus, PaymentTransactionType } from '~/utils/enums'
 import { BadRequestException } from '~/exceptions/BadRequestException'
 
 const paymentVNPay = async (paymentInput: PaymentInput) => {
@@ -45,7 +45,7 @@ const paymentVNPay = async (paymentInput: PaymentInput) => {
     vnp_Params['vnp_IpAddr'] = ipAddr
     vnp_Params['vnp_OrderType'] = 'other'
     vnp_Params['vnp_Locale'] = language === 'en' ? language : 'vn'
-    vnp_Params['vnp_OrderInfo'] = `Thanh toan ve may bay cho ma dat ve ${bookingCode} tại Vivu Airline`
+    vnp_Params['vnp_OrderInfo'] = `Thanh toan ve may bay cho ma dat ve ${bookingCode} tai Vivu Airline`
     vnp_Params['vnp_ReturnUrl'] = returnUrl
     vnp_Params['vnp_TxnRef'] = bookingCode
 
@@ -61,7 +61,7 @@ const paymentVNPay = async (paymentInput: PaymentInput) => {
     return { paymentLink: redirectUrl }
 }
 
-const VnPayReturn = (vnp_Params: { [key: string]: any }, secureHash: string) => {
+const VnPayReturn = async (vnp_Params: { [key: string]: any }, secureHash: string) => {
     const sortedParams = sortObject(vnp_Params)
     const secretKey = env.VNP_HASHSECRET
 
@@ -72,6 +72,26 @@ const VnPayReturn = (vnp_Params: { [key: string]: any }, secureHash: string) => 
     if (secureHash === signed) {
         const vnp_ResponseCode = vnp_Params['vnp_ResponseCode']
         if (vnp_ResponseCode == '00') {
+            console.log(vnp_Params)
+
+            const paymentTransaction = await PaymentTransaction.findOneBy({
+                bookingCode: vnp_Params['vnp_TxnRef'],
+                paymentTransactionType: PaymentTransactionType.PAYMENT
+            })
+            if (!paymentTransaction) {
+                const newPaymentTransaction = PaymentTransaction.create({
+                    transactionCode: vnp_Params['vnp_TransactionNo'],
+                    bookingCode: vnp_Params['vnp_TxnRef'],
+                    transactionDate: moment(vnp_Params['vnp_PayDate'], 'YYYYMMDDHHmmss').toDate(),
+                    transactionInfo: vnp_Params['vnp_OrderInfo'],
+                    transactionAmount: vnp_Params['vnp_Amount'] / 100,
+                    paymentMethod: PaymentMethod.VNPAY,
+                    paymentTransactionType: PaymentTransactionType.PAYMENT
+                })
+
+                await newPaymentTransaction.save()
+            }
+
             return { status: 'success', code: vnp_ResponseCode }
         } else {
             throw new AppError({ status: HttpStatus.PAYMENT_REQUIRED })

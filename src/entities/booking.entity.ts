@@ -19,9 +19,6 @@ export class Booking extends Model {
     @OneToMany(() => BookingServiceOpt, (bookingServiceOpt: BookingServiceOpt) => bookingServiceOpt.booking)
     bookingServiceOpts: BookingServiceOpt[]
 
-    @OneToMany(() => PaymentTransaction, (paymentTransaction: PaymentTransaction) => paymentTransaction.booking)
-    paymentTransactions: PaymentTransaction[]
-
     @OneToMany(() => Passenger, (passenger: Passenger) => passenger.booking)
     passengers: Passenger[]
 
