@@ -8,4 +8,6 @@ export class SeatInput {
     seatCode: string
 
     seatClass: SeatClass
+
+    seatPrice: number
 }

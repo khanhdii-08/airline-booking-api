@@ -72,8 +72,6 @@ const VnPayReturn = async (vnp_Params: { [key: string]: any }, secureHash: strin
     if (secureHash === signed) {
         const vnp_ResponseCode = vnp_Params['vnp_ResponseCode']
         if (vnp_ResponseCode == '00') {
-            console.log(vnp_Params)
-
             const paymentTransaction = await PaymentTransaction.findOneBy({
                 bookingCode: vnp_Params['vnp_TxnRef'],
                 paymentTransactionType: PaymentTransactionType.PAYMENT

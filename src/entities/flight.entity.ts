@@ -24,11 +24,11 @@ export class Flight extends Model {
     @OneToMany(() => FlightSeatPrice, (flightSeatPrice: FlightSeatPrice) => flightSeatPrice.flight)
     flightSeatPrices: FlightSeatPrice[]
 
-    @OneToMany(() => Booking, (booking: Booking) => booking.flight)
-    bookings: Booking[]
+    @OneToMany(() => Booking, (booking: Booking) => booking.flightAway)
+    bookingAways: Booking[]
 
-    @OneToMany(() => Booking, (booking: Booking) => booking.returnFlight)
-    returnBookings: Booking[]
+    @OneToMany(() => Booking, (booking: Booking) => booking.flightReturn)
+    bookingReturns: Booking[]
 
     @OneToMany(() => BookingSeat, (bookingSeat: BookingSeat) => bookingSeat.flight)
     bookingSeats: BookingSeat[]

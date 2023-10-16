@@ -9,9 +9,9 @@ export class Booking extends Model {
     @JoinColumn({ name: 'user_id' })
     user: User
 
-    @ManyToOne(() => Flight, (flight: Flight) => flight.bookings)
-    @JoinColumn({ name: 'flight_id' })
-    flight: Flight
+    @ManyToOne(() => Flight, (flight: Flight) => flight.bookingAways)
+    @JoinColumn({ name: 'flight_away_id' })
+    flightAway: Flight
 
     @OneToMany(() => BookingSeat, (bookingSeat: BookingSeat) => bookingSeat.booking)
     bookingSeats: BookingSeat[]
@@ -22,9 +22,9 @@ export class Booking extends Model {
     @OneToMany(() => Passenger, (passenger: Passenger) => passenger.booking)
     passengers: Passenger[]
 
-    @ManyToOne(() => Flight, (flight: Flight) => flight.returnBookings)
-    @JoinColumn({ name: 'return_flight_id' })
-    returnFlight: Flight
+    @ManyToOne(() => Flight, (flight: Flight) => flight.bookingReturns)
+    @JoinColumn({ name: 'flight_return_id' })
+    flightReturn: Flight
 
     @Column({ name: 'booking_code' })
     bookingCode: string
@@ -32,8 +32,11 @@ export class Booking extends Model {
     @Column({ name: 'booking_date', type: 'timestamptz' })
     bookingDate: Date
 
-    @Column({ name: 'total_amount', type: 'float' })
-    totalAmount: number
+    @Column({ name: 'amount_total', type: 'float', nullable: true })
+    amountTotal: number
+
+    @Column({ name: 'seat_total', type: 'int', nullable: true })
+    seatTotal: number
 
     @Column({ name: 'payment_status' })
     paymentStatus: PaymentStatus

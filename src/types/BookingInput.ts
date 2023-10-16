@@ -1,4 +1,3 @@
-import { BookingSeat, BookingServiceOpt, Passenger, PaymentTransaction } from '~/entities'
 import { JourneyType } from '~/utils/enums'
 import { PassengerInput } from './PassengerInput'
 
@@ -7,11 +6,13 @@ export class BookingInput {
 
     bookingCode: string
 
-    flightId: string
+    flightAwayId: string
 
-    returnFlightId: string
+    flightReturnId: string
 
-    totalAmount: number
+    amountTotal: number
+
+    seatTotal: number
 
     journeyType: JourneyType
 
