@@ -16,6 +16,4 @@ export class BookingInput {
     journeyType: JourneyType
 
     passengers: PassengerInput[]
-
-    paymentTransaction: PaymentTransaction
 }

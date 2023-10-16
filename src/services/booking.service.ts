@@ -13,9 +13,15 @@ import { BookingInput } from './../types/BookingInput'
 import { PaymentStatus } from '~/utils/enums'
 import { NotFoundException } from '~/exceptions/NotFoundException'
 import { AppDataSource } from '~/config/database.config'
+import { generateBookingCode } from '~/utils/common.utils'
+import { AppError } from '~/exceptions/AppError'
+import { HttpStatus } from '~/utils/httpStatus'
+import { logger } from '~/config/logger.config'
 
 const booking = async (bookingInput: BookingInput) => {
-    const { userId, flightId, passengers, paymentTransaction, ...booking } = bookingInput
+    const { userId, flightId, passengers, ...booking } = bookingInput
+
+    let bookingCode = bookingInput.bookingCode
 
     const flight = await Flight.findOneBy({ id: flightId })
     if (!flight) {
@@ -27,63 +33,77 @@ const booking = async (bookingInput: BookingInput) => {
         user = await User.findOneBy({ id: userId })
     }
 
+    let paymentStatus = PaymentStatus.SUCCESSFUL
+    if (bookingCode) {
+        paymentStatus = PaymentStatus.SUCCESSFUL
+        const paymentTransaction = PaymentTransaction.findOneBy({ bookingCode })
+        if (!paymentTransaction) {
+            throw new NotFoundException({ message: 'null' })
+        }
+    }
+
+    if (bookingCode) {
+        const booking = await Booking.findOneBy({ bookingCode })
+        if (booking) {
+            throw new AppError({ status: HttpStatus.CONFLICT, error: { message: 'tồn tại' } })
+        }
+    } else {
+        do {
+            bookingCode = generateBookingCode()
+            const booking = await Booking.findOneBy({ bookingCode })
+            if (booking) {
+                bookingCode = ''
+            }
+        } while (!bookingCode)
+        paymentStatus = PaymentStatus.PENDING
+    }
+
     const newBooking = await Booking.create({
         ...booking,
+        bookingCode,
         flight,
         bookingDate: new Date(),
-        paymentStatus: PaymentStatus.SUCCESSFUL
+        paymentStatus
     })
 
     if (user) newBooking.user = user
 
     await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
-        await transactionalEntityManager.save(newBooking).then(async (booking) => {
-            const bookingSeatsToSave: BookingSeat[] = []
-            const bookingServiceOptsToSave: BookingServiceOpt[] = []
+        try {
+            await transactionalEntityManager.save(newBooking)
 
             passengers.forEach(async (passenger) => {
                 const newPassenger = Passenger.create({
                     ...passenger,
                     isPasserby: true,
-                    booking
+                    booking: newBooking
                 })
 
-                const newBookingSeat = BookingSeat.create({
-                    booking,
-                    seat: Seat.create({ id: passenger.seat.seatId }),
-                    ...passenger.seat
-                })
-
-                passenger.serviceOptIds.forEach((id) => {
-                    bookingServiceOptsToSave.push(
-                        BookingServiceOpt.create({
-                            booking,
-                            serviceOption: ServiceOption.create({ id })
-                        })
-                    )
-                })
-
-                await transactionalEntityManager.save(newPassenger).then(async (passenger) => {
-                    newBookingSeat.passenger = passenger
-                    bookingSeatsToSave.push(newBookingSeat)
-
-                    bookingServiceOptsToSave.forEach((element) => {
-                        element.passenger = passenger
+                await transactionalEntityManager.save(newPassenger).then(async (passengerToSave) => {
+                    passenger.seats.forEach(async (seat) => {
+                        await BookingSeat.create({
+                            passenger: passengerToSave,
+                            booking: newBooking,
+                            seat: Seat.create({ id: seat.seatId }),
+                            flight: Flight.create({ id: seat.flightId }),
+                            ...seat
+                        }).save()
                     })
 
-                    await transactionalEntityManager.save(bookingSeatsToSave)
-                    await transactionalEntityManager.save(bookingServiceOptsToSave)
+                    passenger.serviceOpts.forEach(async (serviceOpt) => {
+                        await BookingServiceOpt.create({
+                            passenger: passengerToSave,
+                            booking: newBooking,
+                            serviceOption: ServiceOption.create({ id: serviceOpt.serviceOptId }),
+                            flight: Flight.create({ id: serviceOpt.flightId }),
+                            ...serviceOpt
+                        }).save()
+                    })
                 })
             })
-
-            const newPaymentTransaction = PaymentTransaction.create({
-                ...paymentTransaction,
-                transactionDate: new Date(),
-                booking
-            })
-
-            await transactionalEntityManager.save(newPaymentTransaction)
-        })
+        } catch (error) {
+            logger.error(error)
+        }
     })
 
     return bookingInput

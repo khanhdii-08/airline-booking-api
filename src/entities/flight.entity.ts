@@ -1,6 +1,6 @@
 import { Entity, Column, ManyToOne, JoinColumn, OneToMany } from 'typeorm'
 import Model from './model.entity'
-import { Aircraft, Airline, Airport, Booking, FlightSeatPrice } from '~/entities'
+import { Aircraft, Airline, Airport, Booking, BookingSeat, BookingServiceOpt, FlightSeatPrice } from '~/entities'
 import { Status } from '~/utils/enums'
 
 @Entity({ name: 'flight' })
@@ -29,6 +29,12 @@ export class Flight extends Model {
 
     @OneToMany(() => Booking, (booking: Booking) => booking.returnFlight)
     returnBookings: Booking[]
+
+    @OneToMany(() => BookingSeat, (bookingSeat: BookingSeat) => bookingSeat.flight)
+    bookingSeats: BookingSeat[]
+
+    @OneToMany(() => BookingServiceOpt, (bookingServiceOpt: BookingServiceOpt) => bookingServiceOpt.flight)
+    bookingServiceOpts: BookingServiceOpt[]
 
     @Column({ name: 'flight_code' })
     flightCode: string

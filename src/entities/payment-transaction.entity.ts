@@ -8,12 +8,14 @@ export class PaymentTransaction extends Model {
     @Column({ name: 'transaction_code', nullable: true })
     transactionCode: string
 
-    @ManyToOne(() => Booking, (booking) => booking.paymentTransactions)
-    @JoinColumn({ name: 'booking_id' })
-    booking: Booking
+    @Column({ name: 'booking_code' })
+    bookingCode: string
 
     @Column({ name: 'transaction_date', type: 'date' })
     transactionDate: Date
+
+    @Column({ name: 'transaction_info' })
+    transactionInfo: string
 
     @Column({ name: 'transaction_amount', type: 'float' })
     transactionAmount: number
