@@ -9,7 +9,7 @@ import {
     ServiceOption,
     User
 } from '~/entities'
-import { BookingInput } from './../types/BookingInput'
+import { BookingInput } from '../types/inputs/BookingInput'
 import { PaymentStatus } from '~/utils/enums'
 import { NotFoundException } from '~/exceptions/NotFoundException'
 import { AppDataSource } from '~/config/database.config'

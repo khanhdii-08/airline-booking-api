@@ -1,4 +1,4 @@
-import { FlightCriteria } from '~/types/FlightCriteria'
+import { FlightCriteria } from '~/types/criterias/FlightCriteria'
 import { Flight } from '~/entities/flight.entity'
 
 const search = async (criteria: FlightCriteria) => {

@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { PaymentService } from '~/services/payment.service'
-import { PaymentInput } from '~/types/PaymentInput'
+import { PaymentInput } from '~/types/inputs/PaymentInput'
 
 const paymentVnPay = async (req: Request<ParamsDictionary, any, any, PaymentInput>, res: Response) => {
     const paymentInput: PaymentInput = req.body

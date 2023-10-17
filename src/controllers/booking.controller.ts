@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { BookingService } from '~/services/booking.service'
-import { BookingInput } from '~/types/BookingInput'
+import { BookingInput } from '~/types/inputs/BookingInput'
 import { TokenContext } from '~/utils/TokenContext'
 import { HttpStatus } from '~/utils/httpStatus'
 
