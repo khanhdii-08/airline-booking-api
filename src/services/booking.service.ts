@@ -1,3 +1,4 @@
+import { BookingCriteria } from './../types/criterias/BookingCriteria'
 import {
     Booking,
     BookingSeat,
@@ -119,9 +120,18 @@ const booking = async (bookingInput: BookingInput) => {
     return bookingInput
 }
 
-const bookingDetail = async (bookingId: string) => {
+const bookingDetail = async (criteria: BookingCriteria) => {
     const booking = await Booking.findOne({
-        where: { id: bookingId },
+        where: [
+            { id: criteria.bookingId },
+            {
+                bookingCode: criteria.bookingCode,
+                passengers: {
+                    firstName: criteria.firstName,
+                    lastName: criteria.lastName
+                }
+            }
+        ],
         relations: {
             flightAway: {
                 sourceAirport: true,
@@ -130,15 +140,39 @@ const bookingDetail = async (bookingId: string) => {
             flightReturn: {
                 sourceAirport: true,
                 destinationAirport: true
-            },
-            passengers: true
+            }
         }
     })
+
     if (!booking) {
         throw new NotFoundException({ message: 'ko tìm thấy chuyến bay' })
     }
 
-    return booking
+    const passengerAways = await Passenger.findBy({
+        booking: {
+            id: booking.id
+        }
+    })
+
+    const passengerReturns = await Passenger.findBy({
+        booking: {
+            id: booking.id
+        }
+    })
+
+    const { flightAway, flightReturn, ...bookingDetail } = booking
+
+    const flightAwayDetail = {
+        ...flightAway,
+        passengerAways
+    }
+
+    const flightReturnDetail = {
+        ...flightReturn,
+        passengerReturns
+    }
+
+    return { bookingDetail, flightAwayDetail, flightReturnDetail }
 }
 
 export const BookingService = { booking, bookingDetail }
