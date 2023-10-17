@@ -20,7 +20,7 @@ const VnPayReturn = async (req: Request, res: Response) => {
     delete vnp_Params['vnp_SecureHash']
     delete vnp_Params['vnp_SecureHashType']
 
-    const result = PaymentService.VnPayReturn(vnp_Params, secureHash)
+    const result = await PaymentService.VnPayReturn(vnp_Params, secureHash)
 
     return res.status(200).json(result)
 }
