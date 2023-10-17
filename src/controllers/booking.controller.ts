@@ -1,7 +1,8 @@
 import { Request, Response } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { BookingService } from '~/services/booking.service'
-import { BookingInput } from '~/types/BookingInput'
+import { BookingCriteria } from '~/types/criterias/BookingCriteria'
+import { BookingInput } from '~/types/inputs/BookingInput'
 import { TokenContext } from '~/utils/TokenContext'
 import { HttpStatus } from '~/utils/httpStatus'
 
@@ -17,9 +18,11 @@ const booking = async (req: Request<ParamsDictionary, any, BookingInput>, res: R
     return res.status(HttpStatus.CREATED).json(result)
 }
 
-const bookingDetail = async (req: Request<ParamsDictionary>, res: Response) => {
-    const result = await BookingService.bookingDetail(req.params.id)
+const search = async (req: Request<ParamsDictionary, any, any, BookingCriteria>, res: Response) => {
+    const bookingCriteria: BookingCriteria = req.query
+
+    const result = await BookingService.bookingDetail(bookingCriteria)
     return res.status(HttpStatus.OK).json(result)
 }
 
-export const BookingController = { booking, bookingDetail }
+export const BookingController = { booking, search }

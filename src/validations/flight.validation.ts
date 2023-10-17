@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
-import { FlightCriteria } from '~/types/FlightCriteria'
+import { FlightCriteria } from '~/types/criterias/FlightCriteria'
 import validator from 'validator'
 import { ErrorResponse } from '~/types/ErrorResponse'
 import i18n from '~/config/i18n.config'

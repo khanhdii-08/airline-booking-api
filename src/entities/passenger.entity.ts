@@ -38,7 +38,7 @@ export class Passenger extends Model {
     @Column({ name: 'gender' })
     gender: Gender
 
-    @Column({ name: 'country' })
+    @Column({ name: 'country', nullable: true })
     country: string
 
     @Column({ name: 'phone_number', nullable: true })

@@ -2,9 +2,9 @@ import { Request, Response } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { HttpStatus } from '~/utils/httpStatus'
 import { AuthService } from '~/services/auth.service'
-import { RegisterInput } from '~/types/RegisterInput'
+import { RegisterInput } from '~/types/inputs/RegisterInput'
 import { TokenContext } from '~/utils/TokenContext'
-import { LoginInput } from '~/types/LoginInput'
+import { LoginInput } from '~/types/inputs/LoginInput'
 
 const register = async (req: Request<ParamsDictionary, any, RegisterInput>, res: Response) => {
     const result = await AuthService.register(req.body)
