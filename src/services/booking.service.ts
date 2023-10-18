@@ -4,6 +4,7 @@ import {
     BookingSeat,
     BookingServiceOpt,
     Flight,
+    FlightSeatPrice,
     Passenger,
     PaymentTransaction,
     Seat,
@@ -18,6 +19,8 @@ import { generateBookingCode } from '~/utils/common.utils'
 import { AppError } from '~/exceptions/AppError'
 import { HttpStatus } from '~/utils/httpStatus'
 import { logger } from '~/config/logger.config'
+import { PassengerType } from '~/utils/enums/passengerType'
+import { In } from 'typeorm'
 
 const booking = async (bookingInput: BookingInput) => {
     const { userId, flightAwayId, flightReturnId, passengers, ...booking } = bookingInput
@@ -160,16 +163,163 @@ const bookingDetail = async (criteria: BookingCriteria) => {
         }
     })
 
+    const flightSeatPriceAway = await FlightSeatPrice.findOne({
+        where: { flight: { id: booking.flightAway.id } },
+        relations: { taxService: true }
+    })
+
+    const flightSeatPriceReturn = await FlightSeatPrice.findOne({
+        where: { flight: { id: booking.flightReturn.id } },
+        relations: { taxService: true }
+    })
+
+    const passengerAwayIds = passengerAways.map((passengerAway) => passengerAway.id)
+
+    const bookingSeatAways = await BookingSeat.find({
+        where: {
+            flight: {
+                id: booking.flightAway.id
+            },
+            passenger: {
+                id: In(passengerAwayIds)
+            },
+            booking: {
+                id: booking.id
+            }
+        },
+        relations: {
+            passenger: true
+        }
+    })
+
+    const passengerReturnIds = passengerReturns.map((passengerReturn) => passengerReturn.id)
+    const bookingSeatReturns = await BookingSeat.find({
+        where: {
+            flight: {
+                id: booking.flightReturn.id
+            },
+            passenger: {
+                id: In(passengerReturnIds)
+            },
+            booking: {
+                id: booking.id
+            }
+        },
+        relations: {
+            passenger: true
+        }
+    })
+
+    const bookingServiceOptAways = await BookingServiceOpt.find({
+        where: {
+            flight: {
+                id: booking.flightAway.id
+            },
+            passenger: {
+                id: In(passengerAwayIds)
+            },
+            booking: {
+                id: booking.id
+            }
+        },
+        relations: {
+            passenger: true,
+            serviceOption: true
+        }
+    })
+
+    const bookingServiceOptReturns = await BookingServiceOpt.find({
+        where: {
+            flight: {
+                id: booking.flightReturn.id
+            },
+            passenger: {
+                id: In(passengerReturnIds)
+            },
+            booking: {
+                id: booking.id
+            }
+        },
+        relations: {
+            passenger: true,
+            serviceOption: true
+        }
+    })
+
+    const passengerAwaysDetail = passengerAways.map((passengerAway) => {
+        let seatPrice
+        if (passengerAway.passengerType === PassengerType.ADULT) {
+            seatPrice = flightSeatPriceAway?.adultPrice
+        } else if (passengerAway.passengerType === PassengerType.CHILD) {
+            seatPrice = flightSeatPriceAway?.childrenPrice
+        } else {
+            seatPrice = flightSeatPriceAway?.infantPrice
+        }
+        const taxService = flightSeatPriceAway?.taxService
+        const seatServicePrice = bookingSeatAways.find(
+            (bookingSeatAway) => bookingSeatAway.passenger.id === passengerAway.id
+        )?.seatPrice
+
+        const serviceOptPrice = bookingServiceOptAways.map((bookingServiceOpt) => {
+            if (bookingServiceOpt.passenger.id === passengerAway.id) {
+                const { passenger, ...serviceOpt } = bookingServiceOpt
+                return {
+                    serviceOpt
+                }
+            }
+        })
+
+        return {
+            ...passengerAway,
+            seatPrice,
+            taxService,
+            seatServicePrice,
+            serviceOptPrice
+        }
+    })
+
+    const passengerReturnsDetail = passengerReturns.map((passengerReturn) => {
+        let seatPrice
+        if (passengerReturn.passengerType === PassengerType.ADULT) {
+            seatPrice = flightSeatPriceReturn?.adultPrice
+        } else if (passengerReturn.passengerType === PassengerType.CHILD) {
+            seatPrice = flightSeatPriceReturn?.childrenPrice
+        } else {
+            seatPrice = flightSeatPriceReturn?.infantPrice
+        }
+        const taxService = flightSeatPriceReturn?.taxService
+        const seatServicePrice = bookingSeatReturns.find(
+            (bookingSeatReturn) => bookingSeatReturn.passenger.id === passengerReturn.id
+        )?.seatPrice
+
+        const serviceOptPrice = bookingServiceOptReturns.map((bookingServiceOpt) => {
+            if (bookingServiceOpt.passenger.id === passengerReturn.id) {
+                const { passenger, ...serviceOpt } = bookingServiceOpt
+                return {
+                    serviceOpt
+                }
+            }
+        })
+
+        return {
+            ...passengerReturn,
+            seatPrice,
+            taxService,
+            seatServicePrice,
+            serviceOptPrice
+        }
+    })
+
     const { flightAway, flightReturn, ...bookingDetail } = booking
 
     const flightAwayDetail = {
         ...flightAway,
-        passengerAways
+        passengerAwaysDetail
     }
 
     const flightReturnDetail = {
         ...flightReturn,
-        passengerReturns
+        passengerReturnsDetail
     }
 
     return { bookingDetail, flightAwayDetail, flightReturnDetail }
