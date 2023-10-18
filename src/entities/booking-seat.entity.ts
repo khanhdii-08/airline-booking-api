@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from 'typeorm'
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm'
 import Model from './model.entity'
 import { Booking, Flight, Passenger, Seat } from '~/entities'
 import { SeatClass } from '~/utils/enums'
