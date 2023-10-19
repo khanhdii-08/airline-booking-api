@@ -15,12 +15,12 @@ import { BookingInput } from '../types/inputs/BookingInput'
 import { PaymentStatus } from '~/utils/enums'
 import { NotFoundException } from '~/exceptions/NotFoundException'
 import { AppDataSource } from '~/config/database.config'
-import { generateBookingCode } from '~/utils/common.utils'
+import { generateBookingCode, removeAccents } from '~/utils/common.utils'
 import { AppError } from '~/exceptions/AppError'
 import { HttpStatus } from '~/utils/httpStatus'
 import { logger } from '~/config/logger.config'
 import { PassengerType } from '~/utils/enums/passengerType'
-import { In } from 'typeorm'
+import { ILike, In } from 'typeorm'
 
 const booking = async (bookingInput: BookingInput) => {
     const { userId, flightAwayId, flightReturnId, passengers, ...booking } = bookingInput
@@ -94,25 +94,27 @@ const booking = async (bookingInput: BookingInput) => {
                 })
 
                 await transactionalEntityManager.save(newPassenger).then(async (passengerToSave) => {
-                    passenger.seats.forEach(async (seat) => {
-                        await BookingSeat.create({
-                            passenger: passengerToSave,
-                            booking: newBooking,
-                            seat: Seat.create({ id: seat.seatId }),
-                            flight: Flight.create({ id: seat.flightId }),
-                            ...seat
-                        }).save()
-                    })
-
-                    passenger.serviceOpts.forEach(async (serviceOpt) => {
-                        await BookingServiceOpt.create({
-                            passenger: passengerToSave,
-                            booking: newBooking,
-                            serviceOption: ServiceOption.create({ id: serviceOpt.serviceOptId }),
-                            flight: Flight.create({ id: serviceOpt.flightId }),
-                            ...serviceOpt
-                        }).save()
-                    })
+                    passenger.seats &&
+                        passenger.seats.forEach(async (seat) => {
+                            await BookingSeat.create({
+                                passenger: passengerToSave,
+                                booking: newBooking,
+                                seat: Seat.create({ id: seat.seatId }),
+                                flight: Flight.create({ id: seat.flightId }),
+                                ...seat
+                            }).save()
+                        })
+                    passenger.serviceOpts &&
+                        passenger.serviceOpts &&
+                        passenger.serviceOpts.forEach(async (serviceOpt) => {
+                            await BookingServiceOpt.create({
+                                passenger: passengerToSave,
+                                booking: newBooking,
+                                serviceOption: ServiceOption.create({ id: serviceOpt.serviceOptId }),
+                                flight: Flight.create({ id: serviceOpt.flightId }),
+                                ...serviceOpt
+                            }).save()
+                        })
                 })
             })
         } catch (error) {
@@ -124,28 +126,19 @@ const booking = async (bookingInput: BookingInput) => {
 }
 
 const bookingDetail = async (criteria: BookingCriteria) => {
-    const booking = await Booking.findOne({
-        where: [
-            { id: criteria.bookingId },
-            {
-                bookingCode: criteria.bookingCode,
-                passengers: {
-                    firstName: criteria.firstName,
-                    lastName: criteria.lastName
-                }
-            }
-        ],
-        relations: {
-            flightAway: {
-                sourceAirport: true,
-                destinationAirport: true
-            },
-            flightReturn: {
-                sourceAirport: true,
-                destinationAirport: true
-            }
-        }
-    })
+    const booking = await AppDataSource.getRepository(Booking)
+        .createQueryBuilder('booking')
+        .leftJoinAndSelect('booking.flightAway', 'flightAway')
+        .leftJoinAndSelect('booking.flightReturn', 'flightReturn')
+        .innerJoin('booking.passengers', 'passengers')
+        .where('booking.bookingCode = :bookingCode', { bookingCode: criteria.bookingCode.trim() })
+        .andWhere('unaccent(passengers.firstName) ILIKE :firstName', {
+            firstName: `%${removeAccents(criteria.firstName.trim())}%`
+        })
+        .andWhere('unaccent(passengers.lastName) ILIKE :lastName', {
+            lastName: `%${removeAccents(criteria.lastName.trim())}%`
+        })
+        .getOne()
 
     if (!booking) {
         throw new NotFoundException({ message: 'ko tìm thấy chuyến bay' })
@@ -215,11 +208,11 @@ const bookingDetail = async (criteria: BookingCriteria) => {
             (bookingSeatAway) => bookingSeatAway.passenger.id === passengerAway.id
         )?.seatPrice
 
-        const serviceOptPrice = bookingServiceOptAways.map((bookingServiceOpt) => {
+        const serviceOpts = bookingServiceOptAways.map((bookingServiceOpt) => {
             if (bookingServiceOpt.passenger.id === passengerAway.id) {
-                const { passenger, ...serviceOpt } = bookingServiceOpt
+                const { passenger, ...bookingService } = bookingServiceOpt
                 return {
-                    serviceOpt
+                    bookingService
                 }
             }
         })
@@ -229,7 +222,7 @@ const bookingDetail = async (criteria: BookingCriteria) => {
             seatPrice,
             taxService,
             seatServicePrice,
-            serviceOptPrice
+            serviceOpts
         }
     })
 
@@ -296,11 +289,11 @@ const bookingDetail = async (criteria: BookingCriteria) => {
                 (bookingSeatReturn) => bookingSeatReturn.passenger.id === passengerReturn.id
             )?.seatPrice
 
-            const serviceOptPrice = bookingServiceOptReturns.map((bookingServiceOpt) => {
+            const serviceOpts = bookingServiceOptReturns.map((bookingServiceOpt) => {
                 if (bookingServiceOpt.passenger.id === passengerReturn.id) {
-                    const { passenger, ...serviceOpt } = bookingServiceOpt
+                    const { passenger, ...bookingService } = bookingServiceOpt
                     return {
-                        serviceOpt
+                        bookingService
                     }
                 }
             })
@@ -310,7 +303,7 @@ const bookingDetail = async (criteria: BookingCriteria) => {
                 seatPrice,
                 taxService,
                 seatServicePrice,
-                serviceOptPrice
+                serviceOpts
             }
         })
     }
