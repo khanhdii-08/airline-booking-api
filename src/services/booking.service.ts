@@ -208,14 +208,14 @@ const bookingDetail = async (criteria: BookingCriteria) => {
             (bookingSeatAway) => bookingSeatAway.passenger.id === passengerAway.id
         )?.seatPrice
 
-        const serviceOpts = bookingServiceOptAways.map((bookingServiceOpt) => {
-            if (bookingServiceOpt.passenger.id === passengerAway.id) {
+        const serviceOpts = bookingServiceOptAways
+            .filter((bookingServiceOpt) => bookingServiceOpt.passenger.id === passengerAway.id)
+            .map((bookingServiceOpt) => {
                 const { passenger, ...bookingService } = bookingServiceOpt
                 return {
                     bookingService
                 }
-            }
-        })
+            })
 
         return {
             ...passengerAway,
@@ -289,14 +289,14 @@ const bookingDetail = async (criteria: BookingCriteria) => {
                 (bookingSeatReturn) => bookingSeatReturn.passenger.id === passengerReturn.id
             )?.seatPrice
 
-            const serviceOpts = bookingServiceOptReturns.map((bookingServiceOpt) => {
-                if (bookingServiceOpt.passenger.id === passengerReturn.id) {
+            const serviceOpts = bookingServiceOptReturns
+                .filter((bookingServiceOpt) => bookingServiceOpt.passenger.id === passengerReturn.id)
+                .map((bookingServiceOpt) => {
                     const { passenger, ...bookingService } = bookingServiceOpt
                     return {
                         bookingService
                     }
-                }
-            })
+                })
 
             return {
                 ...passengerReturn,
