@@ -20,7 +20,8 @@ import { AppError } from '~/exceptions/AppError'
 import { HttpStatus } from '~/utils/httpStatus'
 import { logger } from '~/config/logger.config'
 import { PassengerType } from '~/utils/enums/passengerType'
-import { ILike, In } from 'typeorm'
+import { v4 as uuidv4 } from 'uuid'
+import { In } from 'typeorm'
 
 const booking = async (bookingInput: BookingInput) => {
     const { userId, flightAwayId, flightReturnId, passengers, ...booking } = bookingInput
@@ -71,6 +72,7 @@ const booking = async (bookingInput: BookingInput) => {
     }
 
     const newBooking = await Booking.create({
+        id: uuidv4(),
         ...booking,
         bookingCode,
         flightAway,
@@ -82,41 +84,51 @@ const booking = async (bookingInput: BookingInput) => {
 
     if (user) newBooking.user = user
 
+    const passengersToSave: Passenger[] = []
+    const bookingSeatsToSave: BookingSeat[] = []
+    const bookingServiceOptsToSave: BookingServiceOpt[] = []
+
+    passengers.forEach(async (passenger) => {
+        const newPassenger = Passenger.create({
+            id: uuidv4(),
+            ...passenger,
+            isPasserby: true,
+            booking: newBooking
+        })
+
+        passengersToSave.push(newPassenger)
+
+        passenger.seats &&
+            passenger.seats.forEach(async (seat) => {
+                const newBookingSeat = BookingSeat.create({
+                    passenger: newPassenger,
+                    booking: newBooking,
+                    seat: Seat.create({ id: seat.seatId }),
+                    flight: Flight.create({ id: seat.flightId }),
+                    ...seat
+                })
+                bookingSeatsToSave.push(newBookingSeat)
+            })
+        passenger.serviceOpts &&
+            passenger.serviceOpts &&
+            passenger.serviceOpts.forEach(async (serviceOpt) => {
+                const newBookingServiceOpt = BookingServiceOpt.create({
+                    passenger: newPassenger,
+                    booking: newBooking,
+                    serviceOption: ServiceOption.create({ id: serviceOpt.serviceOptId }),
+                    flight: Flight.create({ id: serviceOpt.flightId }),
+                    ...serviceOpt
+                })
+                bookingServiceOptsToSave.push(newBookingServiceOpt)
+            })
+    })
+
     await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
         try {
             await transactionalEntityManager.save(newBooking)
-
-            passengers.forEach(async (passenger) => {
-                const newPassenger = Passenger.create({
-                    ...passenger,
-                    isPasserby: true,
-                    booking: newBooking
-                })
-
-                await transactionalEntityManager.save(newPassenger).then(async (passengerToSave) => {
-                    passenger.seats &&
-                        passenger.seats.forEach(async (seat) => {
-                            await BookingSeat.create({
-                                passenger: passengerToSave,
-                                booking: newBooking,
-                                seat: Seat.create({ id: seat.seatId }),
-                                flight: Flight.create({ id: seat.flightId }),
-                                ...seat
-                            }).save()
-                        })
-                    passenger.serviceOpts &&
-                        passenger.serviceOpts &&
-                        passenger.serviceOpts.forEach(async (serviceOpt) => {
-                            await BookingServiceOpt.create({
-                                passenger: passengerToSave,
-                                booking: newBooking,
-                                serviceOption: ServiceOption.create({ id: serviceOpt.serviceOptId }),
-                                flight: Flight.create({ id: serviceOpt.flightId }),
-                                ...serviceOpt
-                            }).save()
-                        })
-                })
-            })
+            await transactionalEntityManager.save(passengersToSave)
+            await transactionalEntityManager.save(bookingSeatsToSave)
+            await transactionalEntityManager.save(bookingServiceOptsToSave)
         } catch (error) {
             logger.error(error)
         }
