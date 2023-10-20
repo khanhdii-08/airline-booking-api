@@ -1,7 +1,7 @@
 import { BookingSeat, BookingServiceOpt, Flight, Passenger, PaymentTransaction, User } from '~/entities'
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm'
 import Model from './model.entity'
-import { JourneyType, PaymentStatus } from '~/utils/enums'
+import { JourneyType, PaymentStatus, Status } from '~/utils/enums'
 
 @Entity({ name: 'booking' })
 export class Booking extends Model {
@@ -43,4 +43,10 @@ export class Booking extends Model {
 
     @Column({ name: 'journey_type' })
     journeyType: JourneyType
+
+    @Column({ name: 'note', nullable: true })
+    note: string
+
+    @Column({ name: 'status', nullable: true })
+    status: Status
 }

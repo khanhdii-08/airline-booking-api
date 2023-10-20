@@ -12,7 +12,7 @@ import {
     User
 } from '~/entities'
 import { BookingInput } from '../types/inputs/BookingInput'
-import { PaymentStatus } from '~/utils/enums'
+import { PaymentStatus, Status } from '~/utils/enums'
 import { NotFoundException } from '~/exceptions/NotFoundException'
 import { AppDataSource } from '~/config/database.config'
 import { generateBookingCode, removeAccents } from '~/utils/common.utils'
@@ -22,6 +22,7 @@ import { logger } from '~/config/logger.config'
 import { PassengerType } from '~/utils/enums/passengerType'
 import { v4 as uuidv4 } from 'uuid'
 import { In } from 'typeorm'
+import { BadRequestException } from '~/exceptions/BadRequestException'
 
 const booking = async (bookingInput: BookingInput) => {
     const { userId, flightAwayId, flightReturnId, passengers, ...booking } = bookingInput
@@ -333,4 +334,23 @@ const bookingDetail = async (criteria: BookingCriteria) => {
     return { bookingDetail, flightAwayDetail, flightReturnDetail }
 }
 
-export const BookingService = { booking, bookingDetail }
+const bookingCancel = async (bookingInput: BookingInput) => {
+    const { bookingId, note } = bookingInput
+    const booking = await Booking.findOneBy({ id: bookingId })
+
+    if (!booking) {
+        throw new NotFoundException({ message: 'không tìm thấy chuyến bay' })
+    }
+    if (booking && booking.status !== Status.ACT) {
+        throw new BadRequestException({ error: { message: 'kho phải là active', data: booking } })
+    }
+
+    booking.note = note
+    booking.status = Status.PEN
+
+    await booking.save()
+
+    return booking
+}
+
+export const BookingService = { booking, bookingDetail, bookingCancel }

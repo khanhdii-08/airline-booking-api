@@ -25,4 +25,10 @@ const search = async (req: Request<ParamsDictionary, any, any, BookingCriteria>,
     return res.status(HttpStatus.OK).json(result)
 }
 
-export const BookingController = { booking, search }
+const bookingCancel = async (req: Request<ParamsDictionary, any, BookingInput>, res: Response) => {
+    const bookingInput = req.body
+    const result = await BookingService.bookingCancel(bookingInput)
+    return res.status(HttpStatus.OK).json(result)
+}
+
+export const BookingController = { booking, search, bookingCancel }
