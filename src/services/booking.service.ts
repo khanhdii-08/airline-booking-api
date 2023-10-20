@@ -143,6 +143,10 @@ const bookingDetail = async (criteria: BookingCriteria) => {
         .createQueryBuilder('booking')
         .leftJoinAndSelect('booking.flightAway', 'flightAway')
         .leftJoinAndSelect('booking.flightReturn', 'flightReturn')
+        .innerJoinAndSelect('flightAway.sourceAirport', 'sourceAirportAway')
+        .innerJoinAndSelect('flightAway.destinationAirport', 'destinationAirportAway')
+        .leftJoinAndSelect('flightReturn.sourceAirport', 'sourceAirportReturn')
+        .leftJoinAndSelect('flightReturn.destinationAirport', 'destinationAirportReturn')
         .innerJoin('booking.passengers', 'passengers')
         .where('booking.bookingCode = :bookingCode', { bookingCode: criteria.bookingCode.trim() })
         .andWhere('unaccent(passengers.firstName) ILIKE :firstName', {
