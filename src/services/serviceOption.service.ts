@@ -39,7 +39,7 @@ const getAllServiceOpt = async (flightId: string, airlineId: string, seatId: str
     const seatsInBooking: string[] = []
     bookingAways.concat(bookingReturns).forEach((e) =>
         e.bookingSeats.forEach((seatInBooking) => {
-            if (seatInBooking.flight.id === flightId) {
+            if (seatInBooking.flight.id === flightId && seatInBooking.status === Status.ACT) {
                 seatsInBooking.push(seatInBooking.seatCode)
             }
         })

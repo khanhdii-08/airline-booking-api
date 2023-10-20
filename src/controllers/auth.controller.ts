@@ -31,9 +31,30 @@ const login = async (req: Request<ParamsDictionary, any, LoginInput>, res: Respo
 }
 
 const userInfo = async (req: Request, res: Response) => {
-    const result = await AuthService.userInfo(req.jwtPayload._id)
+    const language: string = req.headers['accept-language'] || 'en'
+    const result = await AuthService.userInfo(req.jwtPayload._id, language)
 
     return res.status(HttpStatus.OK).json(result)
 }
 
-export const AuthController = { register, verify, sendOtp, login, userInfo }
+const sendOtpBooking = async (
+    req: Request<ParamsDictionary, any, any, { bookingId: string; phoneNumber: string }>,
+    res: Response
+) => {
+    const { bookingId, phoneNumber } = req.query
+    const result = await AuthService.sendOtpBooking(bookingId, phoneNumber)
+
+    return res.status(HttpStatus.OK).json(result)
+}
+
+const verifyOtpBooking = async (
+    req: Request<ParamsDictionary, any, any, { bookingId: string; otp: string }>,
+    res: Response
+) => {
+    const { bookingId, otp } = req.query
+    const result = await AuthService.verifyOptBooking(bookingId, otp)
+
+    return res.status(HttpStatus.OK).json(result)
+}
+
+export const AuthController = { register, verify, sendOtp, login, userInfo, sendOtpBooking, verifyOtpBooking }
