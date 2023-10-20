@@ -18,6 +18,7 @@ export const PAYMENT = '/payment'
 // otp
 export const OTP_KEY = 'otp'
 export const OTP_TIME_KEY = 'otpTime'
+export const OTP_TIME_BOOKING_KEY = 'otpTimeBooking'
 
 // token
 export const ACCESS_TOKEN_KEY = 'access_token'

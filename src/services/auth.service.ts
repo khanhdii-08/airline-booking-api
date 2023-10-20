@@ -1,11 +1,13 @@
+import { In } from 'typeorm'
+import { getValueByKey } from './../utils/common.utils'
 import jwt from 'jsonwebtoken'
 import { generateCode, randomColor } from '~/utils/common.utils'
 import { createRefreshToken, createToken } from '~/utils/auth.utils'
 import argon2 from 'argon2'
-import { Passenger } from '~/entities'
+import { Booking, Passenger } from '~/entities'
 import { User } from '~/entities/user.entity'
 import { RegisterInput } from '~/types/inputs/RegisterInput'
-import { Gender, Status, UserType } from '~/utils/enums'
+import { CountryEn, CountryVi, Gender, Status, UserType } from '~/utils/enums'
 import { JwtPayload } from '~/types/JwtPayload'
 import { AppDataSource } from '~/config/database.config'
 import { redisClient } from '~/config/redis.config'
@@ -13,7 +15,7 @@ import { env } from '~/config/environment.config'
 import { MessageKeys } from '~/messages/MessageKeys'
 import i18n from '~/config/i18n.config'
 import { BadRequestException } from '~/exceptions/BadRequestException'
-import { ACCESS_TOKEN_KEY, OTP_KEY, OTP_TIME_KEY, REFRESH_TOKEN_KEY } from '~/utils/constants'
+import { ACCESS_TOKEN_KEY, OTP_KEY, OTP_TIME_BOOKING_KEY, OTP_TIME_KEY, REFRESH_TOKEN_KEY } from '~/utils/constants'
 import { LoginInput } from '~/types/inputs/LoginInput'
 import { NotFoundException } from '~/exceptions/NotFoundException'
 
@@ -74,15 +76,15 @@ const sendOTP = async ({ userId }: { userId: string }) => {
     return { message: 'Success' }
 }
 
-const generateOTP = async (userId: string) => {
+const generateOTP = async (keyId: string) => {
     const otp = Math.floor(100000 + Math.random() * 900000).toString()
     const hashedOtp = await argon2.hash(otp)
 
     const otpTime = new Date()
     otpTime.setMinutes(otpTime.getMinutes() + Number(env.OTP_EXPIRE_MINUTE))
 
-    redisClient.set(`${OTP_KEY}:${userId}`, hashedOtp)
-    redisClient.set(`${OTP_TIME_KEY}:${userId}`, otpTime.toString())
+    redisClient.set(`${OTP_KEY}:${keyId}`, hashedOtp)
+    redisClient.set(`${OTP_TIME_KEY}:${keyId}`, otpTime.toString())
 
     return otp
 }
@@ -146,13 +148,67 @@ const login = async (source: string, loginInput: LoginInput) => {
     return { access_token: accessToken, refresh_token: refreshToken }
 }
 
-const userInfo = async (userId: string) => {
+const userInfo = async (userId: string, language: string) => {
     const passengerInfo = await Passenger.findOneBy({ user: { id: userId }, status: Status.ACT, isPasserby: false })
     if (!passengerInfo) {
         throw new NotFoundException({ message: i18n.__(MessageKeys.E_PASSENGER_R000_NOTFOUND) })
     }
+
     const { id, createdAt, updatedAt, isPasserby, status, ...info } = passengerInfo
-    return info
+
+    let country
+    if (language === 'vi') {
+        country = getValueByKey(info.country, CountryVi)
+    } else if (language === 'en') {
+        country = getValueByKey(info.country, CountryEn)
+    }
+    return {
+        ...info,
+        country
+    }
 }
 
-export const AuthService = { register, verify, sendOTP, login, userInfo }
+const sendOtpBooking = async (bookingId: string, phoneNumber: string) => {
+    const booking = await Booking.findOneBy({
+        id: bookingId,
+        status: Status.ACT,
+        passengers: { phoneNumber }
+    })
+
+    if (!booking) {
+        throw new NotFoundException({ message: 'không tìm thấy booking' })
+    }
+
+    const otp = await generateOTP(bookingId)
+
+    console.log(otp)
+
+    return { message: 'Success' }
+}
+
+const verifyOptBooking = async (bookingId: string, otp: string) => {
+    const savedOtp = await redisClient.get(`${OTP_KEY}:${bookingId}`)
+
+    const otpVerified = savedOtp && (await argon2.verify(savedOtp, otp))
+    if (!otpVerified) {
+        throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_PASSENGER_B002_OPTINVALID) } })
+    }
+
+    const expOtp = await redisClient.get(`${OTP_TIME_KEY}:${bookingId}`)
+    if (expOtp !== null && new Date() > new Date(expOtp)) {
+        throw new BadRequestException({ error: { message: 'hết hạn' } })
+    }
+
+    await redisClient.del(`${OTP_KEY}:${bookingId}`)
+    await redisClient.del(`${OTP_TIME_KEY}:${bookingId}`)
+
+    const otpTime = new Date()
+    otpTime.setMinutes(otpTime.getMinutes() + 5)
+
+    redisClient.set(`${OTP_TIME_BOOKING_KEY}:${bookingId}`, otpTime.toString())
+    redisClient.expire(`${OTP_TIME_BOOKING_KEY}:${bookingId}`, 300)
+
+    return { message: 'Success' }
+}
+
+export const AuthService = { register, verify, sendOTP, login, userInfo, sendOtpBooking, verifyOptBooking }

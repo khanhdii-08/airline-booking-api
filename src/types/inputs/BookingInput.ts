@@ -10,6 +10,8 @@ export class BookingInput {
 
     bookingCode: string
 
+    flightId: string
+
     flightAwayId: string
 
     flightReturnId: string

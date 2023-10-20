@@ -23,6 +23,9 @@ import { PassengerType } from '~/utils/enums/passengerType'
 import { v4 as uuidv4 } from 'uuid'
 import { In } from 'typeorm'
 import { BadRequestException } from '~/exceptions/BadRequestException'
+import { redisClient } from '~/config/redis.config'
+import { OTP_TIME_BOOKING_KEY } from '~/utils/constants'
+import { UnauthorizedExeption } from '~/exceptions/UnauthorizedExeption'
 
 const booking = async (bookingInput: BookingInput) => {
     const { userId, flightAwayId, flightReturnId, passengers, ...booking } = bookingInput
@@ -78,7 +81,8 @@ const booking = async (bookingInput: BookingInput) => {
         bookingCode,
         flightAway,
         bookingDate: new Date(),
-        paymentStatus
+        paymentStatus,
+        status: Status.ACT
     })
 
     if (flightReturn) newBooking.flightReturn = flightReturn
@@ -106,6 +110,7 @@ const booking = async (bookingInput: BookingInput) => {
                     booking: newBooking,
                     seat: Seat.create({ id: seat.seatId }),
                     flight: Flight.create({ id: seat.flightId }),
+                    status: Status.ACT,
                     ...seat
                 })
                 bookingSeatsToSave.push(newBookingSeat)
@@ -118,6 +123,7 @@ const booking = async (bookingInput: BookingInput) => {
                     booking: newBooking,
                     serviceOption: ServiceOption.create({ id: serviceOpt.serviceOptId }),
                     flight: Flight.create({ id: serviceOpt.flightId }),
+                    status: Status.ACT,
                     ...serviceOpt
                 })
                 bookingServiceOptsToSave.push(newBookingServiceOpt)
@@ -186,7 +192,8 @@ const bookingDetail = async (criteria: BookingCriteria) => {
             },
             booking: {
                 id: booking.id
-            }
+            },
+            status: Status.ACT
         },
         relations: {
             passenger: true
@@ -203,7 +210,8 @@ const bookingDetail = async (criteria: BookingCriteria) => {
             },
             booking: {
                 id: booking.id
-            }
+            },
+            status: Status.ACT
         },
         relations: {
             passenger: true,
@@ -268,7 +276,8 @@ const bookingDetail = async (criteria: BookingCriteria) => {
                 },
                 booking: {
                     id: booking.id
-                }
+                },
+                status: Status.ACT
             },
             relations: {
                 passenger: true
@@ -285,7 +294,8 @@ const bookingDetail = async (criteria: BookingCriteria) => {
                 },
                 booking: {
                     id: booking.id
-                }
+                },
+                status: Status.ACT
             },
             relations: {
                 passenger: true,
@@ -349,6 +359,12 @@ const bookingCancel = async (bookingInput: BookingInput) => {
         throw new BadRequestException({ error: { message: 'kho phải là active', data: booking } })
     }
 
+    const savedOtp = await redisClient.get(`${OTP_TIME_BOOKING_KEY}:${booking.id}`)
+    if (!savedOtp) {
+        throw new UnauthorizedExeption('yêu cầu không thể thực hiện')
+    }
+    await redisClient.del(`${OTP_TIME_BOOKING_KEY}:${booking.id}`)
+
     booking.note = note
     booking.status = Status.PEN
 
@@ -357,4 +373,76 @@ const bookingCancel = async (bookingInput: BookingInput) => {
     return booking
 }
 
-export const BookingService = { booking, bookingDetail, bookingCancel }
+const updateBooking = async (bookingInput: BookingInput) => {
+    const { bookingId, flightId, flightAwayId, flightReturnId, amountTotal } = bookingInput
+    const booking = await Booking.findOne({
+        where: { id: bookingId },
+        relations: { flightAway: true, flightReturn: true }
+    })
+
+    if (!booking) {
+        throw new NotFoundException({ message: 'không tìm thấy chuyến bay' })
+    }
+    if (booking && booking.status !== Status.ACT) {
+        throw new BadRequestException({ error: { message: 'kho phải là active', data: booking } })
+    }
+    const savedOtp = await redisClient.get(`${OTP_TIME_BOOKING_KEY}:${booking.id}`)
+    if (!savedOtp) {
+        throw new UnauthorizedExeption('yêu cầu không thể thực hiện')
+    }
+
+    const bookingSeats = await BookingSeat.find({
+        where: { booking: { id: booking.id } },
+        relations: { flight: true, booking: true }
+    })
+
+    const bookingServiceOpts = await BookingServiceOpt.find({
+        where: { booking: { id: booking.id } },
+        relations: { flight: true, booking: true }
+    })
+
+    if (flightAwayId && !flightReturnId) {
+        booking.flightAway.id = flightId
+        booking.amountTotal = amountTotal
+        bookingSeats.forEach((bookingSeat) => {
+            if (bookingSeat.flight.id === flightAwayId && booking.id === bookingSeat.booking.id) {
+                bookingSeat.status = Status.DEL
+            }
+        })
+
+        bookingServiceOpts.forEach((bookingServiceOpt) => {
+            if (bookingServiceOpt.flight.id === flightAwayId && booking.id === bookingServiceOpt.booking.id) {
+                bookingServiceOpt.flight.id = flightId
+            }
+        })
+    } else if (booking.flightReturn && flightReturnId && !flightAwayId) {
+        booking.flightReturn.id = flightId
+        booking.amountTotal = amountTotal
+        bookingSeats.forEach((bookingSeat) => {
+            if (bookingSeat.flight.id === flightReturnId && booking.id === bookingSeat.booking.id) {
+                bookingSeat.status = Status.DEL
+            }
+        })
+        bookingServiceOpts.forEach((bookingServiceOpt) => {
+            if (bookingServiceOpt.flight.id === flightReturnId && booking.id === bookingServiceOpt.booking.id) {
+                bookingServiceOpt.flight.id = flightId
+            }
+        })
+    }
+
+    await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
+        try {
+            await transactionalEntityManager.save(booking)
+            await transactionalEntityManager.save(bookingSeats)
+            await transactionalEntityManager.save(bookingServiceOpts)
+        } catch (error) {
+            logger.error(error)
+        }
+    })
+
+    await redisClient.del(`${OTP_TIME_BOOKING_KEY}:${booking.id}`)
+
+    return booking
+}
+
+export const BookingService = { booking, bookingDetail, bookingCancel, updateBooking }
