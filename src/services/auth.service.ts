@@ -15,7 +15,14 @@ import { env } from '~/config/environment.config'
 import { MessageKeys } from '~/messages/MessageKeys'
 import i18n from '~/config/i18n.config'
 import { BadRequestException } from '~/exceptions/BadRequestException'
-import { ACCESS_TOKEN_KEY, OTP_KEY, OTP_TIME_BOOKING_KEY, OTP_TIME_KEY, REFRESH_TOKEN_KEY } from '~/utils/constants'
+import {
+    ACCESS_TOKEN_KEY,
+    OTP_KEY,
+    OTP_TIME_BOOKING_CANCEL_KEY,
+    OTP_TIME_BOOKING_UPDATE_KEY,
+    OTP_TIME_KEY,
+    REFRESH_TOKEN_KEY
+} from '~/utils/constants'
 import { LoginInput } from '~/types/inputs/LoginInput'
 import { NotFoundException } from '~/exceptions/NotFoundException'
 
@@ -186,7 +193,7 @@ const sendOtpBooking = async (bookingId: string, phoneNumber: string) => {
     return { message: 'Success' }
 }
 
-const verifyOptBooking = async (bookingId: string, otp: string) => {
+const verifyOptBooking = async (name: string, bookingId: string, otp: string) => {
     const savedOtp = await redisClient.get(`${OTP_KEY}:${bookingId}`)
 
     const otpVerified = savedOtp && (await argon2.verify(savedOtp, otp))
@@ -205,8 +212,13 @@ const verifyOptBooking = async (bookingId: string, otp: string) => {
     const otpTime = new Date()
     otpTime.setMinutes(otpTime.getMinutes() + 5)
 
-    redisClient.set(`${OTP_TIME_BOOKING_KEY}:${bookingId}`, otpTime.toString())
-    redisClient.expire(`${OTP_TIME_BOOKING_KEY}:${bookingId}`, 300)
+    if (name === 'cancel') {
+        redisClient.set(`${OTP_TIME_BOOKING_CANCEL_KEY}:${bookingId}`, otpTime.toString())
+        redisClient.expire(`${OTP_TIME_BOOKING_CANCEL_KEY}:${bookingId}`, 300)
+    } else if (name === 'update') {
+        redisClient.set(`${OTP_TIME_BOOKING_UPDATE_KEY}:${bookingId}`, otpTime.toString())
+        redisClient.expire(`${OTP_TIME_BOOKING_UPDATE_KEY}:${bookingId}`, 300)
+    }
 
     return { message: 'Success' }
 }

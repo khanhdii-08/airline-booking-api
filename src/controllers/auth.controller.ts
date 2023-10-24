@@ -52,7 +52,8 @@ const verifyOtpBooking = async (
     res: Response
 ) => {
     const { bookingId, otp } = req.query
-    const result = await AuthService.verifyOptBooking(bookingId, otp)
+    const name = req.params['name']
+    const result = await AuthService.verifyOptBooking(name, bookingId, otp)
 
     return res.status(HttpStatus.OK).json(result)
 }
