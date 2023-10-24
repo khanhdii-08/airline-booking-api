@@ -3,6 +3,8 @@ import { SeatInput } from './SeatInput'
 import { ServiceOptionInput } from './ServiceOptionInput'
 
 export class PassengerInput {
+    passengerId: string
+
     passengerCode: string
 
     color: string

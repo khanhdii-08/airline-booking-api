@@ -18,14 +18,13 @@ import { AppDataSource } from '~/config/database.config'
 import { generateBookingCode, removeAccents } from '~/utils/common.utils'
 import { AppError } from '~/exceptions/AppError'
 import { HttpStatus } from '~/utils/httpStatus'
-import { logger } from '~/config/logger.config'
 import { PassengerType } from '~/utils/enums/passengerType'
 import { v4 as uuidv4 } from 'uuid'
 import { In } from 'typeorm'
 import { BadRequestException } from '~/exceptions/BadRequestException'
 import { redisClient } from '~/config/redis.config'
-import { OTP_TIME_BOOKING_KEY } from '~/utils/constants'
 import { UnauthorizedExeption } from '~/exceptions/UnauthorizedExeption'
+import { OTP_TIME_BOOKING_CANCEL_KEY, OTP_TIME_BOOKING_UPDATE_KEY } from '~/utils/constants'
 
 const booking = async (bookingInput: BookingInput) => {
     const { userId, flightAwayId, flightReturnId, passengers, ...booking } = bookingInput
@@ -131,14 +130,10 @@ const booking = async (bookingInput: BookingInput) => {
     })
 
     await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
-        try {
-            await transactionalEntityManager.save(newBooking)
-            await transactionalEntityManager.save(passengersToSave)
-            await transactionalEntityManager.save(bookingSeatsToSave)
-            await transactionalEntityManager.save(bookingServiceOptsToSave)
-        } catch (error) {
-            logger.error(error)
-        }
+        await transactionalEntityManager.save(newBooking)
+        await transactionalEntityManager.save(passengersToSave)
+        await transactionalEntityManager.save(bookingSeatsToSave)
+        await transactionalEntityManager.save(bookingServiceOptsToSave)
     })
 
     return bookingInput
@@ -359,16 +354,17 @@ const bookingCancel = async (bookingInput: BookingInput) => {
         throw new BadRequestException({ error: { message: 'kho phải là active', data: booking } })
     }
 
-    const savedOtp = await redisClient.get(`${OTP_TIME_BOOKING_KEY}:${booking.id}`)
+    const savedOtp = await redisClient.get(`${OTP_TIME_BOOKING_CANCEL_KEY}:${booking.id}`)
     if (!savedOtp) {
         throw new UnauthorizedExeption('yêu cầu không thể thực hiện')
     }
-    await redisClient.del(`${OTP_TIME_BOOKING_KEY}:${booking.id}`)
 
     booking.note = note
     booking.status = Status.PEN
 
-    await booking.save()
+    await booking.save().then(async () => {
+        await redisClient.del(`${OTP_TIME_BOOKING_CANCEL_KEY}:${booking.id}`)
+    })
 
     return booking
 }
@@ -386,7 +382,7 @@ const updateBooking = async (bookingInput: BookingInput) => {
     if (booking && booking.status !== Status.ACT) {
         throw new BadRequestException({ error: { message: 'kho phải là active', data: booking } })
     }
-    const savedOtp = await redisClient.get(`${OTP_TIME_BOOKING_KEY}:${booking.id}`)
+    const savedOtp = await redisClient.get(`${OTP_TIME_BOOKING_UPDATE_KEY}:${booking.id}`)
     if (!savedOtp) {
         throw new UnauthorizedExeption('yêu cầu không thể thực hiện')
     }
@@ -431,18 +427,103 @@ const updateBooking = async (bookingInput: BookingInput) => {
     }
 
     await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
-        try {
-            await transactionalEntityManager.save(booking)
-            await transactionalEntityManager.save(bookingSeats)
-            await transactionalEntityManager.save(bookingServiceOpts)
-        } catch (error) {
-            logger.error(error)
-        }
+        await transactionalEntityManager.save(booking)
+        await transactionalEntityManager.save(bookingSeats)
+        await transactionalEntityManager.save(bookingServiceOpts)
     })
 
-    await redisClient.del(`${OTP_TIME_BOOKING_KEY}:${booking.id}`)
+    await redisClient.del(`${OTP_TIME_BOOKING_UPDATE_KEY}:${booking.id}`)
 
     return booking
 }
 
-export const BookingService = { booking, bookingDetail, bookingCancel, updateBooking }
+const bookingAddService = async (bookingInput: BookingInput) => {
+    const { bookingId, passengers, flightId, flightAwayId, flightReturnId, amountTotal, seatTotal } = bookingInput
+    const booking = await Booking.findOne({
+        where: { id: bookingId },
+        relations: { flightAway: true, flightReturn: true }
+    })
+    if (!booking) {
+        throw new NotFoundException({ message: 'không tìm thấy chuyến bay' })
+    }
+    if (booking && booking.status !== Status.ACT) {
+        throw new BadRequestException({ error: { message: 'kho phải là active', data: booking } })
+    }
+
+    booking.amountTotal = amountTotal
+    booking.seatTotal = seatTotal
+
+    const bookingSeatsToSave: BookingSeat[] = []
+    const bookingServiceOptsToSave: BookingServiceOpt[] = []
+
+    const bookingSeats = await BookingSeat.find({
+        where: { booking: { id: booking.id }, status: Status.ACT },
+        relations: { passenger: true, seat: true, flight: true }
+    })
+
+    const bookingServiceOpts = await BookingServiceOpt.find({
+        where: { booking: { id: booking.id }, status: Status.ACT },
+        relations: { passenger: true, serviceOption: true, flight: true }
+    })
+
+    passengers.forEach((passenger) => {
+        passenger.seats.forEach((seat) => {
+            const bookingSeat = bookingSeats.find(
+                (bookingSeat) =>
+                    bookingSeat.passenger.id === passenger.passengerId &&
+                    bookingSeat.seat.id === seat.seatId &&
+                    bookingSeat.flight.id === seat.flightId
+            )
+            if (bookingSeat) {
+                bookingSeatsToSave.push(
+                    BookingSeat.create({
+                        ...bookingSeat,
+                        ...seat
+                    })
+                )
+            } else {
+                bookingSeatsToSave.push(
+                    BookingSeat.create({
+                        ...seat,
+                        passenger: Passenger.create({ id: passenger.passengerId }),
+                        booking,
+                        seat: Seat.create({ id: seat.seatId }),
+                        flight: Flight.create({ id: seat.flightId }),
+                        status: Status.ACT
+                    })
+                )
+            }
+        })
+        passenger.serviceOpts.forEach((serviceOpt) => {
+            const bookingServiceOpt = bookingServiceOpts.find(
+                (bookingServiceOpt) =>
+                    bookingServiceOpt.passenger.id === passenger.passengerId &&
+                    bookingServiceOpt.serviceOption.id === serviceOpt.serviceOptId &&
+                    bookingServiceOpt.flight.id === serviceOpt.flightId
+            )
+            if (bookingServiceOpt) {
+                bookingServiceOptsToSave.push(BookingServiceOpt.create({ ...bookingServiceOpt, ...serviceOpt }))
+            } else {
+                bookingServiceOptsToSave.push(
+                    BookingServiceOpt.create({
+                        passenger: Passenger.create({ id: passenger.passengerId }),
+                        booking,
+                        serviceOption: ServiceOption.create({ id: serviceOpt.serviceOptId }),
+                        flight: Flight.create({ id: serviceOpt.flightId }),
+                        status: Status.ACT,
+                        ...serviceOpt
+                    })
+                )
+            }
+        })
+    })
+
+    await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
+        await transactionalEntityManager.save(bookingSeatsToSave)
+        await transactionalEntityManager.save(bookingServiceOptsToSave)
+    })
+
+    return booking
+}
+
+export const BookingService = { booking, bookingDetail, bookingCancel, updateBooking, bookingAddService }
