@@ -221,19 +221,19 @@ const bookingDetail = async (criteria: BookingCriteria) => {
         if (passengerAway.passengerType === PassengerType.ADULT && flightSeatPriceAway) {
             seat = {
                 seatPrice: flightSeatPriceAway.adultPrice,
-                taxPrice: flightSeatPriceAway.taxPrice,
+                taxPrice: (flightSeatPriceAway.adultPrice * 10) / 100,
                 ...flightSeatPriceAway.seat
             }
         } else if (passengerAway.passengerType === PassengerType.CHILD && flightSeatPriceAway) {
             seat = {
                 seatPrice: flightSeatPriceAway.childrenPrice,
-                taxPrice: flightSeatPriceAway.taxPrice,
+                taxPrice: (flightSeatPriceAway.childrenPrice * 10) / 100,
                 ...flightSeatPriceAway.seat
             }
         } else if (passengerAway.passengerType === PassengerType.INFANT && flightSeatPriceAway) {
             seat = {
                 seatPrice: flightSeatPriceAway.infantPrice,
-                taxPrice: flightSeatPriceAway.taxPrice,
+                taxPrice: 0,
                 ...flightSeatPriceAway.seat
             }
         }
@@ -316,19 +316,19 @@ const bookingDetail = async (criteria: BookingCriteria) => {
             if (passengerReturn.passengerType === PassengerType.ADULT && flightSeatPriceReturn) {
                 seat = {
                     seatPrice: flightSeatPriceReturn.adultPrice,
-                    taxPrice: flightSeatPriceReturn.taxPrice,
+                    taxPrice: (flightSeatPriceReturn.adultPrice * 10) / 100,
                     ...flightSeatPriceReturn.seat
                 }
             } else if (passengerReturn.passengerType === PassengerType.CHILD && flightSeatPriceReturn) {
                 seat = {
-                    seatPrice: flightSeatPriceReturn.adultPrice,
-                    taxPrice: flightSeatPriceReturn.taxPrice,
+                    seatPrice: flightSeatPriceReturn.childrenPrice,
+                    taxPrice: (flightSeatPriceReturn.childrenPrice * 10) / 100,
                     ...flightSeatPriceReturn.seat
                 }
-            } else if (flightSeatPriceReturn) {
+            } else if (passengerReturn.passengerType === PassengerType.INFANT && flightSeatPriceReturn) {
                 seat = {
-                    seatPrice: flightSeatPriceReturn.adultPrice,
-                    taxPrice: flightSeatPriceReturn.taxPrice,
+                    seatPrice: flightSeatPriceReturn.infantPrice,
+                    taxPrice: 0,
                     ...flightSeatPriceReturn.seat
                 }
             }
