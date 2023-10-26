@@ -27,7 +27,7 @@ import { UnauthorizedExeption } from '~/exceptions/UnauthorizedExeption'
 import { OTP_TIME_BOOKING_CANCEL_KEY, OTP_TIME_BOOKING_UPDATE_KEY } from '~/utils/constants'
 
 const booking = async (bookingInput: BookingInput) => {
-    const { userId, flightAwayId, flightReturnId, passengers, ...booking } = bookingInput
+    const { userId, flightAwayId, flightReturnId, seatId, passengers, ...booking } = bookingInput
 
     let bookingCode = bookingInput.bookingCode
 
@@ -76,6 +76,7 @@ const booking = async (bookingInput: BookingInput) => {
 
     const newBooking = await Booking.create({
         id: uuidv4(),
+        seat: Seat.create({ id: seatId }),
         ...booking,
         bookingCode,
         flightAway,
@@ -149,8 +150,7 @@ const bookingDetail = async (criteria: BookingCriteria) => {
         .leftJoinAndSelect('flightReturn.sourceAirport', 'sourceAirportReturn')
         .leftJoinAndSelect('flightReturn.destinationAirport', 'destinationAirportReturn')
         .innerJoin('booking.passengers', 'passengers')
-        .leftJoinAndSelect('booking.bookingSeats', 'bookingSeats')
-        .innerJoinAndSelect('bookingSeats.seat', 'seat')
+        .innerJoinAndSelect('booking.seat', 'seat')
         .where('booking.bookingCode = :bookingCode', { bookingCode: criteria.bookingCode.trim() })
         .andWhere('unaccent(passengers.firstName) ILIKE :firstName', {
             firstName: `%${removeAccents(criteria.firstName.trim())}%`
@@ -164,7 +164,7 @@ const bookingDetail = async (criteria: BookingCriteria) => {
         throw new NotFoundException({ message: 'ko tìm thấy chuyến bay' })
     }
 
-    const { flightAway, flightReturn, bookingSeats, ...bookingDetail } = booking
+    const { flightAway, flightReturn, seat, ...bookingDetail } = booking
 
     const passengerAways = await Passenger.findBy({
         booking: {
@@ -173,7 +173,7 @@ const bookingDetail = async (criteria: BookingCriteria) => {
     })
 
     const flightSeatPriceAway = await FlightSeatPrice.findOne({
-        where: { flight: { id: flightAway.id }, seat: { id: bookingSeats[0].seat.id } },
+        where: { flight: { id: flightAway.id }, seat: { id: seat.id } },
         relations: { taxService: true, seat: true }
     })
 
@@ -270,7 +270,7 @@ const bookingDetail = async (criteria: BookingCriteria) => {
         })
 
         const flightSeatPriceReturn = await FlightSeatPrice.findOne({
-            where: { flight: { id: flightReturn.id }, seat: { id: bookingSeats[0].seat.id } },
+            where: { flight: { id: flightReturn.id }, seat: { id: seat.id } },
             relations: { taxService: true, seat: true }
         })
 
