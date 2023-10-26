@@ -1,4 +1,4 @@
-import { BookingSeat, BookingServiceOpt, Flight, Passenger, PaymentTransaction, User } from '~/entities'
+import { BookingSeat, BookingServiceOpt, CheckIn, Flight, Passenger, PaymentTransaction, User } from '~/entities'
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from 'typeorm'
 import Model from './model.entity'
 import { JourneyType, PaymentStatus, Status } from '~/utils/enums'
@@ -25,6 +25,9 @@ export class Booking extends Model {
     @ManyToOne(() => Flight, (flight: Flight) => flight.bookingReturns)
     @JoinColumn({ name: 'flight_return_id' })
     flightReturn: Flight
+
+    @OneToMany(() => CheckIn, (checkIn: CheckIn) => checkIn.booking)
+    checkIns: CheckIn[]
 
     @Column({ name: 'booking_code' })
     bookingCode: string

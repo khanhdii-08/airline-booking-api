@@ -1,7 +1,7 @@
 import Model from './model.entity'
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne } from 'typeorm'
 import { Gender, Status } from '~/utils/enums'
-import { Booking, BookingSeat, BookingServiceOpt, User } from '~/entities'
+import { Booking, BookingSeat, BookingServiceOpt, CheckIn, User } from '~/entities'
 import { PassengerType } from '~/utils/enums/passengerType'
 
 @Entity({ name: 'passenger' })
@@ -19,6 +19,9 @@ export class Passenger extends Model {
 
     @OneToMany(() => BookingSeat, (bookingSeat: BookingSeat) => bookingSeat.passenger)
     bookingSeats: BookingSeat[]
+
+    @OneToMany(() => CheckIn, (checkIn: CheckIn) => checkIn.passenger)
+    checkIns: CheckIn[]
 
     @Column({ name: 'passenger_code', nullable: true })
     passengerCode: string
