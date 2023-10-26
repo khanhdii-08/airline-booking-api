@@ -172,7 +172,7 @@ const bookingDetail = async (criteria: BookingCriteria) => {
 
     const flightSeatPriceAway = await FlightSeatPrice.findOne({
         where: { flight: { id: flightAway.id } },
-        relations: { taxService: true }
+        relations: { taxService: true, seat: true }
     })
 
     const passengerAwayIds = passengerAways.map((passengerAway) => passengerAway.id)
@@ -215,13 +215,22 @@ const bookingDetail = async (criteria: BookingCriteria) => {
     })
 
     const passengerAwaysDetail = passengerAways.map((passengerAway) => {
-        let seatPrice
-        if (passengerAway.passengerType === PassengerType.ADULT) {
-            seatPrice = flightSeatPriceAway?.adultPrice
-        } else if (passengerAway.passengerType === PassengerType.CHILD) {
-            seatPrice = flightSeatPriceAway?.childrenPrice
-        } else {
-            seatPrice = flightSeatPriceAway?.infantPrice
+        let seat
+        if (passengerAway.passengerType === PassengerType.ADULT && flightSeatPriceAway) {
+            seat = {
+                seatPrice: flightSeatPriceAway.adultPrice,
+                ...flightSeatPriceAway.seat
+            }
+        } else if (passengerAway.passengerType === PassengerType.CHILD && flightSeatPriceAway) {
+            seat = {
+                seatPrice: flightSeatPriceAway.adultPrice,
+                ...flightSeatPriceAway.seat
+            }
+        } else if (flightSeatPriceAway) {
+            seat = {
+                seatPrice: flightSeatPriceAway.adultPrice,
+                ...flightSeatPriceAway.seat
+            }
         }
         const taxService = flightSeatPriceAway?.taxService
         const seatServicePrice = bookingSeatAways.find(
@@ -239,7 +248,7 @@ const bookingDetail = async (criteria: BookingCriteria) => {
 
         return {
             ...passengerAway,
-            seatPrice,
+            seat,
             taxService,
             seatServicePrice,
             serviceOpts
@@ -257,7 +266,7 @@ const bookingDetail = async (criteria: BookingCriteria) => {
 
         const flightSeatPriceReturn = await FlightSeatPrice.findOne({
             where: { flight: { id: flightReturn.id } },
-            relations: { taxService: true }
+            relations: { taxService: true, seat: true }
         })
 
         const passengerReturnIds = passengerReturns.map((passengerReturn) => passengerReturn.id)
@@ -298,13 +307,22 @@ const bookingDetail = async (criteria: BookingCriteria) => {
             }
         })
         passengerReturnsDetail = passengerReturns.map((passengerReturn) => {
-            let seatPrice
-            if (passengerReturn.passengerType === PassengerType.ADULT) {
-                seatPrice = flightSeatPriceReturn?.adultPrice
-            } else if (passengerReturn.passengerType === PassengerType.CHILD) {
-                seatPrice = flightSeatPriceReturn?.childrenPrice
-            } else {
-                seatPrice = flightSeatPriceReturn?.infantPrice
+            let seat
+            if (passengerReturn.passengerType === PassengerType.ADULT && flightSeatPriceReturn) {
+                seat = {
+                    seatPrice: flightSeatPriceReturn.adultPrice,
+                    ...flightSeatPriceReturn.seat
+                }
+            } else if (passengerReturn.passengerType === PassengerType.CHILD && flightSeatPriceReturn) {
+                seat = {
+                    seatPrice: flightSeatPriceReturn.adultPrice,
+                    ...flightSeatPriceReturn.seat
+                }
+            } else if (flightSeatPriceReturn) {
+                seat = {
+                    seatPrice: flightSeatPriceReturn.adultPrice,
+                    ...flightSeatPriceReturn.seat
+                }
             }
             const taxService = flightSeatPriceReturn?.taxService
             const seatServicePrice = bookingSeatReturns.find(
@@ -322,7 +340,7 @@ const bookingDetail = async (criteria: BookingCriteria) => {
 
             return {
                 ...passengerReturn,
-                seatPrice,
+                seat,
                 taxService,
                 seatServicePrice,
                 serviceOpts
