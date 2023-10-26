@@ -16,6 +16,8 @@ export class BookingInput {
 
     flightReturnId: string
 
+    seatId: string
+
     amountTotal: number
 
     seatTotal: number
