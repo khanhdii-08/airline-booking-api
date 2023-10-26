@@ -149,6 +149,8 @@ const bookingDetail = async (criteria: BookingCriteria) => {
         .leftJoinAndSelect('flightReturn.sourceAirport', 'sourceAirportReturn')
         .leftJoinAndSelect('flightReturn.destinationAirport', 'destinationAirportReturn')
         .innerJoin('booking.passengers', 'passengers')
+        .leftJoinAndSelect('booking.bookingSeats', 'bookingSeats')
+        .innerJoinAndSelect('bookingSeats.seat', 'seat')
         .where('booking.bookingCode = :bookingCode', { bookingCode: criteria.bookingCode.trim() })
         .andWhere('unaccent(passengers.firstName) ILIKE :firstName', {
             firstName: `%${removeAccents(criteria.firstName.trim())}%`
@@ -162,7 +164,7 @@ const bookingDetail = async (criteria: BookingCriteria) => {
         throw new NotFoundException({ message: 'ko tìm thấy chuyến bay' })
     }
 
-    const { flightAway, flightReturn, ...bookingDetail } = booking
+    const { flightAway, flightReturn, bookingSeats, ...bookingDetail } = booking
 
     const passengerAways = await Passenger.findBy({
         booking: {
@@ -171,7 +173,7 @@ const bookingDetail = async (criteria: BookingCriteria) => {
     })
 
     const flightSeatPriceAway = await FlightSeatPrice.findOne({
-        where: { flight: { id: flightAway.id } },
+        where: { flight: { id: flightAway.id }, seat: { id: bookingSeats[0].seat.id } },
         relations: { taxService: true, seat: true }
     })
 
@@ -219,16 +221,19 @@ const bookingDetail = async (criteria: BookingCriteria) => {
         if (passengerAway.passengerType === PassengerType.ADULT && flightSeatPriceAway) {
             seat = {
                 seatPrice: flightSeatPriceAway.adultPrice,
+                taxPrice: flightSeatPriceAway.taxPrice,
                 ...flightSeatPriceAway.seat
             }
         } else if (passengerAway.passengerType === PassengerType.CHILD && flightSeatPriceAway) {
             seat = {
-                seatPrice: flightSeatPriceAway.adultPrice,
+                seatPrice: flightSeatPriceAway.childrenPrice,
+                taxPrice: flightSeatPriceAway.taxPrice,
                 ...flightSeatPriceAway.seat
             }
-        } else if (flightSeatPriceAway) {
+        } else if (passengerAway.passengerType === PassengerType.INFANT && flightSeatPriceAway) {
             seat = {
-                seatPrice: flightSeatPriceAway.adultPrice,
+                seatPrice: flightSeatPriceAway.infantPrice,
+                taxPrice: flightSeatPriceAway.taxPrice,
                 ...flightSeatPriceAway.seat
             }
         }
@@ -265,7 +270,7 @@ const bookingDetail = async (criteria: BookingCriteria) => {
         })
 
         const flightSeatPriceReturn = await FlightSeatPrice.findOne({
-            where: { flight: { id: flightReturn.id } },
+            where: { flight: { id: flightReturn.id }, seat: { id: bookingSeats[0].seat.id } },
             relations: { taxService: true, seat: true }
         })
 
@@ -311,16 +316,19 @@ const bookingDetail = async (criteria: BookingCriteria) => {
             if (passengerReturn.passengerType === PassengerType.ADULT && flightSeatPriceReturn) {
                 seat = {
                     seatPrice: flightSeatPriceReturn.adultPrice,
+                    taxPrice: flightSeatPriceReturn.taxPrice,
                     ...flightSeatPriceReturn.seat
                 }
             } else if (passengerReturn.passengerType === PassengerType.CHILD && flightSeatPriceReturn) {
                 seat = {
                     seatPrice: flightSeatPriceReturn.adultPrice,
+                    taxPrice: flightSeatPriceReturn.taxPrice,
                     ...flightSeatPriceReturn.seat
                 }
             } else if (flightSeatPriceReturn) {
                 seat = {
                     seatPrice: flightSeatPriceReturn.adultPrice,
+                    taxPrice: flightSeatPriceReturn.taxPrice,
                     ...flightSeatPriceReturn.seat
                 }
             }
