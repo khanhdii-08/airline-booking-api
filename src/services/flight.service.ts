@@ -1,5 +1,6 @@
 import { FlightCriteria } from '~/types/criterias/FlightCriteria'
 import { Flight } from '~/entities/flight.entity'
+import { Status } from '~/utils/enums'
 
 const search = async (criteria: FlightCriteria) => {
     const queryFlightResult = await Flight.createQueryBuilder('flight')
@@ -33,6 +34,7 @@ const search = async (criteria: FlightCriteria) => {
                 .where('booking.flightAway.id = flight.id or booking.flightReturn.id = flight.id')
                 .andWhere('bookingSeat.seat.id = :seatId', { seatId: criteria.seatId })
                 .andWhere('bookingSeat.flight.id = flight.id')
+                .andWhere('bookingSeat.status = :status', { status: Status.ACT })
                 .getQuery()
             return `(${subQuery} + :numAdults + :numChildren) <= aircraftSeat.seatNumber`
         })
@@ -45,9 +47,16 @@ const search = async (criteria: FlightCriteria) => {
     const result = queryFlightResult.map((value) => {
         const { flightSeatPrices, ...flightWithoutSeatPrices } = value
 
+        const { id, createdAt, updatedAt, taxPrice, ...flightSeatPriceWithoutTaxPrice } = flightSeatPrices[0]
+
         return {
-            ...flightWithoutSeatPrices,
-            flightSeatPrice: flightSeatPrices[0]
+            flightSeatPrice: {
+                ...flightSeatPriceWithoutTaxPrice,
+                infantTaxPrice: (flightSeatPrices[0].infantPrice * 10) / 100,
+                adultTaxPrice: (flightSeatPrices[0].adultPrice * 10) / 100,
+                childrenTaxPrice: (flightSeatPrices[0].childrenPrice * 10) / 100
+            },
+            ...flightWithoutSeatPrices
         }
     })
 
