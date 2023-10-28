@@ -27,7 +27,7 @@ import { UnauthorizedExeption } from '~/exceptions/UnauthorizedExeption'
 import { OTP_TIME_BOOKING_CANCEL_KEY, OTP_TIME_BOOKING_UPDATE_KEY } from '~/utils/constants'
 
 const booking = async (bookingInput: BookingInput) => {
-    const { userId, flightAwayId, flightReturnId, passengers, ...booking } = bookingInput
+    const { userId, flightAwayId, flightReturnId, seatId, passengers, ...booking } = bookingInput
 
     let bookingCode = bookingInput.bookingCode
 
@@ -76,6 +76,7 @@ const booking = async (bookingInput: BookingInput) => {
 
     const newBooking = await Booking.create({
         id: uuidv4(),
+        seat: Seat.create({ id: seatId }),
         ...booking,
         bookingCode,
         flightAway,
@@ -149,6 +150,7 @@ const bookingDetail = async (criteria: BookingCriteria) => {
         .leftJoinAndSelect('flightReturn.sourceAirport', 'sourceAirportReturn')
         .leftJoinAndSelect('flightReturn.destinationAirport', 'destinationAirportReturn')
         .innerJoin('booking.passengers', 'passengers')
+        .innerJoinAndSelect('booking.seat', 'seat')
         .where('booking.bookingCode = :bookingCode', { bookingCode: criteria.bookingCode.trim() })
         .andWhere('unaccent(passengers.firstName) ILIKE :firstName', {
             firstName: `%${removeAccents(criteria.firstName.trim())}%`
@@ -162,7 +164,7 @@ const bookingDetail = async (criteria: BookingCriteria) => {
         throw new NotFoundException({ message: 'ko tìm thấy chuyến bay' })
     }
 
-    const { flightAway, flightReturn, ...bookingDetail } = booking
+    const { flightAway, flightReturn, seat, ...bookingDetail } = booking
 
     const passengerAways = await Passenger.findBy({
         booking: {
@@ -171,8 +173,8 @@ const bookingDetail = async (criteria: BookingCriteria) => {
     })
 
     const flightSeatPriceAway = await FlightSeatPrice.findOne({
-        where: { flight: { id: flightAway.id } },
-        relations: { taxService: true }
+        where: { flight: { id: flightAway.id }, seat: { id: seat.id } },
+        relations: { taxService: true, seat: true }
     })
 
     const passengerAwayIds = passengerAways.map((passengerAway) => passengerAway.id)
@@ -215,13 +217,25 @@ const bookingDetail = async (criteria: BookingCriteria) => {
     })
 
     const passengerAwaysDetail = passengerAways.map((passengerAway) => {
-        let seatPrice
-        if (passengerAway.passengerType === PassengerType.ADULT) {
-            seatPrice = flightSeatPriceAway?.adultPrice
-        } else if (passengerAway.passengerType === PassengerType.CHILD) {
-            seatPrice = flightSeatPriceAway?.childrenPrice
-        } else {
-            seatPrice = flightSeatPriceAway?.infantPrice
+        let seat
+        if (passengerAway.passengerType === PassengerType.ADULT && flightSeatPriceAway) {
+            seat = {
+                seatPrice: flightSeatPriceAway.adultPrice,
+                taxPrice: (flightSeatPriceAway.adultPrice * 10) / 100,
+                ...flightSeatPriceAway.seat
+            }
+        } else if (passengerAway.passengerType === PassengerType.CHILD && flightSeatPriceAway) {
+            seat = {
+                seatPrice: flightSeatPriceAway.childrenPrice,
+                taxPrice: (flightSeatPriceAway.childrenPrice * 10) / 100,
+                ...flightSeatPriceAway.seat
+            }
+        } else if (passengerAway.passengerType === PassengerType.INFANT && flightSeatPriceAway) {
+            seat = {
+                seatPrice: flightSeatPriceAway.infantPrice,
+                taxPrice: 0,
+                ...flightSeatPriceAway.seat
+            }
         }
         const taxService = flightSeatPriceAway?.taxService
         const seatServicePrice = bookingSeatAways.find(
@@ -239,7 +253,7 @@ const bookingDetail = async (criteria: BookingCriteria) => {
 
         return {
             ...passengerAway,
-            seatPrice,
+            seat,
             taxService,
             seatServicePrice,
             serviceOpts
@@ -256,8 +270,8 @@ const bookingDetail = async (criteria: BookingCriteria) => {
         })
 
         const flightSeatPriceReturn = await FlightSeatPrice.findOne({
-            where: { flight: { id: flightReturn.id } },
-            relations: { taxService: true }
+            where: { flight: { id: flightReturn.id }, seat: { id: seat.id } },
+            relations: { taxService: true, seat: true }
         })
 
         const passengerReturnIds = passengerReturns.map((passengerReturn) => passengerReturn.id)
@@ -298,13 +312,25 @@ const bookingDetail = async (criteria: BookingCriteria) => {
             }
         })
         passengerReturnsDetail = passengerReturns.map((passengerReturn) => {
-            let seatPrice
-            if (passengerReturn.passengerType === PassengerType.ADULT) {
-                seatPrice = flightSeatPriceReturn?.adultPrice
-            } else if (passengerReturn.passengerType === PassengerType.CHILD) {
-                seatPrice = flightSeatPriceReturn?.childrenPrice
-            } else {
-                seatPrice = flightSeatPriceReturn?.infantPrice
+            let seat
+            if (passengerReturn.passengerType === PassengerType.ADULT && flightSeatPriceReturn) {
+                seat = {
+                    seatPrice: flightSeatPriceReturn.adultPrice,
+                    taxPrice: (flightSeatPriceReturn.adultPrice * 10) / 100,
+                    ...flightSeatPriceReturn.seat
+                }
+            } else if (passengerReturn.passengerType === PassengerType.CHILD && flightSeatPriceReturn) {
+                seat = {
+                    seatPrice: flightSeatPriceReturn.childrenPrice,
+                    taxPrice: (flightSeatPriceReturn.childrenPrice * 10) / 100,
+                    ...flightSeatPriceReturn.seat
+                }
+            } else if (passengerReturn.passengerType === PassengerType.INFANT && flightSeatPriceReturn) {
+                seat = {
+                    seatPrice: flightSeatPriceReturn.infantPrice,
+                    taxPrice: 0,
+                    ...flightSeatPriceReturn.seat
+                }
             }
             const taxService = flightSeatPriceReturn?.taxService
             const seatServicePrice = bookingSeatReturns.find(
@@ -322,7 +348,7 @@ const bookingDetail = async (criteria: BookingCriteria) => {
 
             return {
                 ...passengerReturn,
-                seatPrice,
+                seat,
                 taxService,
                 seatServicePrice,
                 serviceOpts

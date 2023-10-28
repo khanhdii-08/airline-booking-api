@@ -27,17 +27,20 @@ export class CheckIn extends Model {
     flight: Flight
 
     @Column({ name: 'check_in_code' })
-    checkInCode: string
+    ticketCode: string
 
     @Column({ name: 'check_in_time', type: 'timestamptz' })
-    checkInTime: string
+    checkInTime: Date
+
+    @Column({ name: 'door_number' })
+    doorNumber: number
+
+    @Column({ name: 'door_time', type: 'time' })
+    doorTime: Date
 
     @Column({ name: 'seat_code' })
     seatCode: string
 
     @Column({ name: 'booking_code' })
     bookingCode: string
-
-    @Column({ name: 'status' })
-    status: string
 }

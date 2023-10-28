@@ -1,4 +1,4 @@
-import { AircraftSeat, BookingSeat, CheckIn, FlightSeatPrice, ServiceOption } from '~/entities'
+import { AircraftSeat, Booking, BookingSeat, CheckIn, FlightSeatPrice, ServiceOption } from '~/entities'
 import { BaseEntity, Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm'
 import { SeatClass, Status } from '~/utils/enums'
 
@@ -18,6 +18,9 @@ export class Seat extends BaseEntity {
 
     @OneToMany(() => ServiceOption, (serviceOption: ServiceOption) => serviceOption.seat)
     serviceOptions: ServiceOption[]
+
+    @OneToMany(() => Booking, (booking: Booking) => booking.seat)
+    bookings: Booking[]
 
     @OneToMany(() => CheckIn, (checkIn: CheckIn) => checkIn.seat)
     checkIns: CheckIn[]

@@ -8,11 +8,12 @@ import i18n from '~/config/i18n.config'
 import { AuthRoutes } from './auth.route'
 import { AppSettingRoutes } from './appsetting.route'
 import { FlightRoutes } from './flight.route'
-import { AIRPORT, APP, AUTH, BOOKING, FLIGHT, PAYMENT, SEAT, SERVICE_OPTION, V1 } from '~/utils/constants'
+import { AIRPORT, APP, AUTH, BOOKING, CHECK_IN, FLIGHT, PAYMENT, SEAT, SERVICE_OPTION, V1 } from '~/utils/constants'
 import { ServiceOptRoutes } from './serviceOption.route'
 import { BadRequestException } from '~/exceptions/BadRequestException'
 import { BookingRoutes } from './booking.route'
 import { PaymentRoutes } from './payment.route'
+import { CheckInRoutes } from './checkIn.route'
 
 const router = express.Router()
 
@@ -56,6 +57,9 @@ router.use(V1 + BOOKING, BookingRoutes)
 
 /** v1/payment */
 router.use(V1 + PAYMENT, PaymentRoutes)
+
+/** V1/check-in */
+router.use(V1 + CHECK_IN, CheckInRoutes)
 
 router.use((error: Error, req: Request, res: Response, next: NextFunction) => {
     // 1. Log the error or send it to a 3rd party error monitoring software

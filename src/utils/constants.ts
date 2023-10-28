@@ -12,6 +12,7 @@ export const FLIGHT = '/flight'
 export const SERVICE_OPTION = '/service-option'
 export const BOOKING = '/booking'
 export const PAYMENT = '/payment'
+export const CHECK_IN = '/check-in'
 
 // key redis
 
