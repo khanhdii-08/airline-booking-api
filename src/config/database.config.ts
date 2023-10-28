@@ -17,7 +17,8 @@ import {
     BookingServiceOpt,
     Employee,
     PaymentTransaction,
-    TaxService
+    TaxService,
+    CheckIn
 } from '~/entities'
 
 const Entities = [
@@ -37,7 +38,8 @@ const Entities = [
     BookingServiceOpt,
     Employee,
     PaymentTransaction,
-    TaxService
+    TaxService,
+    CheckIn
 ]
 
 export const AppDataSource = new DataSource({
