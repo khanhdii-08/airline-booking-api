@@ -1,3 +1,4 @@
+import moment from 'moment'
 import { v4 } from 'uuid'
 
 export const getValueByKey = (value: string, T: any) => {
@@ -67,4 +68,29 @@ export const generateTicketCode = (): string => {
     }
 
     return checkInCode
+}
+
+export const formatDate = (date: Date): string => {
+    return moment(date).format('DD/MM/YYYY')
+}
+
+export const formatHour = (date: Date): string => {
+    return moment(date).format('HH:mm')
+}
+
+export const calculateTimeDifference = (date1: Date, date2: Date): string => {
+    const moment1 = moment(date1)
+    const moment2 = moment(date2)
+
+    const differenceInMinutes = moment2.diff(moment1, 'minutes')
+    const days = Math.floor(differenceInMinutes / (24 * 60))
+    const remainingMinutes = differenceInMinutes % (24 * 60)
+    const hours = Math.floor(remainingMinutes / 60)
+    const minutes = remainingMinutes % 60
+
+    if (days > 0) {
+        return `${days} ngày ${hours} giờ ${minutes} phút`
+    } else {
+        return `${hours} giờ ${minutes} phút`
+    }
 }

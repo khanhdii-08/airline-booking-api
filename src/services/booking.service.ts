@@ -25,23 +25,32 @@ import { BadRequestException } from '~/exceptions/BadRequestException'
 import { redisClient } from '~/config/redis.config'
 import { UnauthorizedExeption } from '~/exceptions/UnauthorizedExeption'
 import { OTP_TIME_BOOKING_CANCEL_KEY, OTP_TIME_BOOKING_UPDATE_KEY } from '~/utils/constants'
+import { MailProvider } from '~/providers/mail.provider'
 
 const booking = async (bookingInput: BookingInput) => {
     const { userId, flightAwayId, flightReturnId, seatId, passengers, ...booking } = bookingInput
+    const flights: Flight[] = []
 
     let bookingCode = bookingInput.bookingCode
 
-    const flightAway = await Flight.findOneBy({ id: flightAwayId })
+    const flightAway = await Flight.findOne({
+        where: { id: flightAwayId },
+        relations: { aircraft: true, sourceAirport: { city: true }, destinationAirport: { city: true } }
+    })
     if (!flightAway) {
         throw new NotFoundException({ message: 'null' })
     }
-
+    flights.push(flightAway)
     let flightReturn = null
     if (flightReturnId) {
-        flightReturn = await Flight.findOneBy({ id: flightReturnId })
+        flightReturn = await Flight.findOne({
+            where: { id: flightReturnId },
+            relations: { aircraft: true, sourceAirport: { city: true }, destinationAirport: { city: true } }
+        })
         if (!flightReturn) {
             throw new NotFoundException({ message: 'null' })
         }
+        flights.push(flightReturn)
     }
 
     let user = null
@@ -136,6 +145,8 @@ const booking = async (bookingInput: BookingInput) => {
         await transactionalEntityManager.save(bookingSeatsToSave)
         await transactionalEntityManager.save(bookingServiceOptsToSave)
     })
+
+    await MailProvider.sendMailBooking({ bookingCode, flights, passengers })
 
     return bookingInput
 }
