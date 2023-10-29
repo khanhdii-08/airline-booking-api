@@ -1,3 +1,4 @@
+import { env } from '~/config/environment.config'
 import { Flight } from './../entities/flight.entity'
 import nodemailer from 'nodemailer'
 import { PassengerInput } from '~/types/inputs/PassengerInput'
@@ -129,8 +130,8 @@ const sendMailBooking = async ({
         port: 465,
         secure: true,
         auth: {
-            user: 'info.vivuairline@gmail.com',
-            pass: 'ddqz bnzf xnqx kvbk'
+            user: env.EMAIL_USER,
+            pass: env.EMAIL_PASS
         }
     })
 
