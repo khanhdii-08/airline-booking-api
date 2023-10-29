@@ -1,6 +1,7 @@
 import { PassengerType } from '~/utils/enums/passengerType'
 import { SeatInput } from './SeatInput'
 import { ServiceOptionInput } from './ServiceOptionInput'
+import { Gender } from '~/utils/enums'
 
 export class PassengerInput {
     passengerId: string
@@ -10,6 +11,8 @@ export class PassengerInput {
     color: string
 
     imageUrl: string
+
+    gender: Gender
 
     firstName: string
 

@@ -52,7 +52,7 @@ const search = async (criteria: FlightCriteria) => {
         return {
             flightSeatPrice: {
                 ...flightSeatPriceWithoutTaxPrice,
-                infantTaxPrice: (flightSeatPrices[0].infantPrice * 10) / 100,
+                infantTaxPrice: 0,
                 adultTaxPrice: (flightSeatPrices[0].adultPrice * 10) / 100,
                 childrenTaxPrice: (flightSeatPrices[0].childrenPrice * 10) / 100
             },
