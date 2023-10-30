@@ -27,5 +27,6 @@ export const env = {
     MOMO_SECRET_KEY: process.env.MOMO_SECRET_KEY as string,
     MOMO_URL: process.env.MOMO_URL as string,
     EMAIL_USER: process.env.EMAIL_USER,
-    EMAIL_PASS: process.env.EMAIL_PASS
+    EMAIL_PASS: process.env.EMAIL_PASS,
+    WHITELIST_DOMAINS: process.env.WHITELIST_DOMAINS as string
 }

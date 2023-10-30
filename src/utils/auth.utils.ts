@@ -1,7 +1,5 @@
-import { Request } from 'express'
 import jwt from 'jsonwebtoken'
 import { env } from '~/config/environment.config'
-import { UnauthorizedExeption } from '~/exceptions/UnauthorizedExeption'
 import { JwtPayload } from '~/types/JwtPayload'
 
 export const createToken = (payload: JwtPayload): string => {
