@@ -12,7 +12,7 @@ import { Gender } from '~/utils/enums'
 import { CountryEn, CountryVi } from '~/utils/enums/country.enum'
 import { BadRequestException } from '~/exceptions/BadRequestException'
 import { TokenContext } from '~/utils/TokenContext'
-import { UnauthorizedExeption } from '~/exceptions/UnauthorizedExeption'
+import { UnauthorizedException } from '~/exceptions/UnauthorizedException'
 import { redisClient } from '~/config/redis.config'
 import { OTP_KEY } from '~/utils/constants'
 
@@ -90,7 +90,7 @@ const verify = async (req: Request<ParamsDictionary, any, any, { otp: string }>,
     }
 
     const jwtPayload = TokenContext.jwtPayload(req)
-    await User.findOneByOrFail({ id: jwtPayload._id }).catch(() => new UnauthorizedExeption('dđ'))
+    await User.findOneByOrFail({ id: jwtPayload._id }).catch(() => new UnauthorizedException('dđ'))
 
     next()
 }

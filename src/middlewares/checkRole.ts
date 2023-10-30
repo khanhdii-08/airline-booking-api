@@ -1,4 +1,4 @@
-import { UnauthorizedExeption } from '~/exceptions/UnauthorizedExeption'
+import { UnauthorizedException } from '~/exceptions/UnauthorizedException'
 import { UserType } from './../utils/enums/userType.enum'
 import { Request, Response, NextFunction } from 'express'
 
@@ -7,7 +7,7 @@ export const CheckRole = (roles: UserType[]) => {
         const { role } = req.jwtPayload
 
         if (roles.indexOf(role) === -1) {
-            throw new UnauthorizedExeption('Unauthorized - Insufficient user rights')
+            throw new UnauthorizedException('Unauthorized - Insufficient user rights')
         }
         return next()
     }

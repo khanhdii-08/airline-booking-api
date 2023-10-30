@@ -23,7 +23,7 @@ import { v4 as uuidv4 } from 'uuid'
 import { In } from 'typeorm'
 import { BadRequestException } from '~/exceptions/BadRequestException'
 import { redisClient } from '~/config/redis.config'
-import { UnauthorizedExeption } from '~/exceptions/UnauthorizedExeption'
+import { UnauthorizedException } from '~/exceptions/UnauthorizedException'
 import { OTP_TIME_BOOKING_CANCEL_KEY, OTP_TIME_BOOKING_UPDATE_KEY } from '~/utils/constants'
 import { MailProvider } from '~/providers/mail.provider'
 
@@ -393,7 +393,7 @@ const bookingCancel = async (bookingInput: BookingInput) => {
 
     const savedOtp = await redisClient.get(`${OTP_TIME_BOOKING_CANCEL_KEY}:${booking.id}`)
     if (!savedOtp) {
-        throw new UnauthorizedExeption('yêu cầu không thể thực hiện')
+        throw new UnauthorizedException('yêu cầu không thể thực hiện')
     }
 
     booking.note = note
@@ -421,7 +421,7 @@ const updateBooking = async (bookingInput: BookingInput) => {
     }
     const savedOtp = await redisClient.get(`${OTP_TIME_BOOKING_UPDATE_KEY}:${booking.id}`)
     if (!savedOtp) {
-        throw new UnauthorizedExeption('yêu cầu không thể thực hiện')
+        throw new UnauthorizedException('yêu cầu không thể thực hiện')
     }
 
     const bookingSeats = await BookingSeat.find({

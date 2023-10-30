@@ -8,6 +8,7 @@ import { AppDataSource } from './config/database.config'
 import { apiV1 } from './routes/v1'
 import { redisClient } from '~/config/redis.config'
 import pageRoot from '~/routes/pages/root'
+import { corsOptions } from '~/config/cors.config'
 
 // connection database
 AppDataSource.initialize()
@@ -30,7 +31,7 @@ const main = () => {
     const app = express()
 
     /////middleware
-    app.use(cors())
+    app.use(cors(corsOptions))
     app.use(express.urlencoded({ extended: true }))
     // Enable req.body data
     app.use(express.json())

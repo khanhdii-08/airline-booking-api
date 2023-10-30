@@ -1,13 +1,13 @@
 import jwt from 'jsonwebtoken'
 import { Request } from 'express'
-import { UnauthorizedExeption } from '~/exceptions/UnauthorizedExeption'
+import { UnauthorizedException } from '~/exceptions/UnauthorizedException'
 import { env } from '~/config/environment.config'
 import { JwtPayload } from '~/types/JwtPayload'
 
 const token = (req: Request) => {
     const authHeader = req.get('Authorization')
     if (!authHeader) {
-        throw new UnauthorizedExeption('Not authorized2')
+        throw new UnauthorizedException('Not authorized2')
     }
 
     return authHeader.split(' ')[1] as string
@@ -19,8 +19,8 @@ const jwtPayload = (req: Request) => {
         ;['iat', 'exp'].forEach((keyToRemove) => delete jwtPayload[keyToRemove])
         return jwtPayload as JwtPayload
     } catch (error) {
-        if (error instanceof Error) throw new UnauthorizedExeption(error.message)
-        throw new UnauthorizedExeption('Not authorized')
+        if (error instanceof Error) throw new UnauthorizedException(error.message)
+        throw new UnauthorizedException('Not authorized')
     }
 }
 
