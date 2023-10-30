@@ -239,6 +239,7 @@ const bookingDetail = async (criteria: BookingCriteria) => {
                 seatPrice: flightSeatPriceAway.adultPrice,
                 taxPrice: (flightSeatPriceAway.adultPrice * 10) / 100,
                 ...flightSeatPriceAway.seat,
+                servicePrice: seatCode ? flightSeatPriceAway.seat.servicePrice : 0,
                 seatCode
             }
         } else if (passengerAway.passengerType === PassengerType.CHILD && flightSeatPriceAway) {
@@ -246,6 +247,7 @@ const bookingDetail = async (criteria: BookingCriteria) => {
                 seatPrice: flightSeatPriceAway.childrenPrice,
                 taxPrice: (flightSeatPriceAway.childrenPrice * 10) / 100,
                 ...flightSeatPriceAway.seat,
+                servicePrice: seatCode ? flightSeatPriceAway.seat.servicePrice : 0,
                 seatCode
             }
         } else if (passengerAway.passengerType === PassengerType.INFANT && flightSeatPriceAway) {
@@ -253,6 +255,7 @@ const bookingDetail = async (criteria: BookingCriteria) => {
                 seatPrice: flightSeatPriceAway.infantPrice,
                 taxPrice: 0,
                 ...flightSeatPriceAway.seat,
+                servicePrice: seatCode ? flightSeatPriceAway.seat.servicePrice : 0,
                 seatCode
             }
         }
@@ -338,6 +341,7 @@ const bookingDetail = async (criteria: BookingCriteria) => {
                     seatPrice: flightSeatPriceReturn.adultPrice,
                     taxPrice: (flightSeatPriceReturn.adultPrice * 10) / 100,
                     ...flightSeatPriceReturn.seat,
+                    servicePrice: seatCode ? flightSeatPriceReturn.seat.servicePrice : 0,
                     seatCode
                 }
             } else if (passengerReturn.passengerType === PassengerType.CHILD && flightSeatPriceReturn) {
@@ -345,6 +349,7 @@ const bookingDetail = async (criteria: BookingCriteria) => {
                     seatPrice: flightSeatPriceReturn.childrenPrice,
                     taxPrice: (flightSeatPriceReturn.childrenPrice * 10) / 100,
                     ...flightSeatPriceReturn.seat,
+                    servicePrice: seatCode ? flightSeatPriceReturn.seat.servicePrice : 0,
                     seatCode
                 }
             } else if (passengerReturn.passengerType === PassengerType.INFANT && flightSeatPriceReturn) {
@@ -352,6 +357,7 @@ const bookingDetail = async (criteria: BookingCriteria) => {
                     seatPrice: flightSeatPriceReturn.infantPrice,
                     taxPrice: 0,
                     ...flightSeatPriceReturn.seat,
+                    servicePrice: seatCode ? flightSeatPriceReturn.seat.servicePrice : 0,
                     seatCode
                 }
             }
