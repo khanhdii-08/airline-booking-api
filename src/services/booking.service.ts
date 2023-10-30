@@ -228,30 +228,35 @@ const bookingDetail = async (criteria: BookingCriteria) => {
     })
 
     const passengerAwaysDetail = passengerAways.map((passengerAway) => {
+        const bookingSeatAway = bookingSeatAways.find(
+            (bookingSeatAway) => bookingSeatAway.passenger.id === passengerAway.id
+        )
+        const seatCode = bookingSeatAway?.seatCode
+
         let seat
         if (passengerAway.passengerType === PassengerType.ADULT && flightSeatPriceAway) {
             seat = {
                 seatPrice: flightSeatPriceAway.adultPrice,
                 taxPrice: (flightSeatPriceAway.adultPrice * 10) / 100,
-                ...flightSeatPriceAway.seat
+                ...flightSeatPriceAway.seat,
+                seatCode
             }
         } else if (passengerAway.passengerType === PassengerType.CHILD && flightSeatPriceAway) {
             seat = {
                 seatPrice: flightSeatPriceAway.childrenPrice,
                 taxPrice: (flightSeatPriceAway.childrenPrice * 10) / 100,
-                ...flightSeatPriceAway.seat
+                ...flightSeatPriceAway.seat,
+                seatCode
             }
         } else if (passengerAway.passengerType === PassengerType.INFANT && flightSeatPriceAway) {
             seat = {
                 seatPrice: flightSeatPriceAway.infantPrice,
                 taxPrice: 0,
-                ...flightSeatPriceAway.seat
+                ...flightSeatPriceAway.seat,
+                seatCode
             }
         }
         const taxService = flightSeatPriceAway?.taxService
-        const seatServicePrice = bookingSeatAways.find(
-            (bookingSeatAway) => bookingSeatAway.passenger.id === passengerAway.id
-        )?.seatPrice
 
         const serviceOpts = bookingServiceOptAways
             .filter((bookingServiceOpt) => bookingServiceOpt.passenger.id === passengerAway.id)
@@ -266,7 +271,6 @@ const bookingDetail = async (criteria: BookingCriteria) => {
             ...passengerAway,
             seat,
             taxService,
-            seatServicePrice,
             serviceOpts
         }
     })
@@ -323,30 +327,35 @@ const bookingDetail = async (criteria: BookingCriteria) => {
             }
         })
         passengerReturnsDetail = passengerReturns.map((passengerReturn) => {
+            const bookingSeatReturn = bookingSeatReturns.find(
+                (bookingSeatReturn) => bookingSeatReturn.passenger.id === passengerReturn.id
+            )
+            const seatCode = bookingSeatReturn?.seatCode
+
             let seat
             if (passengerReturn.passengerType === PassengerType.ADULT && flightSeatPriceReturn) {
                 seat = {
                     seatPrice: flightSeatPriceReturn.adultPrice,
                     taxPrice: (flightSeatPriceReturn.adultPrice * 10) / 100,
-                    ...flightSeatPriceReturn.seat
+                    ...flightSeatPriceReturn.seat,
+                    seatCode
                 }
             } else if (passengerReturn.passengerType === PassengerType.CHILD && flightSeatPriceReturn) {
                 seat = {
                     seatPrice: flightSeatPriceReturn.childrenPrice,
                     taxPrice: (flightSeatPriceReturn.childrenPrice * 10) / 100,
-                    ...flightSeatPriceReturn.seat
+                    ...flightSeatPriceReturn.seat,
+                    seatCode
                 }
             } else if (passengerReturn.passengerType === PassengerType.INFANT && flightSeatPriceReturn) {
                 seat = {
                     seatPrice: flightSeatPriceReturn.infantPrice,
                     taxPrice: 0,
-                    ...flightSeatPriceReturn.seat
+                    ...flightSeatPriceReturn.seat,
+                    seatCode
                 }
             }
             const taxService = flightSeatPriceReturn?.taxService
-            const seatServicePrice = bookingSeatReturns.find(
-                (bookingSeatReturn) => bookingSeatReturn.passenger.id === passengerReturn.id
-            )?.seatPrice
 
             const serviceOpts = bookingServiceOptReturns
                 .filter((bookingServiceOpt) => bookingServiceOpt.passenger.id === passengerReturn.id)
@@ -361,7 +370,6 @@ const bookingDetail = async (criteria: BookingCriteria) => {
                 ...passengerReturn,
                 seat,
                 taxService,
-                seatServicePrice,
                 serviceOpts
             }
         })
