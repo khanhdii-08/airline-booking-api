@@ -5,6 +5,7 @@ import { AuthService } from '~/services/auth.service'
 import { RegisterInput } from '~/types/inputs/RegisterInput'
 import { TokenContext } from '~/utils/TokenContext'
 import { LoginInput } from '~/types/inputs/LoginInput'
+import { PasswordInput } from '~/types/inputs/PasswordInput'
 
 const register = async (req: Request<ParamsDictionary, any, RegisterInput>, res: Response) => {
     const result = await AuthService.register(req.body)
@@ -58,4 +59,18 @@ const verifyOtpBooking = async (
     return res.status(HttpStatus.OK).json(result)
 }
 
-export const AuthController = { register, verify, sendOtp, login, userInfo, sendOtpBooking, verifyOtpBooking }
+const changePassword = async (req: Request<ParamsDictionary, any, PasswordInput>, res: Response) => {
+    const result = await AuthService.changePassword(req.jwtPayload._id, req.body)
+    return res.status(HttpStatus.OK).json(result)
+}
+
+export const AuthController = {
+    register,
+    verify,
+    sendOtp,
+    login,
+    userInfo,
+    sendOtpBooking,
+    verifyOtpBooking,
+    changePassword
+}

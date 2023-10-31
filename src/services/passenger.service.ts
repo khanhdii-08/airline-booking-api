@@ -3,15 +3,18 @@ import { BadRequestException } from '~/exceptions/BadRequestException'
 import { NotFoundException } from '~/exceptions/NotFoundException'
 import { UploadProvider } from '~/providers/upload.provider'
 import { MulterFile } from '~/types/MulterFile'
+import { PassengerInput } from '~/types/inputs/PassengerInput'
+import { CLOUDINARY_AVATARS } from '~/utils/constants'
+import { Status } from '~/utils/enums'
 
 const uploadAvatar = async (file: MulterFile, userId: string) => {
     if (!file) {
         throw new BadRequestException({ error: { message: 'ko có file' } })
     }
 
-    const result = await UploadProvider.uploadImage(file)
+    const result = await UploadProvider.uploadImage(file, CLOUDINARY_AVATARS)
 
-    const passenger = await Passenger.findOneBy({ user: { id: userId } })
+    const passenger = await Passenger.findOneBy({ user: { id: userId }, status: Status.ACT, isPasserby: false })
     if (!passenger) {
         throw new NotFoundException({ message: 'ko tìm thấy hành khách' })
     }
@@ -22,4 +25,22 @@ const uploadAvatar = async (file: MulterFile, userId: string) => {
     return passenger
 }
 
-export const PassengerService = { uploadAvatar }
+const update = async (userId: string, passengerInput: PassengerInput) => {
+    const passenger = await Passenger.findOneBy({ user: { id: userId }, status: Status.ACT, isPasserby: false })
+
+    if (!passenger) {
+        throw new NotFoundException({ message: 'ko tìm thấy hành khách' })
+    }
+
+    passengerInput.firstName && (passenger.firstName = passengerInput.firstName)
+    passengerInput.lastName && (passenger.lastName = passengerInput.lastName)
+    passengerInput.dateOfBirth && (passenger.dateOfBirth = passengerInput.dateOfBirth)
+    passengerInput.country && (passenger.country = passengerInput.country)
+    passengerInput.gender && (passenger.gender = passengerInput.gender)
+    passengerInput.email && (passenger.email = passengerInput.email)
+    passengerInput.idCard && (passenger.idCard = passengerInput.idCard)
+
+    return passenger.save()
+}
+
+export const PassengerService = { uploadAvatar, update }
