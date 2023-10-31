@@ -28,5 +28,8 @@ export const env = {
     MOMO_URL: process.env.MOMO_URL as string,
     EMAIL_USER: process.env.EMAIL_USER,
     EMAIL_PASS: process.env.EMAIL_PASS,
-    WHITELIST_DOMAINS: process.env.WHITELIST_DOMAINS as string
+    WHITELIST_DOMAINS: process.env.WHITELIST_DOMAINS as string,
+    CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
+    CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
+    CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET
 }
