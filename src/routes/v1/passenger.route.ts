@@ -6,5 +6,6 @@ import { upload } from '~/middlewares/uploadFile'
 const router: Router = express.Router()
 
 router.route('/upload-avatar').patch(upload.single('avatar'), CheckAuth, PassengerController.uploadAvatar)
+router.route('/update').put(CheckAuth, PassengerController.update)
 
 export const PassengerRoutes = router

@@ -44,6 +44,9 @@ export class Passenger extends Model {
     @Column({ name: 'country', nullable: true })
     country: string
 
+    @Column({ name: 'id_card', nullable: true })
+    idCard: string
+
     @Column({ name: 'phone_number', nullable: true })
     phoneNumber: string
 

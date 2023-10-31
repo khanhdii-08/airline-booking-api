@@ -20,6 +20,8 @@ export class PassengerInput {
 
     country: string
 
+    idCard: string
+
     phoneNumber: string
 
     dateOfBirth: string
