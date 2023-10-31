@@ -4,7 +4,8 @@ import { env } from './environment.config'
 cloudinary.config({
     cloud_name: env.CLOUDINARY_CLOUD_NAME,
     api_key: env.CLOUDINARY_API_KEY,
-    api_secret: env.CLOUDINARY_API_SECRET
+    api_secret: env.CLOUDINARY_API_SECRET,
+    secure: true
 })
 
 export default cloudinary
