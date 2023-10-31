@@ -2,6 +2,7 @@ import { Request, Response } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { PaymentService } from '~/services/payment.service'
 import { PaymentInput } from '~/types/inputs/PaymentInput'
+import { HttpStatus } from '~/utils/httpStatus'
 
 const paymentVnPay = async (req: Request<ParamsDictionary, any, any, PaymentInput>, res: Response) => {
     const paymentInput: PaymentInput = req.body
@@ -10,7 +11,7 @@ const paymentVnPay = async (req: Request<ParamsDictionary, any, any, PaymentInpu
 
     const result = await PaymentService.paymentVNPay(paymentInput)
 
-    return res.status(200).json(result)
+    return res.status(HttpStatus.OK).json(result)
 }
 
 const VnPayReturn = async (req: Request, res: Response) => {
@@ -22,7 +23,7 @@ const VnPayReturn = async (req: Request, res: Response) => {
 
     const result = await PaymentService.VnPayReturn(vnp_Params, secureHash)
 
-    return res.status(200).json(result)
+    return res.status(HttpStatus.OK).json(result)
 }
 
 export const PaymentController = { paymentVnPay, VnPayReturn }
