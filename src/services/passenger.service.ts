@@ -3,13 +3,14 @@ import { BadRequestException } from '~/exceptions/BadRequestException'
 import { NotFoundException } from '~/exceptions/NotFoundException'
 import { UploadProvider } from '~/providers/upload.provider'
 import { MulterFile } from '~/types/MulterFile'
+import { CLOUDINARY_AVATARS } from '~/utils/constants'
 
 const uploadAvatar = async (file: MulterFile, userId: string) => {
     if (!file) {
         throw new BadRequestException({ error: { message: 'ko có file' } })
     }
 
-    const result = await UploadProvider.uploadImage(file)
+    const result = await UploadProvider.uploadImage(file, CLOUDINARY_AVATARS)
 
     const passenger = await Passenger.findOneBy({ user: { id: userId } })
     if (!passenger) {

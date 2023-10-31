@@ -29,3 +29,6 @@ export const REFRESH_TOKEN_KEY = 'refresh_token'
 
 // payment
 export const MOMO_URL_CREATE = '/v2/gateway/api/create'
+
+// cloudinary
+export const CLOUDINARY_AVATARS = 'avatars'

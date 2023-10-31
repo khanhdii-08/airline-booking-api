@@ -25,6 +25,7 @@ import {
 } from '~/utils/constants'
 import { LoginInput } from '~/types/inputs/LoginInput'
 import { NotFoundException } from '~/exceptions/NotFoundException'
+import { PasswordInput } from '~/types/inputs/PasswordInput'
 
 const register = async (registerInput: RegisterInput) => {
     const { phoneNumber, gender, password } = registerInput
@@ -223,4 +224,37 @@ const verifyOptBooking = async (name: string, bookingId: string, otp: string) =>
     return { message: 'Success' }
 }
 
-export const AuthService = { register, verify, sendOTP, login, userInfo, sendOtpBooking, verifyOptBooking }
+const changePassword = async (userId: string, passwordInput: PasswordInput) => {
+    const { currentPassword, newPassword } = passwordInput
+    const user = await User.findOneBy({ id: userId, isActived: true, userType: UserType.CUSTOMER })
+    if (!user) {
+        throw new NotFoundException({ message: 'Không tìm thấy user' })
+    }
+
+    const checkCurrenPass = await argon2.verify(user.password, currentPassword)
+    if (!checkCurrenPass) {
+        throw new BadRequestException({ error: { message: 'Mật khẩu hiện tại không đúng' } })
+    }
+
+    const checkNewPass = await argon2.verify(user.password, newPassword)
+    if (checkNewPass) {
+        throw new BadRequestException({ error: { message: 'Mật khẩu mới không được trùng mật khẩu hiện tại' } })
+    }
+
+    const hashedPassword = await argon2.hash(newPassword)
+    user.password = hashedPassword
+    await user.save()
+
+    return { message: 'Success' }
+}
+
+export const AuthService = {
+    register,
+    verify,
+    sendOTP,
+    login,
+    userInfo,
+    sendOtpBooking,
+    verifyOptBooking,
+    changePassword
+}

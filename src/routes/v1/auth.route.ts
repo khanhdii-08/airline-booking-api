@@ -12,5 +12,6 @@ router.route('/login').post(AuthController.login)
 router.route('/info').get(CheckAuth, AuthController.userInfo)
 router.route('/send-opt-booking').post(AuthController.sendOtpBooking)
 router.route('/verify-opt-booking/:name').post(AuthController.verifyOtpBooking)
+router.route('/change-password').post(CheckAuth, AuthController.changePassword)
 
 export const AuthRoutes = router
