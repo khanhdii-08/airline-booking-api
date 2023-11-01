@@ -43,4 +43,12 @@ const bookingAddService = async (req: Request<ParamsDictionary, any, BookingInpu
     return res.status(HttpStatus.OK).json(result)
 }
 
-export const BookingController = { booking, search, bookingCancel, updateBooking, bookingAddService }
+const myBooking = async (req: Request<ParamsDictionary, any, any, BookingCriteria>, res: Response) => {
+    const bookingCriteria: BookingCriteria = req.query
+    const status = req.params['status']
+
+    const result = await BookingService.myBooking(req.jwtPayload._id, status, bookingCriteria)
+    return res.status(HttpStatus.OK).json(result)
+}
+
+export const BookingController = { booking, search, bookingCancel, updateBooking, bookingAddService, myBooking }

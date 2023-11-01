@@ -1,4 +1,4 @@
-import { BookingCriteria } from './../types/criterias/BookingCriteria'
+import { BookingCriteria } from '~/types/criterias/BookingCriteria'
 import {
     Booking,
     BookingSeat,
@@ -152,6 +152,7 @@ const booking = async (bookingInput: BookingInput) => {
 }
 
 const bookingDetail = async (criteria: BookingCriteria) => {
+    const { bookingCode, firstName, lastName } = criteria
     const booking = await AppDataSource.getRepository(Booking)
         .createQueryBuilder('booking')
         .leftJoinAndSelect('booking.flightAway', 'flightAway')
@@ -162,12 +163,12 @@ const bookingDetail = async (criteria: BookingCriteria) => {
         .leftJoinAndSelect('flightReturn.destinationAirport', 'destinationAirportReturn')
         .innerJoin('booking.passengers', 'passengers')
         .innerJoinAndSelect('booking.seat', 'seat')
-        .where('booking.bookingCode = :bookingCode', { bookingCode: criteria.bookingCode.trim() })
+        .where('booking.bookingCode = :bookingCode', { bookingCode: bookingCode?.trim() })
         .andWhere('unaccent(passengers.firstName) ILIKE :firstName', {
-            firstName: `%${removeAccents(criteria.firstName.trim())}%`
+            firstName: `%${removeAccents(firstName?.trim())}%`
         })
         .andWhere('unaccent(passengers.lastName) ILIKE :lastName', {
-            lastName: `%${removeAccents(criteria.lastName.trim())}%`
+            lastName: `%${removeAccents(lastName?.trim())}%`
         })
         .getOne()
 
@@ -577,4 +578,35 @@ const bookingAddService = async (bookingInput: BookingInput) => {
     return booking
 }
 
-export const BookingService = { booking, bookingDetail, bookingCancel, updateBooking, bookingAddService }
+const myBooking = async (userId: string, status: string, criteria: BookingCriteria) => {
+    const { bookingCode, fromDate, toDate } = criteria
+    const booking = await AppDataSource.getRepository(Booking)
+        .createQueryBuilder('booking')
+        .innerJoin('booking.user', 'user')
+        .leftJoinAndSelect('booking.flightAway', 'flightAway')
+        .leftJoinAndSelect('booking.flightReturn', 'flightReturn')
+        .innerJoinAndSelect('flightAway.sourceAirport', 'sourceAirportAway')
+        .innerJoinAndSelect('flightAway.destinationAirport', 'destinationAirportAway')
+        .leftJoinAndSelect('flightReturn.sourceAirport', 'sourceAirportReturn')
+        .leftJoinAndSelect('flightReturn.destinationAirport', 'destinationAirportReturn')
+        .where('user.id = :userId', {
+            userId: userId
+        })
+        .andWhere('booking.status = :status', {
+            status: status.toUpperCase()
+        })
+        .andWhere('(coalesce(:bookingCode) IS NULL OR (booking.bookingCode = :bookingCode))', {
+            bookingCode: bookingCode?.trim()
+        })
+        .andWhere('(coalesce(:fromDate) IS NULL OR (booking.bookingDate >= DATE(:fromDate)))', {
+            fromDate: fromDate
+        })
+        .andWhere('(coalesce(:toDate) IS NULL OR (booking.bookingDate <= DATE(:toDate)))', {
+            toDate: toDate
+        })
+        .getMany()
+
+    return booking
+}
+
+export const BookingService = { booking, bookingDetail, bookingCancel, updateBooking, bookingAddService, myBooking }
