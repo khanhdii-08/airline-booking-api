@@ -1,5 +1,7 @@
 import moment from 'moment'
 import { v4 } from 'uuid'
+import { Pageable } from '~/types/Pageable'
+import { Pagination } from '~/types/Pagination'
 
 export const getValueByKey = (value: string, T: any) => {
     const indexOf = Object.keys(T).indexOf(value)
@@ -49,7 +51,7 @@ export const generateBookingCode = (): string => {
     return bookingCode
 }
 
-export const removeAccents = (str: string) => {
+export const removeAccents = (str: string = '') => {
     return str
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '')
@@ -93,4 +95,48 @@ export const calculateTimeDifference = (date1: Date, date2: Date): string => {
     } else {
         return `${hours} giờ ${minutes} phút`
     }
+}
+
+export const createPageable = (list: any[], options: Pagination): Pageable => {
+    const { page = 1, size = 10, sort } = options
+
+    let clonedList = [...list]
+
+    if (sort) {
+        if (sort instanceof Array) {
+            sort.forEach((s) => {
+                clonedList = sorting(clonedList, s)
+            })
+        } else {
+            clonedList = sorting(clonedList, sort)
+        }
+    }
+
+    const startIndex = page === 0 ? 0 : (page - 1) * size
+    const endIndex = startIndex + size
+
+    if (startIndex >= clonedList.length) {
+        return new Pageable([], 0, page, size)
+    }
+
+    return new Pageable(clonedList.slice(startIndex, endIndex), clonedList.length, page, size)
+}
+
+export const sorting = (list: any[], sort: string) => {
+    const [sortBy, sortOrder] = sort.split(',')
+
+    if (sortBy) {
+        const orderMultiplier = sortOrder === 'asc' ? 1 : -1
+        list.sort((a, b) => {
+            if (a[sortBy] < b[sortBy]) {
+                return -1 * orderMultiplier
+            }
+            if (a[sortBy] > b[sortBy]) {
+                return 1 * orderMultiplier
+            }
+            return 0
+        })
+    }
+
+    return list
 }

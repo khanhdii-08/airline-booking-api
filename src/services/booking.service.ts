@@ -1,4 +1,4 @@
-import { BookingCriteria } from './../types/criterias/BookingCriteria'
+import { BookingCriteria } from '~/types/criterias/BookingCriteria'
 import {
     Booking,
     BookingSeat,
@@ -15,7 +15,7 @@ import { BookingInput } from '../types/inputs/BookingInput'
 import { PaymentStatus, Status } from '~/utils/enums'
 import { NotFoundException } from '~/exceptions/NotFoundException'
 import { AppDataSource } from '~/config/database.config'
-import { generateBookingCode, removeAccents } from '~/utils/common.utils'
+import { createPageable, generateBookingCode, removeAccents } from '~/utils/common.utils'
 import { AppError } from '~/exceptions/AppError'
 import { HttpStatus } from '~/utils/httpStatus'
 import { PassengerType } from '~/utils/enums/passengerType'
@@ -26,6 +26,7 @@ import { redisClient } from '~/config/redis.config'
 import { UnauthorizedException } from '~/exceptions/UnauthorizedException'
 import { OTP_TIME_BOOKING_CANCEL_KEY, OTP_TIME_BOOKING_UPDATE_KEY } from '~/utils/constants'
 import { MailProvider } from '~/providers/mail.provider'
+import { Pagination } from '~/types/Pagination'
 
 const booking = async (bookingInput: BookingInput) => {
     const { userId, flightAwayId, flightReturnId, seatId, passengers, ...booking } = bookingInput
@@ -152,6 +153,7 @@ const booking = async (bookingInput: BookingInput) => {
 }
 
 const bookingDetail = async (criteria: BookingCriteria) => {
+    const { bookingCode, firstName, lastName } = criteria
     const booking = await AppDataSource.getRepository(Booking)
         .createQueryBuilder('booking')
         .leftJoinAndSelect('booking.flightAway', 'flightAway')
@@ -162,12 +164,12 @@ const bookingDetail = async (criteria: BookingCriteria) => {
         .leftJoinAndSelect('flightReturn.destinationAirport', 'destinationAirportReturn')
         .innerJoin('booking.passengers', 'passengers')
         .innerJoinAndSelect('booking.seat', 'seat')
-        .where('booking.bookingCode = :bookingCode', { bookingCode: criteria.bookingCode.trim() })
+        .where('booking.bookingCode = :bookingCode', { bookingCode: bookingCode?.trim() })
         .andWhere('unaccent(passengers.firstName) ILIKE :firstName', {
-            firstName: `%${removeAccents(criteria.firstName.trim())}%`
+            firstName: `%${removeAccents(firstName?.trim())}%`
         })
         .andWhere('unaccent(passengers.lastName) ILIKE :lastName', {
-            lastName: `%${removeAccents(criteria.lastName.trim())}%`
+            lastName: `%${removeAccents(lastName?.trim())}%`
         })
         .getOne()
 
@@ -577,4 +579,38 @@ const bookingAddService = async (bookingInput: BookingInput) => {
     return booking
 }
 
-export const BookingService = { booking, bookingDetail, bookingCancel, updateBooking, bookingAddService }
+const myBooking = async (userId: string, status: string, criteria: BookingCriteria) => {
+    const { bookingCode, fromDate, toDate, page, size, sort } = criteria
+    const pagination: Pagination = { page, size, sort }
+
+    const bookings = await AppDataSource.getRepository(Booking)
+        .createQueryBuilder('booking')
+        .innerJoin('booking.user', 'user')
+        .leftJoinAndSelect('booking.flightAway', 'flightAway')
+        .leftJoinAndSelect('booking.flightReturn', 'flightReturn')
+        .innerJoinAndSelect('flightAway.sourceAirport', 'sourceAirportAway')
+        .innerJoinAndSelect('flightAway.destinationAirport', 'destinationAirportAway')
+        .leftJoinAndSelect('flightReturn.sourceAirport', 'sourceAirportReturn')
+        .leftJoinAndSelect('flightReturn.destinationAirport', 'destinationAirportReturn')
+        .where('user.id = :userId', {
+            userId: userId
+        })
+        .andWhere('(coalesce(:status) IS NULL OR booking.status = :status)', {
+            status: status === 'all' ? null : status.toUpperCase()
+        })
+        .andWhere('(coalesce(:bookingCode) IS NULL OR (booking.bookingCode = :bookingCode))', {
+            bookingCode: bookingCode?.trim()
+        })
+        .andWhere('(coalesce(:fromDate) IS NULL OR (booking.bookingDate >= DATE(:fromDate)))', {
+            fromDate: fromDate
+        })
+        .andWhere('(coalesce(:toDate) IS NULL OR (booking.bookingDate <= DATE(:toDate)))', {
+            toDate: toDate
+        })
+        .orderBy('booking.bookingCode', 'DESC')
+        .getMany()
+
+    return createPageable(bookings, pagination)
+}
+
+export const BookingService = { booking, bookingDetail, bookingCancel, updateBooking, bookingAddService, myBooking }
