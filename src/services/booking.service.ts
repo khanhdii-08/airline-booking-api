@@ -15,7 +15,7 @@ import { BookingInput } from '../types/inputs/BookingInput'
 import { PaymentStatus, Status } from '~/utils/enums'
 import { NotFoundException } from '~/exceptions/NotFoundException'
 import { AppDataSource } from '~/config/database.config'
-import { generateBookingCode, removeAccents } from '~/utils/common.utils'
+import { createPageable, generateBookingCode, removeAccents } from '~/utils/common.utils'
 import { AppError } from '~/exceptions/AppError'
 import { HttpStatus } from '~/utils/httpStatus'
 import { PassengerType } from '~/utils/enums/passengerType'
@@ -26,6 +26,7 @@ import { redisClient } from '~/config/redis.config'
 import { UnauthorizedException } from '~/exceptions/UnauthorizedException'
 import { OTP_TIME_BOOKING_CANCEL_KEY, OTP_TIME_BOOKING_UPDATE_KEY } from '~/utils/constants'
 import { MailProvider } from '~/providers/mail.provider'
+import { Pagination } from '~/types/Pagination'
 
 const booking = async (bookingInput: BookingInput) => {
     const { userId, flightAwayId, flightReturnId, seatId, passengers, ...booking } = bookingInput
@@ -579,8 +580,10 @@ const bookingAddService = async (bookingInput: BookingInput) => {
 }
 
 const myBooking = async (userId: string, status: string, criteria: BookingCriteria) => {
-    const { bookingCode, fromDate, toDate } = criteria
-    const booking = await AppDataSource.getRepository(Booking)
+    const { bookingCode, fromDate, toDate, page, size, sort } = criteria
+    const pagination: Pagination = { page, size, sort }
+
+    const bookings = await AppDataSource.getRepository(Booking)
         .createQueryBuilder('booking')
         .innerJoin('booking.user', 'user')
         .leftJoinAndSelect('booking.flightAway', 'flightAway')
@@ -592,8 +595,8 @@ const myBooking = async (userId: string, status: string, criteria: BookingCriter
         .where('user.id = :userId', {
             userId: userId
         })
-        .andWhere('booking.status = :status', {
-            status: status.toUpperCase()
+        .andWhere('(coalesce(:status) IS NULL OR booking.status = :status)', {
+            status: status === 'all' ? null : status.toUpperCase()
         })
         .andWhere('(coalesce(:bookingCode) IS NULL OR (booking.bookingCode = :bookingCode))', {
             bookingCode: bookingCode?.trim()
@@ -604,9 +607,10 @@ const myBooking = async (userId: string, status: string, criteria: BookingCriter
         .andWhere('(coalesce(:toDate) IS NULL OR (booking.bookingDate <= DATE(:toDate)))', {
             toDate: toDate
         })
+        .orderBy('booking.bookingCode', 'DESC')
         .getMany()
 
-    return booking
+    return createPageable(bookings, pagination)
 }
 
 export const BookingService = { booking, bookingDetail, bookingCancel, updateBooking, bookingAddService, myBooking }
