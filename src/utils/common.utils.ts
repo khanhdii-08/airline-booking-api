@@ -140,3 +140,7 @@ export const sorting = (list: any[], sort: string) => {
 
     return list
 }
+
+export const validateVariable = (value: any) => {
+    return value ? value : null
+}

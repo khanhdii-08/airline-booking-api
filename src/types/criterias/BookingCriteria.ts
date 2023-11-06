@@ -1,6 +1,4 @@
-import { Pagination } from '~/types/Pagination'
-
-export interface BookingCriteria extends Pagination {
+export interface BookingCriteria {
     bookingId?: string
     bookingCode?: string
     firstName?: string
