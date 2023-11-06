@@ -63,4 +63,6 @@ const search = async (criteria: FlightCriteria) => {
     return result
 }
 
-export const FlightService = { search }
+const create = () => {}
+
+export const FlightService = { search, create }
