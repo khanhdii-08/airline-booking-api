@@ -15,11 +15,10 @@ import { BookingInput } from '../types/inputs/BookingInput'
 import { PaymentStatus, Status } from '~/utils/enums'
 import { NotFoundException } from '~/exceptions/NotFoundException'
 import { AppDataSource } from '~/config/database.config'
-import { createPageable, generateBookingCode, removeAccents } from '~/utils/common.utils'
+import { createPageable, genUUID, generateBookingCode, removeAccents, validateVariable } from '~/utils/common.utils'
 import { AppError } from '~/exceptions/AppError'
 import { HttpStatus } from '~/utils/httpStatus'
 import { PassengerType } from '~/utils/enums/passengerType'
-import { v4 as uuidv4 } from 'uuid'
 import { In } from 'typeorm'
 import { BadRequestException } from '~/exceptions/BadRequestException'
 import { redisClient } from '~/config/redis.config'
@@ -85,7 +84,7 @@ const booking = async (bookingInput: BookingInput) => {
     }
 
     const newBooking = await Booking.create({
-        id: uuidv4(),
+        id: genUUID(),
         seat: Seat.create({ id: seatId }),
         ...booking,
         bookingCode,
@@ -105,7 +104,7 @@ const booking = async (bookingInput: BookingInput) => {
 
     passengers.forEach(async (passenger) => {
         const newPassenger = Passenger.create({
-            id: uuidv4(),
+            id: genUUID(),
             ...passenger,
             isPasserby: true,
             booking: newBooking
@@ -579,9 +578,8 @@ const bookingAddService = async (bookingInput: BookingInput) => {
     return booking
 }
 
-const myBooking = async (userId: string, status: string, criteria: BookingCriteria) => {
-    const { bookingCode, fromDate, toDate, page, size, sort } = criteria
-    const pagination: Pagination = { page, size, sort }
+const myBooking = async (userId: string, status: string, criteria: BookingCriteria, pagination: Pagination) => {
+    const { bookingCode, fromDate, toDate } = criteria
 
     const bookings = await AppDataSource.getRepository(Booking)
         .createQueryBuilder('booking')
@@ -599,13 +597,13 @@ const myBooking = async (userId: string, status: string, criteria: BookingCriter
             status: status === 'all' ? null : status.toUpperCase()
         })
         .andWhere('(coalesce(:bookingCode) IS NULL OR (booking.bookingCode = :bookingCode))', {
-            bookingCode: bookingCode?.trim()
+            bookingCode: validateVariable(bookingCode?.trim())
         })
         .andWhere('(coalesce(:fromDate) IS NULL OR (booking.bookingDate >= DATE(:fromDate)))', {
-            fromDate: fromDate
+            fromDate: validateVariable(fromDate)
         })
         .andWhere('(coalesce(:toDate) IS NULL OR (booking.bookingDate <= DATE(:toDate)))', {
-            toDate: toDate
+            toDate: validateVariable(toDate)
         })
         .orderBy('booking.bookingCode', 'DESC')
         .getMany()

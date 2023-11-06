@@ -1,6 +1,7 @@
 import { Request, Response } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { BookingService } from '~/services/booking.service'
+import { Pagination } from '~/types/Pagination'
 import { BookingCriteria } from '~/types/criterias/BookingCriteria'
 import { BookingInput } from '~/types/inputs/BookingInput'
 import { TokenContext } from '~/utils/TokenContext'
@@ -43,11 +44,14 @@ const bookingAddService = async (req: Request<ParamsDictionary, any, BookingInpu
     return res.status(HttpStatus.OK).json(result)
 }
 
-const myBooking = async (req: Request<ParamsDictionary, any, any, BookingCriteria>, res: Response) => {
-    const bookingCriteria: BookingCriteria = req.query
+const myBooking = async (req: Request<ParamsDictionary, any, any, any>, res: Response) => {
+    const { bookingCode, fromDate, toDate, page, size, sort } = req.query
+    const bookingCriteria: BookingCriteria = { bookingCode, fromDate, toDate }
+    const pagination: Pagination = { page, size, sort }
+
     const status = req.params['status']
 
-    const result = await BookingService.myBooking(req.jwtPayload._id, status, bookingCriteria)
+    const result = await BookingService.myBooking(req.jwtPayload._id, status, bookingCriteria, pagination)
     return res.status(HttpStatus.OK).json(result)
 }
 
