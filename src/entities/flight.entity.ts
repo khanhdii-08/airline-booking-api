@@ -51,7 +51,7 @@ export class Flight extends Model {
     @Column({ name: 'flight_code' })
     flightCode: string
 
-    @Column({ name: 'flight_name' })
+    @Column({ name: 'flight_name', nullable: true })
     flightName: string
 
     @Column({ name: 'departure_time', type: 'timestamptz', nullable: true })

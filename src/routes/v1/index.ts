@@ -9,11 +9,13 @@ import { AuthRoutes } from './auth.route'
 import { AppSettingRoutes } from './appsetting.route'
 import { FlightRoutes } from './flight.route'
 import {
+    AIRCRAFT,
     AIRPORT,
     APP,
     AUTH,
     BOOKING,
     CHECK_IN,
+    EMPLOYEE,
     FLIGHT,
     PASSENGER,
     PAYMENT,
@@ -27,6 +29,8 @@ import { BookingRoutes } from './booking.route'
 import { PaymentRoutes } from './payment.route'
 import { CheckInRoutes } from './checkIn.route'
 import { PassengerRoutes } from './passenger.route'
+import { AircraftRoutes } from './aircraft.route'
+import { EmployeeRoutes } from './employee.route'
 
 const router = express.Router()
 
@@ -39,7 +43,7 @@ router.use((req, res, next) => {
 /** Middleware x-request-source */
 router.use((req, res, next) => {
     const requestSource = req.headers['x-request-source']
-    if (!requestSource || (requestSource !== 'web' && requestSource !== 'mobile')) {
+    if (!requestSource || (requestSource !== 'web' && requestSource !== 'mobile' && requestSource !== 'be')) {
         throw new BadRequestException({ error: { message: 'Invalid x-request-source header' } })
     }
     req.requestSource = requestSource
@@ -76,6 +80,12 @@ router.use(V1 + CHECK_IN, CheckInRoutes)
 
 /** V1 passenger */
 router.use(V1 + PASSENGER, PassengerRoutes)
+
+/** V1  aircraft */
+router.use(V1 + AIRCRAFT, AircraftRoutes)
+
+/** V1 employee */
+router.use(V1 + EMPLOYEE, EmployeeRoutes)
 
 router.use((error: Error, req: Request, res: Response, next: NextFunction) => {
     // 1. Log the error or send it to a 3rd party error monitoring software

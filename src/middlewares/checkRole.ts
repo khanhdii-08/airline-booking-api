@@ -1,5 +1,5 @@
 import { UnauthorizedException } from '~/exceptions/UnauthorizedException'
-import { UserType } from './../utils/enums/userType.enum'
+import { UserType } from '~/utils/enums/userType.enum'
 import { Request, Response, NextFunction } from 'express'
 
 export const CheckRole = (roles: UserType[]) => {

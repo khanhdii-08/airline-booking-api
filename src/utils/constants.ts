@@ -14,6 +14,8 @@ export const BOOKING = '/booking'
 export const PAYMENT = '/payment'
 export const CHECK_IN = '/check-in'
 export const PASSENGER = '/passenger'
+export const AIRCRAFT = '/aircraft'
+export const EMPLOYEE = '/employee'
 
 // key redis
 
