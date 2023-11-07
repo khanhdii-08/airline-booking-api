@@ -26,8 +26,8 @@ export class FlightSeatPrice extends Model {
     @Column({ name: 'children_price', type: 'float' })
     childrenPrice: number
 
-    @Column({ name: 'tax_price', type: 'float', nullable: true })
-    taxPrice: number
+    // @Column({ name: 'tax_price', type: 'float', nullable: true })
+    // taxPrice: number
 
     @Column({ name: 'seat_class' })
     seatClass: SeatClass

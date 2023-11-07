@@ -145,7 +145,7 @@ export const validateVariable = (value: any) => {
     return value ? value : null
 }
 
-function generateFlightNumber(): string {
+export const generateFlightNumber = (): string => {
     const flightNumber = Math.floor(Math.random() * 1000)
     const flightCode = `VN${flightNumber.toString().padStart(3, '0')}`
     return flightCode

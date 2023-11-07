@@ -79,7 +79,7 @@ router.use(V1 + CHECK_IN, CheckInRoutes)
 /** V1 passenger */
 router.use(V1 + PASSENGER, PassengerRoutes)
 
-/** V1  */
+/** V1  aircraft */
 router.use(V1 + AIRCRAFT, AircraftRoutes)
 
 router.use((error: Error, req: Request, res: Response, next: NextFunction) => {
