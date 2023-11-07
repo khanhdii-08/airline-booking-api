@@ -15,6 +15,7 @@ import {
     AUTH,
     BOOKING,
     CHECK_IN,
+    EMPLOYEE,
     FLIGHT,
     PASSENGER,
     PAYMENT,
@@ -29,6 +30,7 @@ import { PaymentRoutes } from './payment.route'
 import { CheckInRoutes } from './checkIn.route'
 import { PassengerRoutes } from './passenger.route'
 import { AircraftRoutes } from './aircraft.route'
+import { EmployeeRoutes } from './employee.route'
 
 const router = express.Router()
 
@@ -81,6 +83,9 @@ router.use(V1 + PASSENGER, PassengerRoutes)
 
 /** V1  aircraft */
 router.use(V1 + AIRCRAFT, AircraftRoutes)
+
+/** V1 employee */
+router.use(V1 + EMPLOYEE, EmployeeRoutes)
 
 router.use((error: Error, req: Request, res: Response, next: NextFunction) => {
     // 1. Log the error or send it to a 3rd party error monitoring software

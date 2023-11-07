@@ -98,8 +98,8 @@ const create = async (flightInput: FlightInput) => {
         airline: airline[0],
         sourceAirport: Airport.create({ id: sourceAirportId }),
         destinationAirport: Airport.create({ id: destinationAirportId }),
-        departureTime,
-        arrivalTime,
+        departureTime: new Date(departureTime),
+        arrivalTime: new Date(arrivalTime),
         status: Status.ACT
     })
 

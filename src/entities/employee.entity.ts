@@ -12,10 +12,7 @@ export class Employee extends Model {
     @Column({ name: 'employee_code' })
     employeeCode: string
 
-    @Column({ name: 'code' })
-    code: string
-
-    @Column({ name: 'image_url' })
+    @Column({ name: 'image_url', nullable: true })
     imageUrl: string
 
     @Column({ name: 'name' })
@@ -33,23 +30,11 @@ export class Employee extends Model {
     @Column({ name: 'phone_number' })
     phoneNumber: string
 
-    @Column({ name: 'email' })
+    @Column({ name: 'email', nullable: true })
     email: string
 
-    @Column({ name: 'street' })
-    street: string
-
-    @Column({ name: 'country_name' })
-    countryName: string
-
-    @Column({ name: 'province_name' })
-    provinceName: string
-
-    @Column({ name: 'district_name' })
-    districtName: string
-
-    @Column({ name: 'ward_name' })
-    wardName: string
+    @Column({ name: 'address', nullable: true })
+    address: string
 
     @Column({ name: 'status' })
     status: Status

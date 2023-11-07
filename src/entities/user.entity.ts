@@ -22,9 +22,6 @@ export class User extends BaseEntity {
     @Column({ name: 'user_type' })
     userType: UserType
 
-    @Column({ default: 0 })
-    tokenVersion: number
-
     @OneToMany(() => Booking, (booking: Booking) => booking.user)
     bookings: Booking[]
 }
