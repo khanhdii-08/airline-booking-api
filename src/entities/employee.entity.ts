@@ -33,6 +33,9 @@ export class Employee extends Model {
     @Column({ name: 'email', nullable: true })
     email: string
 
+    @Column({ name: 'country', nullable: true })
+    country: string
+
     @Column({ name: 'address', nullable: true })
     address: string
 
