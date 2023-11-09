@@ -5,7 +5,7 @@ import Model from './model.entity'
 
 @Entity({ name: 'employee' })
 export class Employee extends Model {
-    @OneToOne(() => User, { lazy: true })
+    @OneToOne(() => User)
     @JoinColumn({ name: 'user_id' })
     user: User
 

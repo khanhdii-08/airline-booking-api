@@ -1,6 +1,5 @@
 import { EmployeeCriteria } from './../types/criterias/EmployeeCriteria'
 import { Pagination } from '~/types/Pagination'
-import { JwtPayload } from './../types/JwtPayload'
 import { Status } from './../utils/enums/status.enum'
 import { EmployeeInput } from '~/types/inputs/EmployeeInput'
 import { User, Employee } from '~/entities'
@@ -85,9 +84,10 @@ const employeeInfo = async (userId: string, language: string) => {
 
 const employees = async (role: UserType, criteria: EmployeeCriteria, pagination: Pagination) => {
     const { searchText, status, fromDate, toDate } = criteria
-    console.log(searchText)
     const employees = await Employee.createQueryBuilder('employee')
         .innerJoin('employee.user', 'user')
+        .select('employee')
+        .addSelect('user.userType')
         .where(
             '(coalesce(:searchText) is null or (unaccent(employee.employeeCode) ILIKE :searchText or unaccent(employee.name) ILIKE :searchText or unaccent(employee.phoneNumber) ILIKE :searchText))',
             {
@@ -117,4 +117,31 @@ const employees = async (role: UserType, criteria: EmployeeCriteria, pagination:
     return createPageable(employees, pagination)
 }
 
-export const EmployeeService = { create, employeeInfo, employees }
+const employee = async (id: string) => {
+    const employee = await Employee.findOne({
+        select: { user: { userType: true } },
+        where: { id },
+        relations: { user: true }
+    })
+    if (!employee) {
+        throw new NotFoundException({ message: 'ko tìm thấy' })
+    }
+
+    return employee
+}
+
+const updateEmployee = async (employeeInput: EmployeeInput) => {
+    const { employeeId } = employeeInput
+    const employee = await Employee.findOne({
+        select: { user: { userType: true } },
+        where: { id: employeeId },
+        relations: { user: true }
+    })
+    if (!employee) {
+        throw new NotFoundException({ message: 'ko tìm thấy' })
+    }
+
+    return employee
+}
+
+export const EmployeeService = { create, employeeInfo, employees, employee, updateEmployee }
