@@ -3,7 +3,7 @@ import { Airline } from './../entities/airline.entity'
 import { FlightInput } from './../types/inputs/FlightInput'
 import { FlightCriteria } from '~/types/criterias/FlightCriteria'
 import { Flight } from '~/entities/flight.entity'
-import { Status } from '~/utils/enums'
+import { FlightType, Status } from '~/utils/enums'
 import { Aircraft, Airport, FlightSeatPrice, Seat } from '~/entities'
 import { genUUID, generateFlightNumber } from '~/utils/common.utils'
 import { NotFoundException } from '~/exceptions/NotFoundException'
@@ -111,9 +111,9 @@ const create = async (flightInput: FlightInput) => {
         }
         const newFlightSeatPrice = FlightSeatPrice.create({
             flight: newFlight,
-            adultPrice: fsp.adultPrice,
-            childrenPrice: fsp.childrenPrice,
-            infantPrice: fsp.infantPrice,
+            adultPrice: fsp.seatPrice,
+            childrenPrice: (fsp.seatPrice * 90) / 100,
+            infantPrice: flightType === FlightType.DOMESTIC ? 100000 : 300000,
             seat,
             seatClass: seat.seatClass,
             taxService
