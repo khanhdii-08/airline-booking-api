@@ -1,3 +1,4 @@
+import { Pagination } from '~/types/Pagination'
 import { Request, Response } from 'express'
 import { HttpStatus } from '~/utils/httpStatus'
 import { FlightService } from '~/services/flight.service'
@@ -16,4 +17,14 @@ const create = async (req: Request<ParamsDictionary, any, FlightInput>, res: Res
     return res.status(HttpStatus.CREATED).json(result)
 }
 
-export const FlightController = { search, create }
+const flights = async (req: Request<ParamsDictionary, any, any, any>, res: Response) => {
+    const { sourceAirportId, destinationAirportId, departureDate, arrivalDate, page, size, sort } = req.query
+    const pagination: Pagination = { page, size, sort }
+    const criteria: FlightCriteria = { sourceAirportId, destinationAirportId, departureDate, arrivalDate }
+    const status = req.params['status']
+    const result = await FlightService.flights(status, criteria, pagination)
+
+    return res.status(HttpStatus.OK).json(result)
+}
+
+export const FlightController = { search, create, flights }
