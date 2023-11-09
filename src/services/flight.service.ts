@@ -1,3 +1,4 @@
+import { Pagination } from '~/types/Pagination'
 import { TaxService } from './../entities/tax-service.entity'
 import { Airline } from './../entities/airline.entity'
 import { FlightInput } from './../types/inputs/FlightInput'
@@ -5,7 +6,7 @@ import { FlightCriteria } from '~/types/criterias/FlightCriteria'
 import { Flight } from '~/entities/flight.entity'
 import { FlightType, Status } from '~/utils/enums'
 import { Aircraft, Airport, FlightSeatPrice, Seat } from '~/entities'
-import { genUUID, generateFlightNumber } from '~/utils/common.utils'
+import { createPageable, genUUID, generateFlightNumber, validateVariable } from '~/utils/common.utils'
 import { NotFoundException } from '~/exceptions/NotFoundException'
 import { AppDataSource } from '~/config/database.config'
 
@@ -130,4 +131,32 @@ const create = async (flightInput: FlightInput) => {
     return newFlight
 }
 
-export const FlightService = { search, create }
+const flights = async (status: string, criteria: FlightCriteria, pagination: Pagination) => {
+    const { sourceAirportId, destinationAirportId, departureDate, arrivalDate } = criteria
+
+    const flights = await Flight.createQueryBuilder('flight')
+        .innerJoinAndSelect('flight.sourceAirport', 'sourceAirport')
+        .innerJoinAndSelect('sourceAirport.city', 'sourceCity')
+        .innerJoinAndSelect('flight.destinationAirport', 'destinationAirport')
+        .innerJoinAndSelect('destinationAirport.city', 'destinationCity')
+        .where('(coalesce(:status) IS NULL OR flight.status = :status)', {
+            status: status === 'all' ? null : status.toUpperCase()
+        })
+        .andWhere('(coalesce(:sourceAirportId) is null or sourceAirport.id = :sourceAirportId)', {
+            sourceAirportId: validateVariable(sourceAirportId)
+        })
+        .andWhere('(coalesce(:destinationAirportId) is null or destinationAirport.id = :destinationAirportId)', {
+            destinationAirportId: validateVariable(destinationAirportId)
+        })
+        .andWhere('(coalesce(:departureDate) is null or DATE(flight.departureTime) = DATE(:departureDate))', {
+            departureDate: validateVariable(departureDate)
+        })
+        .andWhere('(coalesce(:arrivalDate) is null or DATE(flight.arrivalTime) = DATE(:arrivalDate))', {
+            arrivalDate: validateVariable(arrivalDate)
+        })
+        .getMany()
+
+    return createPageable(flights, pagination)
+}
+
+export const FlightService = { search, create, flights }
