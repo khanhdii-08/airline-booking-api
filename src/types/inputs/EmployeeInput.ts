@@ -1,8 +1,6 @@
 import { Gender, UserType } from '~/utils/enums'
 
 export class EmployeeInput {
-    employeeId: string
-
     name: string
 
     dateOfBirth: Date

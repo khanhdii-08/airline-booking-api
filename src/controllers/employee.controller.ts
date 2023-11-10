@@ -27,4 +27,48 @@ const employees = async (req: Request<ParamsDictionary, any, any, any>, res: Res
     return res.status(HttpStatus.OK).json(result)
 }
 
-export const EmployeeController = { create, employeeInfo, employees }
+const employee = async (req: Request<ParamsDictionary, any, any, any>, res: Response) => {
+    const id = req.params['id']
+    const result = await EmployeeService.employee(id)
+
+    return res.status(HttpStatus.OK).json(result)
+}
+
+const updateEmployee = async (req: Request<ParamsDictionary, any, EmployeeInput>, res: Response) => {
+    const id = req.params['id']
+    const employeeInput: EmployeeInput = req.body
+    const result = await EmployeeService.updateEmployee(id, employeeInput)
+    return res.status(HttpStatus.OK).json(result)
+}
+
+const pending = async (req: Request<ParamsDictionary, any, any, any>, res: Response) => {
+    const id = req.params['id']
+    const result = await EmployeeService.pending(id)
+
+    return res.status(HttpStatus.OK).json(result)
+}
+
+const open = async (req: Request<ParamsDictionary, any, any, any>, res: Response) => {
+    const id = req.params['id']
+    const result = await EmployeeService.open(id)
+
+    return res.status(HttpStatus.OK).json(result)
+}
+
+const deleteEmployee = async (req: Request<ParamsDictionary, any, any, any>, res: Response) => {
+    const id = req.params['id']
+    const result = await EmployeeService.deleteEmployee(id)
+
+    return res.status(HttpStatus.OK).json(result)
+}
+
+export const EmployeeController = {
+    create,
+    employeeInfo,
+    employees,
+    employee,
+    updateEmployee,
+    pending,
+    open,
+    deleteEmployee
+}
