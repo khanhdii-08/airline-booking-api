@@ -18,9 +18,10 @@ import { AppError } from '~/exceptions/AppError'
 import { HttpStatus } from '~/utils/httpStatus'
 import { ValidationException } from '~/exceptions/ValidationException'
 import { NotFoundException } from '~/exceptions/NotFoundException'
+import { BadRequestException } from '~/exceptions/BadRequestException'
 
 const create = async (employeeInput: EmployeeInput) => {
-    const { phoneNumber, password, userType } = employeeInput
+    const { phoneNumber, password } = employeeInput
 
     const employee = await Employee.findOneBy({ phoneNumber })
     if (employee && employee.status === Status.ACT) {
@@ -33,7 +34,7 @@ const create = async (employeeInput: EmployeeInput) => {
 
     let employeeCode: string = ''
     do {
-        employeeCode = userType === UserType.EMPLOYEE ? generateCode('E') : generateCode('M')
+        employeeCode = generateCode('E')
         const employee = await Employee.findOneBy({ employeeCode })
 
         if (employee) {
@@ -130,18 +131,105 @@ const employee = async (id: string) => {
     return employee
 }
 
-const updateEmployee = async (employeeInput: EmployeeInput) => {
-    const { employeeId } = employeeInput
+const updateEmployee = async (id: string, employeeInput: EmployeeInput) => {
+    const { name, dateOfBirth, gender, idCard, email, country, address, userType } = employeeInput
     const employee = await Employee.findOne({
-        select: { user: { userType: true } },
-        where: { id: employeeId },
+        where: { id },
         relations: { user: true }
     })
     if (!employee) {
         throw new NotFoundException({ message: 'ko tìm thấy' })
     }
 
-    return employee
+    const { user, ...employeeNotUser } = employee
+    userType && (user.userType = userType)
+    name && (employee.name = name)
+    dateOfBirth && (employee.dateOfBirth = dateOfBirth)
+    gender && (employee.dateOfBirth = dateOfBirth)
+    idCard && (employee.dateOfBirth = dateOfBirth)
+    email && (employee.dateOfBirth = dateOfBirth)
+    country && (employee.dateOfBirth = dateOfBirth)
+    address && (employee.dateOfBirth = dateOfBirth)
+
+    user.save()
+    employee.save()
+
+    return employeeNotUser
 }
 
-export const EmployeeService = { create, employeeInfo, employees, employee, updateEmployee }
+const pending = async (id: string) => {
+    const employee = await Employee.findOne({
+        where: { id },
+        relations: { user: true }
+    })
+    if (!employee) {
+        throw new NotFoundException({ message: 'ko tìm thấy' })
+    }
+    if (employee.status !== Status.ACT) {
+        throw new BadRequestException({ error: { message: 'không nằm ở trạng thái hoạt động' } })
+    }
+    const { user, ...employeeNotUser } = employee
+
+    employee.status = Status.PEN
+    user.isActived = false
+
+    employee.save()
+    user.save()
+
+    return employeeNotUser
+}
+
+const open = async (id: string) => {
+    const employee = await Employee.findOne({
+        where: { id },
+        relations: { user: true }
+    })
+    if (!employee) {
+        throw new NotFoundException({ message: 'ko tìm thấy' })
+    }
+    if (employee.status !== Status.PEN) {
+        throw new BadRequestException({ error: { message: 'không nằm ở trạng thái tạm ngưng' } })
+    }
+    const { user, ...employeeNotUser } = employee
+
+    employee.status = Status.ACT
+    user.isActived = true
+
+    employee.save()
+    user.save()
+
+    return employeeNotUser
+}
+
+const deleteEmployee = async (id: string) => {
+    const employee = await Employee.findOne({
+        where: { id },
+        relations: { user: true }
+    })
+    if (!employee) {
+        throw new NotFoundException({ message: 'ko tìm thấy' })
+    }
+    if (employee.status !== Status.PEN) {
+        throw new BadRequestException({ error: { message: 'không nằm ở trạng thái tạm ngưng' } })
+    }
+    const { user, ...employeeNotUser } = employee
+
+    employee.status = Status.DEL
+    user.isActived = false
+
+    employee.save()
+    user.save()
+
+    return employeeNotUser
+}
+
+export const EmployeeService = {
+    create,
+    employeeInfo,
+    employees,
+    employee,
+    updateEmployee,
+    pending,
+    open,
+    deleteEmployee
+}
