@@ -18,9 +18,10 @@ const create = async (req: Request<ParamsDictionary, any, FlightInput>, res: Res
 }
 
 const flights = async (req: Request<ParamsDictionary, any, any, any>, res: Response) => {
-    const { sourceAirportId, destinationAirportId, departureDate, arrivalDate, page, size, sort } = req.query
+    const { searchText, sourceAirportId, destinationAirportId, departureDate, arrivalDate, page, size, sort } =
+        req.query
     const pagination: Pagination = { page, size, sort }
-    const criteria: FlightCriteria = { sourceAirportId, destinationAirportId, departureDate, arrivalDate }
+    const criteria: FlightCriteria = { searchText, sourceAirportId, destinationAirportId, departureDate, arrivalDate }
     const status = req.params['status']
     const result = await FlightService.flights(status, criteria, pagination)
 
@@ -35,4 +36,10 @@ const updateFlight = async (req: Request<ParamsDictionary, any, FlightInput>, re
     return res.status(HttpStatus.OK).json(result)
 }
 
-export const FlightController = { search, create, flights, updateFlight }
+const flight = async (req: Request<ParamsDictionary, any, any, any>, res: Response) => {
+    const id: string = req.params['id']
+    const result = await FlightService.flight(id)
+    return res.status(HttpStatus.OK).json(result)
+}
+
+export const FlightController = { search, create, flights, updateFlight, flight }

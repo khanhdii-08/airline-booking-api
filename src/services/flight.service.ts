@@ -194,4 +194,16 @@ const updateFlight = async (id: string, flightInput: FlightInput) => {
     return flight
 }
 
-export const FlightService = { search, create, flights, updateFlight }
+const flight = async (id: string) => {
+    const flight = await Flight.findOne({
+        where: { id },
+        relations: { sourceAirport: true, destinationAirport: true, aircraft: true, flightSeatPrices: true }
+    })
+    if (!flight) {
+        throw new NotFoundException({ message: 'không tìm thấy' })
+    }
+
+    return flight
+}
+
+export const FlightService = { search, create, flights, updateFlight, flight }

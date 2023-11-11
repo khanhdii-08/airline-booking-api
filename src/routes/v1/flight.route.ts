@@ -16,5 +16,8 @@ router
 router
     .route('/:id')
     .put(CheckAuth, CheckRole([UserType.ADMIN, UserType.EMPLOYEE, UserType.MANAGER]), FlightController.updateFlight)
+router
+    .route('/id/:id')
+    .get(CheckAuth, CheckRole([UserType.ADMIN, UserType.EMPLOYEE, UserType.MANAGER]), FlightController.flight)
 
 export const FlightRoutes = router

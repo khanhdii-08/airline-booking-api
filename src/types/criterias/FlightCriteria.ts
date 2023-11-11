@@ -1,4 +1,6 @@
 export interface FlightCriteria {
+    searchText?: string
+
     sourceAirportId?: string
 
     destinationAirportId?: string
