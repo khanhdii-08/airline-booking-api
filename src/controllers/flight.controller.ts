@@ -27,4 +27,12 @@ const flights = async (req: Request<ParamsDictionary, any, any, any>, res: Respo
     return res.status(HttpStatus.OK).json(result)
 }
 
-export const FlightController = { search, create, flights }
+const updateFlight = async (req: Request<ParamsDictionary, any, FlightInput>, res: Response) => {
+    const flightInput: FlightInput = req.body
+    const id: string = req.params['id']
+    const result = await FlightService.updateFlight(id, flightInput)
+
+    return res.status(HttpStatus.OK).json(result)
+}
+
+export const FlightController = { search, create, flights, updateFlight }

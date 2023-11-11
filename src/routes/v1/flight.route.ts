@@ -7,9 +7,14 @@ import { FlightValidation } from '~/validations/flight.validation'
 const router: Router = express.Router()
 
 router.route('/search').get(FlightValidation.search, FlightController.search)
-router.route('/').post(FlightController.create)
+router
+    .route('/')
+    .post(CheckAuth, CheckRole([UserType.ADMIN, UserType.EMPLOYEE, UserType.MANAGER]), FlightController.create)
 router
     .route('/:status')
     .get(CheckAuth, CheckRole([UserType.ADMIN, UserType.EMPLOYEE, UserType.MANAGER]), FlightController.flights)
+router
+    .route('/:id')
+    .put(CheckAuth, CheckRole([UserType.ADMIN, UserType.EMPLOYEE, UserType.MANAGER]), FlightController.updateFlight)
 
 export const FlightRoutes = router

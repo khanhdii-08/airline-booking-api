@@ -10,7 +10,7 @@ import {
     CheckIn,
     FlightSeatPrice
 } from '~/entities'
-import { Status } from '~/utils/enums'
+import { FlightType, Status } from '~/utils/enums'
 
 @Entity({ name: 'flight' })
 export class Flight extends Model {
@@ -59,6 +59,9 @@ export class Flight extends Model {
 
     @Column({ name: 'arrival_time', type: 'timestamptz', nullable: true })
     arrivalTime: Date
+
+    @Column({ name: 'flight_type', nullable: true })
+    flightType: FlightType
 
     @Column({ name: 'status', nullable: true })
     status: Status
