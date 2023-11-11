@@ -1,4 +1,4 @@
-import { Gender, UserType } from '~/utils/enums'
+import { Gender, Status, UserType } from '~/utils/enums'
 
 export class EmployeeInput {
     name: string
@@ -18,6 +18,8 @@ export class EmployeeInput {
     country: string
 
     address: string
+
+    status: Status
 
     password: string
 }

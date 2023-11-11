@@ -132,7 +132,7 @@ const employee = async (id: string) => {
 }
 
 const updateEmployee = async (id: string, employeeInput: EmployeeInput) => {
-    const { name, dateOfBirth, gender, idCard, email, country, address, userType } = employeeInput
+    const { name, dateOfBirth, gender, idCard, email, country, address, status, userType } = employeeInput
     const employee = await Employee.findOne({
         where: { id },
         relations: { user: true }
@@ -145,11 +145,12 @@ const updateEmployee = async (id: string, employeeInput: EmployeeInput) => {
     userType && (user.userType = userType)
     name && (employee.name = name)
     dateOfBirth && (employee.dateOfBirth = dateOfBirth)
-    gender && (employee.dateOfBirth = dateOfBirth)
-    idCard && (employee.dateOfBirth = dateOfBirth)
-    email && (employee.dateOfBirth = dateOfBirth)
-    country && (employee.dateOfBirth = dateOfBirth)
-    address && (employee.dateOfBirth = dateOfBirth)
+    gender && (employee.gender = gender)
+    idCard && (employee.idCard = idCard)
+    email && (employee.email = email)
+    country && (employee.country = country)
+    address && (employee.address = address)
+    status && (employee.status = status)
 
     user.save()
     employee.save()

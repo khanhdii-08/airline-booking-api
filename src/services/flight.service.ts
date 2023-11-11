@@ -1,7 +1,7 @@
+import { FlightInput } from '~/types/inputs/FlightInput'
 import { Pagination } from '~/types/Pagination'
 import { TaxService } from './../entities/tax-service.entity'
 import { Airline } from './../entities/airline.entity'
-import { FlightInput } from './../types/inputs/FlightInput'
 import { FlightCriteria } from '~/types/criterias/FlightCriteria'
 import { Flight } from '~/entities/flight.entity'
 import { FlightType, Status } from '~/utils/enums'
@@ -101,6 +101,7 @@ const create = async (flightInput: FlightInput) => {
         destinationAirport: Airport.create({ id: destinationAirportId }),
         departureTime: new Date(departureTime),
         arrivalTime: new Date(arrivalTime),
+        flightType,
         status: Status.ACT
     })
 
@@ -159,4 +160,38 @@ const flights = async (status: string, criteria: FlightCriteria, pagination: Pag
     return createPageable(flights, pagination)
 }
 
-export const FlightService = { search, create, flights }
+const updateFlight = async (id: string, flightInput: FlightInput) => {
+    const { aircraftId, departureTime, arrivalTime, flightSeatPrices } = flightInput
+
+    const flight = await Flight.findOne({ where: { id, status: Status.ACT }, relations: { aircraft: true } })
+    if (!flight) {
+        throw new NotFoundException({ message: 'không tìm thấy' })
+    }
+
+    aircraftId && (flight.aircraft.id = aircraftId)
+    departureTime && (flight.departureTime = departureTime)
+    arrivalTime && (flight.arrivalTime = arrivalTime)
+
+    const flightSeatPricesInDb = await FlightSeatPrice.find({
+        where: { flight: { id: flight.id } },
+        relations: { seat: true }
+    })
+    if (!flightSeatPricesInDb) {
+        throw new NotFoundException({ message: 'không tìm thấy' })
+    }
+
+    flightSeatPrices.forEach((fsp) => {
+        const flightSeatPrice = flightSeatPricesInDb.find((element) => fsp.seatId === element.seat.id)
+        if (flightSeatPrice) {
+            flightSeatPrice.adultPrice = fsp.seatPrice
+            flightSeatPrice.childrenPrice = (fsp.seatPrice * 90) / 100
+            flightSeatPrice.save()
+        }
+    })
+
+    flight.save()
+
+    return flight
+}
+
+export const FlightService = { search, create, flights, updateFlight }
