@@ -24,7 +24,6 @@ const flights = async (req: Request<ParamsDictionary, any, any, any>, res: Respo
     const criteria: FlightCriteria = { searchText, sourceAirportId, destinationAirportId, departureDate, arrivalDate }
     const status = req.params['status']
     const result = await FlightService.flights(status, criteria, pagination)
-
     return res.status(HttpStatus.OK).json(result)
 }
 
@@ -32,7 +31,6 @@ const updateFlight = async (req: Request<ParamsDictionary, any, FlightInput>, re
     const flightInput: FlightInput = req.body
     const id: string = req.params['id']
     const result = await FlightService.updateFlight(id, flightInput)
-
     return res.status(HttpStatus.OK).json(result)
 }
 
@@ -42,4 +40,11 @@ const flight = async (req: Request<ParamsDictionary, any, any, any>, res: Respon
     return res.status(HttpStatus.OK).json(result)
 }
 
-export const FlightController = { search, create, flights, updateFlight, flight }
+const updateStatus = async (req: Request<ParamsDictionary, any, any, any>, res: Response) => {
+    const id: string = req.params['id']
+    const { status } = req.query
+    const result = await FlightService.updateStatus(id, status)
+    return res.status(HttpStatus.OK).json(result)
+}
+
+export const FlightController = { search, create, flights, updateFlight, flight, updateStatus }

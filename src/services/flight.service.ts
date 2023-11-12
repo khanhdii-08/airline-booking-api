@@ -5,10 +5,11 @@ import { Airline } from './../entities/airline.entity'
 import { FlightCriteria } from '~/types/criterias/FlightCriteria'
 import { Flight } from '~/entities/flight.entity'
 import { FlightType, Status } from '~/utils/enums'
-import { Aircraft, Airport, FlightSeatPrice, Seat } from '~/entities'
+import { Aircraft, Airport, Booking, FlightSeatPrice, Seat } from '~/entities'
 import { createPageable, genUUID, generateFlightNumber, validateVariable } from '~/utils/common.utils'
 import { NotFoundException } from '~/exceptions/NotFoundException'
 import { AppDataSource } from '~/config/database.config'
+import { BadRequestException } from '~/exceptions/BadRequestException'
 
 const search = async (criteria: FlightCriteria) => {
     const queryFlightResult = await Flight.createQueryBuilder('flight')
@@ -206,4 +207,54 @@ const flight = async (id: string) => {
     return flight
 }
 
-export const FlightService = { search, create, flights, updateFlight, flight }
+const updateStatus = async (id: string, status: Status) => {
+    const flight = await Flight.findOne({
+        where: { id }
+    })
+    if (!flight) {
+        throw new NotFoundException({ message: 'không tìm thấy' })
+    }
+
+    if (status === Status.PEN) {
+        if (flight.status !== Status.ACT) {
+            throw new BadRequestException({ error: { message: 'không ở trạng thái hoạt động' } })
+        }
+        flight.status = Status.PEN
+        const bookings = await Booking.find({
+            where: [{ flightAway: { id: flight.id } }, { flightReturn: { id: flight.id } }],
+            relations: { bookingSeats: true, bookingServiceOpts: true }
+        })
+
+        bookings &&
+            bookings.forEach((booking) => {
+                booking.status = Status.DEL
+                const { bookingSeats, bookingServiceOpts } = booking
+                bookingSeats &&
+                    bookingSeats.forEach((bookingSeat) => {
+                        bookingSeat.status = Status.DEL
+                        bookingSeat.save()
+                    })
+                bookingServiceOpts &&
+                    bookingServiceOpts.forEach((bookingServiceOpt) => {
+                        bookingServiceOpt.status = Status.DEL
+                        bookingServiceOpt.save()
+                    })
+            })
+        await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
+            await transactionalEntityManager.save(flight)
+            await transactionalEntityManager.save(bookings)
+        })
+        return flight
+    } else if (status === Status.ACT) {
+        if (flight.status !== Status.PEN) {
+            throw new BadRequestException({ error: { message: 'không ở trạng thái tạm ngưng' } })
+        }
+        flight.status = Status.ACT
+        await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
+            await transactionalEntityManager.save(flight)
+        })
+        return flight
+    }
+}
+
+export const FlightService = { search, create, flights, updateFlight, flight, updateStatus }

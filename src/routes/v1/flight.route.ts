@@ -19,5 +19,6 @@ router
 router
     .route('/id/:id')
     .get(CheckAuth, CheckRole([UserType.ADMIN, UserType.EMPLOYEE, UserType.MANAGER]), FlightController.flight)
+router.route('/:id').patch(CheckAuth, CheckRole([UserType.ADMIN]), FlightController.updateStatus)
 
 export const FlightRoutes = router
