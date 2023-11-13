@@ -69,7 +69,7 @@ const employeeInfo = async (userId: string, language: string) => {
         throw new NotFoundException({ message: 'ko tìm thấy' })
     }
 
-    const { id, createdAt, updatedAt, status, ...info } = employeeInfo
+    const { createdAt, updatedAt, status, ...info } = employeeInfo
 
     let country
     if (language === 'vi') {
