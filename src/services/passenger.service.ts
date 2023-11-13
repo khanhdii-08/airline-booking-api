@@ -1,9 +1,12 @@
+import { PassengerCriteria } from './../types/criterias/PassengerCriteria'
 import { Passenger } from '~/entities'
 import { BadRequestException } from '~/exceptions/BadRequestException'
 import { NotFoundException } from '~/exceptions/NotFoundException'
 import { UploadProvider } from '~/providers/upload.provider'
 import { MulterFile } from '~/types/MulterFile'
+import { Pagination } from '~/types/Pagination'
 import { PassengerInput } from '~/types/inputs/PassengerInput'
+import { createPageable, removeAccents, validateVariable } from '~/utils/common.utils'
 import { CLOUDINARY_AVATARS } from '~/utils/constants'
 import { Status } from '~/utils/enums'
 
@@ -43,4 +46,28 @@ const update = async (userId: string, passengerInput: PassengerInput) => {
     return passenger.save()
 }
 
-export const PassengerService = { uploadAvatar, update }
+const passengers = async (criteria: PassengerCriteria, pagination: Pagination) => {
+    const { searchText, status, fromDate, toDate } = criteria
+    const passengers = await Passenger.createQueryBuilder('passenger')
+        .innerJoin('passenger.user', 'user')
+        .where(
+            '(coalesce(:searchText) is null or (unaccent(passenger.passengerCode) ILIKE :searchText or unaccent(passenger.firstName) ILIKE :searchText or unaccent(passenger.lastName) ILIKE :searchText or unaccent(passenger.phoneNumber) ILIKE :searchText))',
+            {
+                searchText: `%${removeAccents(searchText)}%`
+            }
+        )
+        .andWhere('(coalesce(:status) is null or passenger.status = :status)', {
+            status: validateVariable(status)
+        })
+        .andWhere('(coalesce(:fromDate) IS NULL OR (DATE(passenger.createdAt) >= DATE(:fromDate)))', {
+            fromDate: validateVariable(fromDate)
+        })
+        .andWhere('(coalesce(:toDate) IS NULL OR (DATE(passenger.createdAt) <= DATE(:toDate)))', {
+            toDate: validateVariable(toDate)
+        })
+        .getMany()
+
+    return createPageable(passengers, pagination)
+}
+
+export const PassengerService = { uploadAvatar, update, passengers }
