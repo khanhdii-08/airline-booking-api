@@ -134,7 +134,7 @@ const create = async (flightInput: FlightInput) => {
 }
 
 const flights = async (status: string, criteria: FlightCriteria, pagination: Pagination) => {
-    const { sourceAirportId, destinationAirportId, departureDate, arrivalDate } = criteria
+    const { searchText, sourceAirportId, destinationAirportId, departureDate, arrivalDate } = criteria
 
     const flights = await Flight.createQueryBuilder('flight')
         .innerJoinAndSelect('flight.sourceAirport', 'sourceAirport')
@@ -143,6 +143,9 @@ const flights = async (status: string, criteria: FlightCriteria, pagination: Pag
         .innerJoinAndSelect('destinationAirport.city', 'destinationCity')
         .where('(coalesce(:status) IS NULL OR flight.status = :status)', {
             status: status === 'all' ? null : status.toUpperCase()
+        })
+        .andWhere('(coalesce(:searchText) is null or flight.flightCode ilike :searchText)', {
+            searchText: validateVariable(searchText)
         })
         .andWhere('(coalesce(:sourceAirportId) is null or sourceAirport.id = :sourceAirportId)', {
             sourceAirportId: validateVariable(sourceAirportId)
