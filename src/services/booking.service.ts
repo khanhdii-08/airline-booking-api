@@ -611,4 +611,24 @@ const myBooking = async (userId: string, status: string, criteria: BookingCriter
     return createPageable(bookings, pagination)
 }
 
-export const BookingService = { booking, bookingDetail, bookingCancel, updateBooking, bookingAddService, myBooking }
+const bookingsCancel = async (status: string, criteria: BookingCriteria, pagination: Pagination) => {
+    const { bookingCode } = criteria
+    const bookingsCancel = await Booking.createQueryBuilder('booking')
+        .where('(coalesce(:bookingCode) IS NULL OR booking.bookingCode = :bookingCode)', { bookingCode })
+        .andWhere('(coalesce(:status) IS NULL OR booking.status = :status)', {
+            status: status === 'all' ? null : status.toUpperCase()
+        })
+        .getMany()
+
+    return createPageable(bookingsCancel, pagination)
+}
+
+export const BookingService = {
+    booking,
+    bookingDetail,
+    bookingCancel,
+    updateBooking,
+    bookingAddService,
+    myBooking,
+    bookingsCancel
+}
