@@ -6,7 +6,7 @@ import { PassengerType } from '~/utils/enums/passengerType'
 
 @Entity({ name: 'passenger' })
 export class Passenger extends Model {
-    @OneToOne(() => User, { lazy: true })
+    @OneToOne(() => User)
     @JoinColumn({ name: 'user_id' })
     user: User
 
