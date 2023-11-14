@@ -11,5 +11,22 @@ router.route('/update').put(CheckAuth, PassengerController.update)
 router
     .route('/')
     .get(CheckAuth, CheckRole([UserType.EMPLOYEE, UserType.MANAGER, UserType.ADMIN]), PassengerController.passengers)
+router
+    .route('/:id')
+    .get(CheckAuth, CheckRole([UserType.EMPLOYEE, UserType.MANAGER, UserType.ADMIN]), PassengerController.passenger)
+router
+    .route('/:id')
+    .patch(
+        CheckAuth,
+        CheckRole([UserType.EMPLOYEE, UserType.MANAGER, UserType.ADMIN]),
+        PassengerController.updateStatus
+    )
+router
+    .route('/:id')
+    .put(
+        CheckAuth,
+        CheckRole([UserType.EMPLOYEE, UserType.MANAGER, UserType.ADMIN]),
+        PassengerController.updatePassenger
+    )
 
 export const PassengerRoutes = router
