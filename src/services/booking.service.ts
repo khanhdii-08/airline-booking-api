@@ -614,7 +614,9 @@ const myBooking = async (userId: string, status: string, criteria: BookingCriter
 const bookingsCancel = async (status: string, criteria: BookingCriteria, pagination: Pagination) => {
     const { bookingCode } = criteria
     const bookingsCancel = await Booking.createQueryBuilder('booking')
-        .where('(coalesce(:bookingCode) IS NULL OR booking.bookingCode = :bookingCode)', { bookingCode })
+        .where('(coalesce(:bookingCode) IS NULL OR booking.bookingCode = :bookingCode)', {
+            bookingCode: validateVariable(bookingCode)
+        })
         .andWhere('(coalesce(:status) IS NULL OR booking.status = :status)', {
             status: status === 'all' ? null : status.toUpperCase()
         })

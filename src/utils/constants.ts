@@ -16,6 +16,7 @@ export const CHECK_IN = '/check-in'
 export const PASSENGER = '/passenger'
 export const AIRCRAFT = '/aircraft'
 export const EMPLOYEE = '/employee'
+export const ADMIN = '/admin'
 
 // key redis
 
