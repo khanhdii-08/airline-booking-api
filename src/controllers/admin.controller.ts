@@ -12,4 +12,9 @@ const bookingsLimitTen = async (req: Request, res: Response) => {
     return res.status(HttpStatus.OK).json(result)
 }
 
-export const AdminController = { reportClient, bookingsLimitTen }
+const revenueInTwoYear = async (req: Request, res: Response) => {
+    const result = await AdminService.revenueInTwoYear()
+    return res.status(HttpStatus.OK).json(result)
+}
+
+export const AdminController = { reportClient, bookingsLimitTen, revenueInTwoYear }
