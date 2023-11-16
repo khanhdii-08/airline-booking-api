@@ -26,6 +26,7 @@ import { UnauthorizedException } from '~/exceptions/UnauthorizedException'
 import { OTP_TIME_BOOKING_CANCEL_KEY, OTP_TIME_BOOKING_UPDATE_KEY } from '~/utils/constants'
 import { MailProvider } from '~/providers/mail.provider'
 import { Pagination } from '~/types/Pagination'
+import { ErrorResponse } from '~/types/ErrorResponse'
 
 const booking = async (bookingInput: BookingInput) => {
     const { userId, flightAwayId, flightReturnId, seatId, passengers, ...booking } = bookingInput
@@ -625,6 +626,86 @@ const bookingsCancel = async (status: string, criteria: BookingCriteria, paginat
     return createPageable(bookingsCancel, pagination)
 }
 
+const upadateStatus = async (ids: string[], status: Status) => {
+    const bookings = await Booking.find({ where: { id: In(ids) } })
+
+    const errors: ErrorResponse[] = []
+
+    if (bookings) {
+        if (status === Status.DEL) {
+            ids.forEach((id) => {
+                const booking = bookings.find((b) => b.id === id)
+                if (booking) {
+                    if (booking.status === Status.PEN) {
+                        booking.status = Status.DEL
+                    } else {
+                        errors.push({ message: 'không ở trạng thái chờ hủy', data: booking })
+                    }
+                } else {
+                    errors.push({ message: 'không tìm thấy', data: id })
+                }
+            })
+        } else if (status === Status.ACT) {
+            ids.forEach((id) => {
+                const booking = bookings.find((b) => b.id === id)
+                if (booking) {
+                    if (booking.status === Status.PEN) {
+                        booking.status = Status.ACT
+                    } else {
+                        errors.push({ message: 'không ở trạng thái chờ hủy', data: booking })
+                    }
+                } else {
+                    errors.push({ message: 'không tìm thấy', data: id })
+                }
+            })
+        }
+    } else {
+        errors.push({ message: 'không tìm thấy', data: ids })
+    }
+
+    if (errors.length > 0) {
+        throw new BadRequestException({ errors: errors })
+    }
+
+    await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
+        await transactionalEntityManager.save(bookings)
+    })
+
+    return bookings
+}
+
+const cancelBookings = async (ids: string[]) => {
+    const bookings = await Booking.findBy({ id: In(ids) })
+    const errors: ErrorResponse[] = []
+
+    if (bookings) {
+        ids.forEach((id) => {
+            const booking = bookings.find((b) => b.id === id)
+            if (booking) {
+                if (booking.status === Status.ACT) {
+                    booking.status = Status.DEL
+                } else {
+                    errors.push({ message: 'không ở trạng thái hoạt động', data: booking })
+                }
+            } else {
+                errors.push({ message: 'không tìm thấy', data: id })
+            }
+        })
+    } else {
+        errors.push({ message: 'không tìm thấy', data: ids })
+    }
+
+    if (errors.length > 0) {
+        throw new BadRequestException({ errors: errors })
+    }
+
+    await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
+        await transactionalEntityManager.save(bookings)
+    })
+
+    return bookings
+}
+
 export const BookingService = {
     booking,
     bookingDetail,
@@ -632,5 +713,7 @@ export const BookingService = {
     updateBooking,
     bookingAddService,
     myBooking,
-    bookingsCancel
+    bookingsCancel,
+    upadateStatus,
+    cancelBookings
 }

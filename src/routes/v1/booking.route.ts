@@ -15,5 +15,15 @@ router.route('/my-booking/:status').get(CheckAuth, BookingController.myBooking)
 router
     .route('/:status')
     .get(CheckAuth, CheckRole([UserType.EMPLOYEE, UserType.MANAGER, UserType.ADMIN]), BookingController.bookingsCancel)
+router
+    .route('/change-status')
+    .patch(CheckAuth, CheckRole([UserType.EMPLOYEE, UserType.MANAGER, UserType.ADMIN]), BookingController.upadateStatus)
+router
+    .route('/cancel')
+    .patch(
+        CheckAuth,
+        CheckRole([UserType.EMPLOYEE, UserType.MANAGER, UserType.ADMIN]),
+        BookingController.cancelBookings
+    )
 
 export const BookingRoutes = router
