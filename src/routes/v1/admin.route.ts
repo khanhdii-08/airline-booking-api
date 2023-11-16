@@ -11,5 +11,8 @@ router
 router
     .route('/booking-limit-ten')
     .get(CheckAuth, CheckRole([UserType.ADMIN, UserType.MANAGER, UserType.EMPLOYEE]), AdminController.bookingsLimitTen)
+router
+    .route('/revenue-in-two-year')
+    .get(CheckAuth, CheckRole([UserType.ADMIN, UserType.MANAGER, UserType.EMPLOYEE]), AdminController.revenueInTwoYear)
 
 export const AdminRoutes = router
