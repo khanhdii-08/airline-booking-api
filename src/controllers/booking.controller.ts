@@ -4,7 +4,9 @@ import { BookingService } from '~/services/booking.service'
 import { Pagination } from '~/types/Pagination'
 import { BookingCriteria } from '~/types/criterias/BookingCriteria'
 import { BookingInput } from '~/types/inputs/BookingInput'
+import { IdsInput } from '~/types/inputs/IdsInput'
 import { TokenContext } from '~/utils/TokenContext'
+import { Status } from '~/utils/enums'
 import { HttpStatus } from '~/utils/httpStatus'
 
 const booking = async (req: Request<ParamsDictionary, any, BookingInput>, res: Response) => {
@@ -64,6 +66,16 @@ const bookingsCancel = async (req: Request<ParamsDictionary, any, any, any>, res
     return res.status(HttpStatus.OK).json(result)
 }
 
+const upadateStatus = async (req: Request<ParamsDictionary, any, IdsInput>, res: Response) => {
+    const result = await BookingService.upadateStatus(req.body.ids, req.body.status)
+    return res.status(HttpStatus.OK).json(result)
+}
+
+const cancelBookings = async (req: Request<ParamsDictionary, any, IdsInput>, res: Response) => {
+    const result = await BookingService.cancelBookings(req.body.ids)
+    return res.status(HttpStatus.OK).json(result)
+}
+
 export const BookingController = {
     booking,
     search,
@@ -71,5 +83,7 @@ export const BookingController = {
     updateBooking,
     bookingAddService,
     myBooking,
-    bookingsCancel
+    bookingsCancel,
+    upadateStatus,
+    cancelBookings
 }
