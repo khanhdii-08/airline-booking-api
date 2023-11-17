@@ -153,7 +153,8 @@ const booking = async (bookingInput: BookingInput) => {
 }
 
 const bookingDetail = async (criteria: BookingCriteria) => {
-    const { bookingCode, firstName, lastName } = criteria
+    const { bookingId, bookingCode, firstName, lastName } = criteria
+
     const booking = await AppDataSource.getRepository(Booking)
         .createQueryBuilder('booking')
         .leftJoinAndSelect('booking.flightAway', 'flightAway')
@@ -164,7 +165,8 @@ const bookingDetail = async (criteria: BookingCriteria) => {
         .leftJoinAndSelect('flightReturn.destinationAirport', 'destinationAirportReturn')
         .innerJoin('booking.passengers', 'passengers')
         .innerJoinAndSelect('booking.seat', 'seat')
-        .where('booking.bookingCode = :bookingCode', { bookingCode: bookingCode?.trim() })
+        .where('(coalesce(:bookingId) IS NULL OR booking.id = :bookingId)', { bookingId })
+        .orWhere('booking.bookingCode = :bookingCode', { bookingCode: bookingCode?.trim() })
         .andWhere('unaccent(passengers.firstName) ILIKE :firstName', {
             firstName: `%${removeAccents(firstName?.trim())}%`
         })
@@ -618,8 +620,8 @@ const bookingsCancel = async (status: string, criteria: BookingCriteria, paginat
         .where('(coalesce(:bookingCode) IS NULL OR booking.bookingCode = :bookingCode)', {
             bookingCode: validateVariable(bookingCode)
         })
-        .andWhere('(coalesce(:status) IS NULL OR booking.status = :status)', {
-            status: status === 'all' ? null : status.toUpperCase()
+        .andWhere('(coalesce(:status) IS NULL OR booking.status IN (:...status))', {
+            status: status === 'all' ? [Status.PEN, Status.DEL] : [status.toUpperCase()]
         })
         .getMany()
 
@@ -706,6 +708,21 @@ const cancelBookings = async (ids: string[]) => {
     return bookings
 }
 
+const bookings = async (criteria: BookingCriteria, pagination: Pagination) => {
+    const { bookingCode } = criteria
+    console.log(criteria)
+    const bookingsCancel = await Booking.createQueryBuilder('booking')
+        .where('(coalesce(:bookingCode) IS NULL OR booking.bookingCode = :bookingCode)', {
+            bookingCode: validateVariable(bookingCode)
+        })
+        .andWhere('(coalesce(:status) IS NULL OR booking.status = :status)', {
+            status: Status.ACT
+        })
+        .getMany()
+
+    return createPageable(bookingsCancel, pagination)
+}
+
 export const BookingService = {
     booking,
     bookingDetail,
@@ -715,5 +732,6 @@ export const BookingService = {
     myBooking,
     bookingsCancel,
     upadateStatus,
-    cancelBookings
+    cancelBookings,
+    bookings
 }

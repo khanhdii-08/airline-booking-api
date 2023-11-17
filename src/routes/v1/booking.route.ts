@@ -25,5 +25,8 @@ router
         CheckRole([UserType.EMPLOYEE, UserType.MANAGER, UserType.ADMIN]),
         BookingController.cancelBookings
     )
+router
+    .route('/admin/all')
+    .get(CheckAuth, CheckRole([UserType.EMPLOYEE, UserType.MANAGER, UserType.ADMIN]), BookingController.bookings)
 
 export const BookingRoutes = router
