@@ -9,12 +9,16 @@ const search = async (req: Request<ParamsDictionary, any, any, BookingCriteria>,
     const criteria: BookingCriteria = req.query
     const errors: ErrorResponse[] = []
 
-    if (criteria.bookingCode === undefined || validator.isEmpty(criteria.bookingCode)) {
-        errors.push({ message: 'err bookingCode' })
-    } else if (!criteria.firstName) {
-        errors.push({ message: 'err firstName' })
-    } else if (!criteria.lastName) {
-        errors.push({ message: 'err firstName' })
+    if (!criteria.bookingId) {
+        if (!criteria.bookingCode || validator.isEmpty(criteria.bookingCode)) {
+            errors.push({ message: 'err bookingCode' })
+        }
+        if (!criteria.firstName) {
+            errors.push({ message: 'err firstName' })
+        }
+        if (!criteria.lastName) {
+            errors.push({ message: 'err lastName' })
+        }
     }
 
     if (errors.length > 0) {

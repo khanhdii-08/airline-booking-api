@@ -6,7 +6,6 @@ import { BookingCriteria } from '~/types/criterias/BookingCriteria'
 import { BookingInput } from '~/types/inputs/BookingInput'
 import { IdsInput } from '~/types/inputs/IdsInput'
 import { TokenContext } from '~/utils/TokenContext'
-import { Status } from '~/utils/enums'
 import { HttpStatus } from '~/utils/httpStatus'
 
 const booking = async (req: Request<ParamsDictionary, any, BookingInput>, res: Response) => {
@@ -76,6 +75,14 @@ const cancelBookings = async (req: Request<ParamsDictionary, any, IdsInput>, res
     return res.status(HttpStatus.OK).json(result)
 }
 
+const bookings = async (req: Request<ParamsDictionary, any, any, any>, res: Response) => {
+    const { bookingCode, page, size, sort } = req.query
+    const bookingCriteria: BookingCriteria = { bookingCode }
+    const pagination: Pagination = { page, size, sort }
+    const result = await BookingService.bookings(bookingCriteria, pagination)
+    return res.status(HttpStatus.OK).json(result)
+}
+
 export const BookingController = {
     booking,
     search,
@@ -85,5 +92,6 @@ export const BookingController = {
     myBooking,
     bookingsCancel,
     upadateStatus,
-    cancelBookings
+    cancelBookings,
+    bookings
 }
