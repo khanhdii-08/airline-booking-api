@@ -29,4 +29,8 @@ router
         PassengerController.updatePassenger
     )
 
+router
+    .route('/')
+    .post(CheckAuth, CheckRole([UserType.EMPLOYEE, UserType.MANAGER, UserType.ADMIN]), PassengerController.create)
+
 export const PassengerRoutes = router

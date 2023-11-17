@@ -1,5 +1,5 @@
 import { PassengerCriteria } from './../types/criterias/PassengerCriteria'
-import { Passenger } from '~/entities'
+import { Passenger, User } from '~/entities'
 import { BadRequestException } from '~/exceptions/BadRequestException'
 import { NotFoundException } from '~/exceptions/NotFoundException'
 import { MessageKeys } from '~/messages/MessageKeys'
@@ -7,9 +7,11 @@ import { UploadProvider } from '~/providers/upload.provider'
 import { MulterFile } from '~/types/MulterFile'
 import { Pagination } from '~/types/Pagination'
 import { PassengerInput } from '~/types/inputs/PassengerInput'
-import { createPageable, getValueByKey, removeAccents, validateVariable } from '~/utils/common.utils'
+import { createPageable, generateCode, randomColor, removeAccents, validateVariable } from '~/utils/common.utils'
 import { CLOUDINARY_AVATARS } from '~/utils/constants'
-import { CountryEn, CountryVi, Status } from '~/utils/enums'
+import { Gender, Status, UserType } from '~/utils/enums'
+import { AppDataSource } from '~/config/database.config'
+import argon2 from 'argon2'
 
 const uploadAvatar = async (file: MulterFile, userId: string) => {
     if (!file) {
@@ -126,4 +128,49 @@ const updatePassenger = async (id: string, passengerInput: PassengerInput) => {
     return passenger
 }
 
-export const PassengerService = { uploadAvatar, update, passengers, passenger, updateStatus, updatePassenger }
+const create = async (passengerInput: PassengerInput) => {
+    const { phoneNumber, gender, password } = passengerInput
+
+    const user = await User.findOneBy({ phoneNumber, isActived: false })
+
+    const passenger = user && (await Passenger.findOneBy({ user: { id: user.id } }))
+
+    const hashedPassword = await argon2.hash(password)
+    const newUser = await User.create({
+        ...user,
+        ...passengerInput,
+        password: hashedPassword,
+        userType: UserType.CUSTOMER,
+        isActived: true
+    })
+
+    let passengerCode: string = ''
+    do {
+        passengerCode = generateCode('P')
+        const passenger = await Passenger.findOneBy({ passengerCode })
+
+        if (passenger) {
+            passengerCode = ''
+        }
+    } while (!passengerCode)
+
+    const newPassenger = await Passenger.create({
+        ...passenger,
+        ...passengerInput,
+        passengerCode,
+        gender: gender as Gender,
+        color: randomColor(),
+        isPasserby: false,
+        status: Status.ACT
+    })
+    await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
+        await transactionalEntityManager.save(newUser).then((user) => {
+            newPassenger.user = user
+        })
+        await transactionalEntityManager.save(newPassenger)
+    })
+
+    return newPassenger
+}
+
+export const PassengerService = { uploadAvatar, update, passengers, passenger, updateStatus, updatePassenger, create }
