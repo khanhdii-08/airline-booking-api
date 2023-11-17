@@ -5,17 +5,22 @@ const reportClient = async () => {
     const { totalRevenue } = await Booking.createQueryBuilder('booking')
         .select('COALESCE(sum(booking.amountTotal), 0)', 'totalRevenue')
         .where('date(booking.createdAt) = date(now())')
+        .andWhere('booking.status in (:...status)', {
+            status: [Status.ACT, Status.PEN]
+        })
         .getRawOne()
 
     const { totalUser } = await User.createQueryBuilder('user')
         .select('COALESCE(count(user.id), 0)', 'totalUser')
         .where('user.userType = :userType', { userType: UserType.CUSTOMER })
+        .andWhere('user.isActived = true')
         .getRawOne()
 
     const { totalUserInMonth } = await Passenger.createQueryBuilder('passenger')
         .innerJoin('passenger.user', 'user')
         .select('COALESCE(count(user.id), 0)', 'totalUserInMonth')
         .where('user.userType = :userType', { userType: UserType.CUSTOMER })
+        .andWhere('user.isActived = true')
         .andWhere('EXTRACT(MONTH FROM passenger.createdAt) = EXTRACT(MONTH FROM CURRENT_DATE)')
         .andWhere('EXTRACT(YEAR FROM passenger.createdAt) = EXTRACT(YEAR FROM CURRENT_DATE)')
         .getRawOne()
@@ -23,6 +28,9 @@ const reportClient = async () => {
     const { totalOrderInDay } = await Booking.createQueryBuilder('booking')
         .select('count(booking.id)', 'totalOrderInDay')
         .where('date(booking.createdAt) = date(now())')
+        .andWhere('booking.status in (:...status)', {
+            status: [Status.ACT, Status.PEN]
+        })
         .getRawOne()
 
     return { totalRevenue, totalUser, totalUserInMonth, totalOrderInDay }
