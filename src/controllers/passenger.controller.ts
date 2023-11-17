@@ -46,4 +46,18 @@ const updatePassenger = async (req: Request<ParamsDictionary, any, PassengerInpu
     return res.status(HttpStatus.OK).json(result)
 }
 
-export const PassengerController = { uploadAvatar, update, passengers, passenger, updateStatus, updatePassenger }
+const create = async (req: Request<ParamsDictionary, any, PassengerInput>, res: Response) => {
+    const passengerInput: PassengerInput = req.body
+    const result = await PassengerService.create(passengerInput)
+    return res.status(HttpStatus.OK).json(result)
+}
+
+export const PassengerController = {
+    uploadAvatar,
+    update,
+    passengers,
+    passenger,
+    updateStatus,
+    updatePassenger,
+    create
+}

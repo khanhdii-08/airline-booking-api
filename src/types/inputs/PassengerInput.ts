@@ -35,4 +35,6 @@ export class PassengerInput {
     seats: SeatInput[]
 
     serviceOpts: ServiceOptionInput[]
+
+    password: string
 }
