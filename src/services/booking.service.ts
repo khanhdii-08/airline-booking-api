@@ -617,14 +617,46 @@ const myBooking = async (userId: string, status: string, criteria: BookingCriter
 }
 
 const bookingsCancel = async (status: string, criteria: BookingCriteria, pagination: Pagination) => {
-    const { bookingCode } = criteria
+    const { bookingCode, sourceAirportId, destinationAirportId, departureDate, arrivalDate } = criteria
+
     const bookingsCancel = await Booking.createQueryBuilder('booking')
+        .innerJoinAndSelect('booking.flightAway', 'flightAway')
+        .leftJoinAndSelect('booking.flightReturn', 'flightReturn')
+        .innerJoinAndSelect('flightAway.sourceAirport', 'sourceAirportAway')
+        .innerJoinAndSelect('flightAway.destinationAirport', 'destinationAirportAway')
+        .leftJoinAndSelect('flightReturn.sourceAirport', 'sourceAirportReturn')
+        .leftJoinAndSelect('flightReturn.destinationAirport', 'destinationAirportReturn')
         .where('(coalesce(:bookingCode) IS NULL OR booking.bookingCode = :bookingCode)', {
             bookingCode: validateVariable(bookingCode)
         })
         .andWhere('(coalesce(:status) IS NULL OR booking.status IN (:...status))', {
             status: status === 'all' ? [Status.PEN, Status.DEL] : [status.toUpperCase()]
         })
+        .andWhere('(coalesce(:sourceAirportId) is null or sourceAirportAway.id = :sourceAirportId)', {
+            sourceAirportId: validateVariable(sourceAirportId)
+        })
+        .andWhere('(coalesce(:destinationAirportId) is null or destinationAirportAway.id = :destinationAirportId)', {
+            destinationAirportId: validateVariable(destinationAirportId)
+        })
+        .andWhere('(coalesce(:departureDate) is null or DATE(flightAway.departureTime) = DATE(:departureDate))', {
+            departureDate: validateVariable(departureDate)
+        })
+        .andWhere('(coalesce(:arrivalDate) is null or DATE(flightAway.arrivalTime) = DATE(:arrivalDate))', {
+            arrivalDate: validateVariable(arrivalDate)
+        })
+        .andWhere('(coalesce(:sourceAirportId) is null or sourceAirportReturn.id = :sourceAirportId)', {
+            sourceAirportId: validateVariable(sourceAirportId)
+        })
+        .andWhere('(coalesce(:destinationAirportId) is null or destinationAirportReturn.id = :destinationAirportId)', {
+            destinationAirportId: validateVariable(destinationAirportId)
+        })
+        .andWhere('(coalesce(:departureDate) is null or DATE(flightReturn.departureTime) = DATE(:departureDate))', {
+            departureDate: validateVariable(departureDate)
+        })
+        .andWhere('(coalesce(:arrivalDate) is null or DATE(flightReturn.arrivalTime) = DATE(:arrivalDate))', {
+            arrivalDate: validateVariable(arrivalDate)
+        })
+        .orderBy('booking.updatedAt', 'DESC')
         .getMany()
 
     return createPageable(bookingsCancel, pagination)
@@ -736,17 +768,48 @@ const cancelBookings = async (ids: string[]) => {
 }
 
 const bookings = async (criteria: BookingCriteria, pagination: Pagination) => {
-    const { bookingCode } = criteria
-    const bookingsCancel = await Booking.createQueryBuilder('booking')
-        .where('(coalesce(:bookingCode) IS NULL OR booking.bookingCode = :bookingCode)', {
-            bookingCode: validateVariable(bookingCode)
-        })
-        .andWhere('(coalesce(:status) IS NULL OR booking.status = :status)', {
+    const { bookingCode, sourceAirportId, destinationAirportId, departureDate, arrivalDate } = criteria
+    const bookings = await Booking.createQueryBuilder('booking')
+        .innerJoinAndSelect('booking.flightAway', 'flightAway')
+        .leftJoinAndSelect('booking.flightReturn', 'flightReturn')
+        .innerJoinAndSelect('flightAway.sourceAirport', 'sourceAirportAway')
+        .innerJoinAndSelect('flightAway.destinationAirport', 'destinationAirportAway')
+        .leftJoinAndSelect('flightReturn.sourceAirport', 'sourceAirportReturn')
+        .leftJoinAndSelect('flightReturn.destinationAirport', 'destinationAirportReturn')
+        .where('booking.status = :status', {
             status: Status.ACT
         })
+        .andWhere('(coalesce(:bookingCode) IS NULL OR booking.bookingCode = :bookingCode)', {
+            bookingCode: validateVariable(bookingCode)
+        })
+        .andWhere('(coalesce(:sourceAirportId) is null or sourceAirportAway.id = :sourceAirportId)', {
+            sourceAirportId: validateVariable(sourceAirportId)
+        })
+        .andWhere('(coalesce(:destinationAirportId) is null or destinationAirportAway.id = :destinationAirportId)', {
+            destinationAirportId: validateVariable(destinationAirportId)
+        })
+        .andWhere('(coalesce(:departureDate) is null or DATE(flightAway.departureTime) = DATE(:departureDate))', {
+            departureDate: validateVariable(departureDate)
+        })
+        .andWhere('(coalesce(:arrivalDate) is null or DATE(flightAway.arrivalTime) = DATE(:arrivalDate))', {
+            arrivalDate: validateVariable(arrivalDate)
+        })
+        .andWhere('(coalesce(:sourceAirportId) is null or sourceAirportReturn.id = :sourceAirportId)', {
+            sourceAirportId: validateVariable(sourceAirportId)
+        })
+        .andWhere('(coalesce(:destinationAirportId) is null or destinationAirportReturn.id = :destinationAirportId)', {
+            destinationAirportId: validateVariable(destinationAirportId)
+        })
+        .andWhere('(coalesce(:departureDate) is null or DATE(flightReturn.departureTime) = DATE(:departureDate))', {
+            departureDate: validateVariable(departureDate)
+        })
+        .andWhere('(coalesce(:arrivalDate) is null or DATE(flightReturn.arrivalTime) = DATE(:arrivalDate))', {
+            arrivalDate: validateVariable(arrivalDate)
+        })
+        .orderBy('booking.bookingDate', 'DESC')
         .getMany()
 
-    return createPageable(bookingsCancel, pagination)
+    return createPageable(bookings, pagination)
 }
 
 export const BookingService = {
