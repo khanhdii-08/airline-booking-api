@@ -5,6 +5,7 @@ import { Pagination } from '~/types/Pagination'
 import { BookingCriteria } from '~/types/criterias/BookingCriteria'
 import { BookingInput } from '~/types/inputs/BookingInput'
 import { IdsInput } from '~/types/inputs/IdsInput'
+import { PassengerInput } from '~/types/inputs/PassengerInput'
 import { TokenContext } from '~/utils/TokenContext'
 import { HttpStatus } from '~/utils/httpStatus'
 
@@ -97,6 +98,13 @@ const bookings = async (req: Request<ParamsDictionary, any, any, any>, res: Resp
     return res.status(HttpStatus.OK).json(result)
 }
 
+const updateBookingByAdmin = async (req: Request<ParamsDictionary, any, PassengerInput[]>, res: Response) => {
+    const passengersInput: PassengerInput[] = req.body
+    const id = req.params['id']
+    const result = await BookingService.updateBookingByAdmin(id, passengersInput)
+    return res.status(HttpStatus.OK).json(result)
+}
+
 export const BookingController = {
     booking,
     search,
@@ -107,5 +115,6 @@ export const BookingController = {
     bookingsCancel,
     upadateStatus,
     cancelBookings,
-    bookings
+    bookings,
+    updateBookingByAdmin
 }

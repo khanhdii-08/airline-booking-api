@@ -27,6 +27,7 @@ import { MESSAGE_CANCEL_BOOKING, OTP_TIME_BOOKING_CANCEL_KEY, OTP_TIME_BOOKING_U
 import { MailProvider } from '~/providers/mail.provider'
 import { Pagination } from '~/types/Pagination'
 import { ErrorResponse } from '~/types/ErrorResponse'
+import { PassengerInput } from '~/types/inputs/PassengerInput'
 
 const booking = async (bookingInput: BookingInput) => {
     const { userId, flightAwayId, flightReturnId, seatId, passengers, ...booking } = bookingInput
@@ -812,6 +813,42 @@ const bookings = async (criteria: BookingCriteria, pagination: Pagination) => {
     return createPageable(bookings, pagination)
 }
 
+const updateBookingByAdmin = async (id: string, passengersInput: PassengerInput[]) => {
+    const booking = await Booking.findOne({
+        where: { id },
+        relations: { passengers: true }
+    })
+    if (!booking) {
+        throw new NotFoundException({ message: 'không tìm thấy chuyến bay' })
+    } else if (booking.status !== Status.ACT) {
+        throw new BadRequestException({ error: { message: 'không ở trạng thái hoạt động' } })
+    }
+
+    const { passengers } = booking
+    passengers.forEach((passenger) => {
+        const passengerSave = passengersInput.find((p) => p.passengerId === passenger.id)
+        if (passengerSave) {
+            if (passenger.passengerType === PassengerType.ADULT) {
+                passengerSave.firstName && (passenger.firstName = passengerSave.firstName)
+                passengerSave.lastName && (passenger.lastName = passengerSave.lastName)
+                passengerSave.dateOfBirth && (passenger.dateOfBirth = passengerSave.dateOfBirth)
+                passengerSave.country && (passenger.country = passengerSave.country)
+                passengerSave.phoneNumber && (passenger.phoneNumber = passengerSave.phoneNumber)
+                passengerSave.email && (passenger.email = passengerSave.email)
+                passengerSave.address && (passenger.address = passengerSave.address)
+                passenger.save()
+            } else {
+                passengerSave.firstName && (passenger.firstName = passengerSave.firstName)
+                passengerSave.lastName && (passenger.lastName = passengerSave.lastName)
+                passengerSave.dateOfBirth && (passenger.dateOfBirth = passengerSave.dateOfBirth)
+                passenger.save()
+            }
+        }
+    })
+
+    return booking
+}
+
 export const BookingService = {
     booking,
     bookingDetail,
@@ -822,5 +859,6 @@ export const BookingService = {
     bookingsCancel,
     upadateStatus,
     cancelBookings,
-    bookings
+    bookings,
+    updateBookingByAdmin
 }

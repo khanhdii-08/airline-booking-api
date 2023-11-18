@@ -28,5 +28,12 @@ router
 router
     .route('/admin/all')
     .get(CheckAuth, CheckRole([UserType.EMPLOYEE, UserType.MANAGER, UserType.ADMIN]), BookingController.bookings)
+router
+    .route('/:id')
+    .put(
+        CheckAuth,
+        CheckRole([UserType.EMPLOYEE, UserType.MANAGER, UserType.ADMIN]),
+        BookingController.updateBookingByAdmin
+    )
 
 export const BookingRoutes = router
