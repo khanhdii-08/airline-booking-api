@@ -1,23 +1,17 @@
 import { NextFunction, Request, Response } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
+import { PassengerInput } from '~/types/inputs/PassengerInput'
 import validator from 'validator'
-import i18n from '~/config/i18n.config'
-import { HttpStatus } from '~/utils/httpStatus'
-import { User } from '~/entities'
-import { AppError } from '~/exceptions/AppError'
 import { ValidationException } from '~/exceptions/ValidationException'
+import i18n from '~/config/i18n.config'
 import { MessageKeys } from '~/messages/MessageKeys'
-import { RegisterInput } from '~/types/inputs/RegisterInput'
-import { Gender } from '~/utils/enums'
-import { CountryEn, CountryVi } from '~/utils/enums/country.enum'
-import { BadRequestException } from '~/exceptions/BadRequestException'
-import { TokenContext } from '~/utils/TokenContext'
-import { UnauthorizedException } from '~/exceptions/UnauthorizedException'
-import { redisClient } from '~/config/redis.config'
-import { OTP_KEY } from '~/utils/constants'
+import { CountryEn, CountryVi, Gender } from '~/utils/enums'
+import { User } from '~/entities'
+import { HttpStatus } from '~/utils/httpStatus'
+import { AppError } from '~/exceptions/AppError'
 
-const register = async (req: Request<ParamsDictionary, any, RegisterInput>, res: Response, next: NextFunction) => {
-    const { phoneNumber, email, firstName, dateOfBirth, lastName, country, gender, password } = req.body
+const create = async (req: Request<ParamsDictionary, any, PassengerInput>, res: Response, next: NextFunction) => {
+    const { firstName, lastName, dateOfBirth, country, gender, phoneNumber, email, password, idCard } = req.body
 
     if (Object.keys(Gender).indexOf(gender) === -1) {
         throw new ValidationException(
@@ -43,6 +37,8 @@ const register = async (req: Request<ParamsDictionary, any, RegisterInput>, res:
         throw new ValidationException(i18n.__(MessageKeys.E_PASSENGER_V008_PHONENUMBERBLANK))
     } else if (!validator.isMobilePhone(phoneNumber, 'vi-VN')) {
         throw new ValidationException(i18n.__(MessageKeys.E_PASSENGER_V009_PHONENUMBERCORRECTFORMAT))
+    } else if (!idCard || validator.isEmpty(idCard)) {
+        throw new ValidationException('idCard')
     } else if (email && !validator.isEmpty(email)) {
         if (!validator.isEmail(email))
             throw new ValidationException(i18n.__(MessageKeys.E_PASSENGER_V011_EMAILCORRECTFORMAT))
@@ -70,6 +66,22 @@ const register = async (req: Request<ParamsDictionary, any, RegisterInput>, res:
                 })
             }
         }
+
+        const existingUserNotAcitive = await User.findOneBy({ phoneNumber, isActived: false })
+        if (existingUserNotAcitive) {
+            throw new AppError({
+                status: HttpStatus.CONFLICT,
+                error: { message: i18n.__(MessageKeys.E_PASSENGER_B003_PHONEDUPLICATEDNOTACTIVE) }
+            })
+        } else {
+            const existingUserNotAcitive = await User.findOneBy({ email, isActived: false })
+            if (existingUserNotAcitive) {
+                throw new AppError({
+                    status: HttpStatus.CONFLICT,
+                    error: { message: i18n.__(MessageKeys.E_PASSENGER_B004_EMAILDUPLICATEDNOTACTIVE) }
+                })
+            }
+        }
     } else {
         const existingUser = await User.findOneBy({ phoneNumber, isActived: true })
         if (existingUser) {
@@ -78,32 +90,16 @@ const register = async (req: Request<ParamsDictionary, any, RegisterInput>, res:
                 error: { message: i18n.__(MessageKeys.E_PASSENGER_B000_PHONEDUPLICATED) }
             })
         }
+        const existingUserNotAcitive = await User.findOneBy({ phoneNumber, isActived: false })
+        if (existingUserNotAcitive) {
+            throw new AppError({
+                status: HttpStatus.CONFLICT,
+                error: { message: i18n.__(MessageKeys.E_PASSENGER_B003_PHONEDUPLICATEDNOTACTIVE) }
+            })
+        }
     }
 
     next()
 }
 
-const verify = async (req: Request<ParamsDictionary, any, any, { otp: string }>, res: Response, next: NextFunction) => {
-    const { otp } = req.query
-
-    if (!otp || validator.isEmpty(otp)) {
-        throw new BadRequestException({ error: { message: 'ss' } })
-    }
-
-    const jwtPayload = TokenContext.jwtPayload(req)
-    await User.findOneByOrFail({ id: jwtPayload._id }).catch(() => new UnauthorizedException('dđ'))
-
-    next()
-}
-
-const sendOTP = async (req: Request, res: Response, next: NextFunction) => {
-    const jwtPayload = TokenContext.jwtPayload(req)
-    const savedOtp = await redisClient.get(`${OTP_KEY}:${jwtPayload._id}`)
-    if (!savedOtp) {
-        throw new BadRequestException({ error: { message: 'dsds' } })
-    }
-
-    next()
-}
-
-export const AuthValidation = { register, verify, sendOTP }
+export const PassengerValidation = { create }

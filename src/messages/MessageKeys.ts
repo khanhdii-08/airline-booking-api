@@ -25,6 +25,8 @@ export const MessageKeys = {
     E_PASSENGER_B000_PHONEDUPLICATED: 'e.passenger.b000.phoneDuplicated',
     E_PASSENGER_B001_EMAILDUPLICATED: 'e.passenger.b001.emailDuplicated',
     E_PASSENGER_B002_OPTINVALID: 'e.passenger.b002.optInvalid',
+    E_PASSENGER_B003_PHONEDUPLICATEDNOTACTIVE: 'e.passenger.b003.phoneDuplicatedNotActive',
+    E_PASSENGER_B004_EMAILDUPLICATEDNOTACTIVE: 'e.passenger.b004.emailDuplicatedNotActive',
     E_PASSENGER_R000_NOTFOUND: 'e.passenger.r000.notfound',
     E_AIRLINE_R000_NOTFOUND: 'e.airline.r000.notfound',
     E_FLIGHT_R000_NOTFOUND: 'e.flight.r000.notfound',

@@ -1,12 +1,12 @@
-{   
-    "e.express.v000.isEmpty" : "Field %s cannot be empty.",
-    "e.express.v001.notString" : "Field %s must be a string.",
-    "e.express.v002.notNumber" : "Field %s must be numeric.",
-    "e.express.v003.notDate" : "Field %s must be a date.",
-    "e.express.v004.isMin" : "Field %s cannot be less than %s.",
-    "e.express.v005.isMax" : "Field %s cannot be greater than %s.",
+{
+    "e.express.v000.isEmpty": "Field %s cannot be empty.",
+    "e.express.v001.notString": "Field %s must be a string.",
+    "e.express.v002.notNumber": "Field %s must be numeric.",
+    "e.express.v003.notDate": "Field %s must be a date.",
+    "e.express.v004.isMin": "Field %s cannot be less than %s.",
+    "e.express.v005.isMax": "Field %s cannot be greater than %s.",
 
-    "e.enum.v000.invalid" : "The %s value passed is not valid.",
+    "e.enum.v000.invalid": "The %s value passed is not valid.",
 
     "e.passenger.v000.firstNameBlank": "First Name cannot be blank.",
     "e.passenger.v001.firstNameTooLong": "First Name must be less than 60 characters.",
@@ -16,23 +16,25 @@
     "e.passenger.v005.dateOfBirthCorrectFormat": "Date Of Birth is not in correct format.",
     "e.passenger.v006.countryBlank": "Country cannot be blank.",
     "e.passenger.v007.countryExist": "Country does not exist.",
-    "e.passenger.v008.phonenumberBlank" : "Phone number can not be left blank.",
-    "e.passenger.v009.phonenumberCorrectFormat" : "Phone number is not in the correct format.",
-    "e.passenger.v010.emailBlank" : "Email cannot be blank.",
-    "e.passenger.v011.emailCorrectFormat" : "Email is not in correct format.",
-    "e.passenger.v012.passwordBlank" : "Password can not be blank.",
-    "e.passenger.V013.passwordLength" : "Password must be longer than 8 characters.",
+    "e.passenger.v008.phonenumberBlank": "Phone number can not be left blank.",
+    "e.passenger.v009.phonenumberCorrectFormat": "Phone number is not in the correct format.",
+    "e.passenger.v010.emailBlank": "Email cannot be blank.",
+    "e.passenger.v011.emailCorrectFormat": "Email is not in correct format.",
+    "e.passenger.v012.passwordBlank": "Password can not be blank.",
+    "e.passenger.V013.passwordLength": "Password must be longer than 8 characters.",
     "e.passenger.v014.passwordTooLong": "Password must be less than 60 characters.",
 
     "e.passenger.b000.phoneDuplicated": "The phone number was used for previous registration.",
     "e.passenger.b001.emailDuplicated": "Email was used for previous registration.",
-    "e.passenger.b002.optInvalid" : "Invalid Otp",
+    "e.passenger.b002.optInvalid": "Invalid Otp",
+    "e.passenger.b003.phoneDuplicatedNotActive": "The phone number has been registered but has not been activated. Please enable.",
+    "e.passenger.b004.emailDuplicatedNotActive": "Email is registered but not activated. Please enable.",
 
-    "e.passenger.r000.notfound" : "Passenger not found.",
+    "e.passenger.r000.notfound": "Passenger not found.",
 
-    "e.airline.r000.notfound" : "Airline not found.",
+    "e.airline.r000.notfound": "Airline not found.",
 
-    "e.flight.r000.notfound" : "Flight not found.",
+    "e.flight.r000.notfound": "Flight not found.",
 
-    "e.seat.r000.notfound" : "Seat not found."
+    "e.seat.r000.notfound": "Seat not found."
 }
