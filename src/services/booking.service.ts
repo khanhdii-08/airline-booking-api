@@ -165,8 +165,10 @@ const bookingDetail = async (criteria: BookingCriteria) => {
         .leftJoinAndSelect('flightReturn.destinationAirport', 'destinationAirportReturn')
         .innerJoin('booking.passengers', 'passengers')
         .innerJoinAndSelect('booking.seat', 'seat')
-        .where('(coalesce(:bookingId) IS NULL OR booking.id = :bookingId)', { bookingId })
-        .orWhere('booking.bookingCode = :bookingCode', { bookingCode: bookingCode?.trim() })
+        .where('(booking.id = :bookingId)', { bookingId })
+        .orWhere('booking.bookingCode = :bookingCode', {
+            bookingCode: bookingCode?.trim()
+        })
         .andWhere('unaccent(passengers.firstName) ILIKE :firstName', {
             firstName: `%${removeAccents(firstName?.trim())}%`
         })
@@ -629,7 +631,10 @@ const bookingsCancel = async (status: string, criteria: BookingCriteria, paginat
 }
 
 const upadateStatus = async (ids: string[], status: Status) => {
-    const bookings = await Booking.find({ where: { id: In(ids) } })
+    const bookings = await Booking.find({
+        where: { id: In(ids) },
+        relations: { bookingSeats: true, bookingServiceOpts: true }
+    })
 
     const errors: ErrorResponse[] = []
 
@@ -639,6 +644,15 @@ const upadateStatus = async (ids: string[], status: Status) => {
                 const booking = bookings.find((b) => b.id === id)
                 if (booking) {
                     if (booking.status === Status.PEN) {
+                        const { bookingSeats, bookingServiceOpts } = booking
+                        bookingSeats.forEach((bookingSeat) => {
+                            bookingSeat.status = Status.DEL
+                            bookingSeat.save()
+                        })
+                        bookingServiceOpts.forEach((bookingServiceOpt) => {
+                            bookingServiceOpt.status = Status.DEL
+                            bookingServiceOpt.save()
+                        })
                         booking.status = Status.DEL
                     } else {
                         errors.push({ message: 'không ở trạng thái chờ hủy', data: booking })
@@ -677,7 +691,10 @@ const upadateStatus = async (ids: string[], status: Status) => {
 }
 
 const cancelBookings = async (ids: string[]) => {
-    const bookings = await Booking.findBy({ id: In(ids) })
+    const bookings = await Booking.find({
+        where: { id: In(ids) },
+        relations: { bookingSeats: true, bookingServiceOpts: true }
+    })
     const errors: ErrorResponse[] = []
 
     if (bookings) {
@@ -685,6 +702,15 @@ const cancelBookings = async (ids: string[]) => {
             const booking = bookings.find((b) => b.id === id)
             if (booking) {
                 if (booking.status === Status.ACT) {
+                    const { bookingSeats, bookingServiceOpts } = booking
+                    bookingSeats.forEach((bookingSeat) => {
+                        bookingSeat.status = Status.DEL
+                        bookingSeat.save()
+                    })
+                    bookingServiceOpts.forEach((bookingServiceOpt) => {
+                        bookingServiceOpt.status = Status.DEL
+                        bookingServiceOpt.save()
+                    })
                     booking.status = Status.DEL
                 } else {
                     errors.push({ message: 'không ở trạng thái hoạt động', data: booking })
@@ -710,7 +736,6 @@ const cancelBookings = async (ids: string[]) => {
 
 const bookings = async (criteria: BookingCriteria, pagination: Pagination) => {
     const { bookingCode } = criteria
-    console.log(criteria)
     const bookingsCancel = await Booking.createQueryBuilder('booking')
         .where('(coalesce(:bookingCode) IS NULL OR booking.bookingCode = :bookingCode)', {
             bookingCode: validateVariable(bookingCode)
