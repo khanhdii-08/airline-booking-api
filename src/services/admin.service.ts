@@ -58,6 +58,9 @@ const revenueInTwoYear = async () => {
         .addSelect('EXTRACT(YEAR FROM booking.createdAt) AS year')
         .addSelect('SUM(booking.amountTotal) AS totalAmount')
         .where('booking.createdAt >= :twoYearsAgo', { twoYearsAgo })
+        .andWhere('booking.status in (:...status)', {
+            status: [Status.ACT, Status.PEN]
+        })
         .groupBy('year, month')
         .orderBy('year', 'ASC')
         .addOrderBy('month', 'ASC')
