@@ -35,3 +35,6 @@ export const MOMO_URL_CREATE = '/v2/gateway/api/create'
 
 // cloudinary
 export const CLOUDINARY_AVATARS = 'avatars'
+
+// message cancel booking
+export const MESSAGE_CANCEL_BOOKING = 'Hủy đặt vé bởi ADMIN'

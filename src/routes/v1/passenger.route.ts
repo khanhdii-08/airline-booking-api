@@ -3,6 +3,7 @@ import { PassengerController } from '~/controllers/passenger.controller'
 import { CheckAuth, CheckRole } from '~/middlewares'
 import { upload } from '~/middlewares/uploadFile'
 import { UserType } from '~/utils/enums'
+import { PassengerValidation } from '~/validations/passenger.validation'
 
 const router: Router = express.Router()
 
@@ -31,6 +32,11 @@ router
 
 router
     .route('/')
-    .post(CheckAuth, CheckRole([UserType.EMPLOYEE, UserType.MANAGER, UserType.ADMIN]), PassengerController.create)
+    .post(
+        CheckAuth,
+        CheckRole([UserType.EMPLOYEE, UserType.MANAGER, UserType.ADMIN]),
+        PassengerValidation.create,
+        PassengerController.create
+    )
 
 export const PassengerRoutes = router

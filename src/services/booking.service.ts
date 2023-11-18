@@ -11,7 +11,7 @@ import {
     ServiceOption,
     User
 } from '~/entities'
-import { BookingInput } from '../types/inputs/BookingInput'
+import { BookingInput } from '~/types/inputs/BookingInput'
 import { PaymentStatus, Status } from '~/utils/enums'
 import { NotFoundException } from '~/exceptions/NotFoundException'
 import { AppDataSource } from '~/config/database.config'
@@ -23,7 +23,7 @@ import { In } from 'typeorm'
 import { BadRequestException } from '~/exceptions/BadRequestException'
 import { redisClient } from '~/config/redis.config'
 import { UnauthorizedException } from '~/exceptions/UnauthorizedException'
-import { OTP_TIME_BOOKING_CANCEL_KEY, OTP_TIME_BOOKING_UPDATE_KEY } from '~/utils/constants'
+import { MESSAGE_CANCEL_BOOKING, OTP_TIME_BOOKING_CANCEL_KEY, OTP_TIME_BOOKING_UPDATE_KEY } from '~/utils/constants'
 import { MailProvider } from '~/providers/mail.provider'
 import { Pagination } from '~/types/Pagination'
 import { ErrorResponse } from '~/types/ErrorResponse'
@@ -495,7 +495,7 @@ const updateBooking = async (bookingInput: BookingInput) => {
 }
 
 const bookingAddService = async (bookingInput: BookingInput) => {
-    const { bookingId, passengers, flightId, flightAwayId, flightReturnId, amountTotal, seatTotal } = bookingInput
+    const { bookingId, passengers, amountTotal, seatTotal } = bookingInput
     const booking = await Booking.findOne({
         where: { id: bookingId },
         relations: { flightAway: true, flightReturn: true }
@@ -712,6 +712,7 @@ const cancelBookings = async (ids: string[]) => {
                         bookingServiceOpt.save()
                     })
                     booking.status = Status.DEL
+                    booking.note = MESSAGE_CANCEL_BOOKING
                 } else {
                     errors.push({ message: 'không ở trạng thái hoạt động', data: booking })
                 }

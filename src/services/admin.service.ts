@@ -4,9 +4,11 @@ import { Status, UserType } from '~/utils/enums'
 const reportClient = async () => {
     const { totalRevenue } = await Booking.createQueryBuilder('booking')
         .select('COALESCE(sum(booking.amountTotal), 0)', 'totalRevenue')
-        .where('date(booking.bookingDate) = date(now())')
         .where('date(booking.bookingDate) = :now', {
             now: new Date()
+        })
+        .andWhere('booking.status in (:...status)', {
+            status: [Status.ACT, Status.PEN]
         })
         .getRawOne()
 
