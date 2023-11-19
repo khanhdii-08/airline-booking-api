@@ -14,5 +14,11 @@ router
 router
     .route('/revenue-in-two-year')
     .get(CheckAuth, CheckRole([UserType.ADMIN, UserType.MANAGER, UserType.EMPLOYEE]), AdminController.revenueInTwoYear)
+router
+    .route('/statistical-client')
+    .get(CheckAuth, CheckRole([UserType.ADMIN, UserType.MANAGER, UserType.EMPLOYEE]), AdminController.statisticalClient)
+router
+    .route('/statistical-revenue-by-year')
+    .get(CheckAuth, CheckRole([UserType.ADMIN, UserType.MANAGER, UserType.EMPLOYEE]), AdminController.revenueByYear)
 
 export const AdminRoutes = router

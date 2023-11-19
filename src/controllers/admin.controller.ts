@@ -1,4 +1,6 @@
+import { StatisticalCriteria } from './../types/criterias/StatisticalCriteria'
 import { Request, Response } from 'express'
+import { ParamsDictionary } from 'express-serve-static-core'
 import { AdminService } from '~/services/admin.service'
 import { HttpStatus } from '~/utils/httpStatus'
 
@@ -17,4 +19,18 @@ const revenueInTwoYear = async (req: Request, res: Response) => {
     return res.status(HttpStatus.OK).json(result)
 }
 
-export const AdminController = { reportClient, bookingsLimitTen, revenueInTwoYear }
+const statisticalClient = async (req: Request<ParamsDictionary, any, any, any>, res: Response) => {
+    const { fromDate, toDate } = req.query
+    const criteria: StatisticalCriteria = { fromDate, toDate }
+    const result = await AdminService.statisticalClient(criteria)
+    return res.status(HttpStatus.OK).json(result)
+}
+
+const revenueByYear = async (req: Request<ParamsDictionary, any, any, any>, res: Response) => {
+    const { year } = req.query
+    const criteria: StatisticalCriteria = { year }
+    const result = await AdminService.revenueByYear(criteria)
+    return res.status(HttpStatus.OK).json(result)
+}
+
+export const AdminController = { reportClient, bookingsLimitTen, revenueInTwoYear, statisticalClient, revenueByYear }

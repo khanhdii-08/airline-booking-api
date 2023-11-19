@@ -1,4 +1,6 @@
+import { StatisticalCriteria } from './../types/criterias/StatisticalCriteria'
 import { Booking, Passenger, User } from '~/entities'
+import { validateVariable } from '~/utils/common.utils'
 import { Status, UserType } from '~/utils/enums'
 
 const reportClient = async () => {
@@ -161,4 +163,141 @@ const revenueInTwoYear = async () => {
     return { yearOne, yearTwo }
 }
 
-export const AdminService = { reportClient, bookingsLimitTen, revenueInTwoYear }
+const statisticalClient = async (criteria: StatisticalCriteria) => {
+    const { fromDate, toDate } = criteria
+    const { totalRevenue } = await Booking.createQueryBuilder('booking')
+        .select('COALESCE(sum(booking.amountTotal), 0)', 'totalRevenue')
+        .where('(coalesce(:fromDate) is null or DATE(booking.bookingDate) >= DATE(:fromDate))', {
+            fromDate: validateVariable(fromDate)
+        })
+        .andWhere('(coalesce(:toDate) is null or DATE(booking.bookingDate) <= DATE(:toDate))', {
+            toDate: validateVariable(toDate)
+        })
+        .andWhere('booking.status in (:...status)', {
+            status: [Status.ACT, Status.PEN]
+        })
+        .getRawOne()
+
+    // const { totalUser } = await User.createQueryBuilder('user')
+    //     .select('COALESCE(count(user.id), 0)', 'totalUser')
+    //     .where('user.userType = :userType', { userType: UserType.CUSTOMER })
+    //     .andWhere('user.isActived = true')
+    //     .andWhere('(coalesce(:fromDate) is null or DATE(booking.bookingDate) >= DATE(:fromDate))', {
+    //         fromDate: validateVariable(fromDate)
+    //     })
+    //     .andWhere('(coalesce(:toDate) is null or DATE(booking.bookingDate) <= DATE(:toDate))', {
+    //         toDate: validateVariable(toDate)
+    //     })
+    //     .getRawOne()
+
+    const { totalUser } = await Passenger.createQueryBuilder('passenger')
+        .innerJoin('passenger.user', 'user')
+        .select('COALESCE(count(user.id), 0)', 'totalUser')
+        .where('user.userType = :userType', { userType: UserType.CUSTOMER })
+        .andWhere('user.isActived = true')
+        .andWhere('(coalesce(:fromDate) is null or DATE(passenger.createdAt) >= DATE(:fromDate))', {
+            fromDate: validateVariable(fromDate)
+        })
+        .andWhere('(coalesce(:toDate) is null or DATE(passenger.createdAt) <= DATE(:toDate))', {
+            toDate: validateVariable(toDate)
+        })
+        .getRawOne()
+
+    const { totalOrder } = await Booking.createQueryBuilder('booking')
+        .select('count(booking.id)', 'totalOrder')
+        .where('(coalesce(:fromDate) is null or DATE(booking.bookingDate) >= DATE(:fromDate))', {
+            fromDate: validateVariable(fromDate)
+        })
+        .andWhere('(coalesce(:toDate) is null or DATE(booking.bookingDate) <= DATE(:toDate))', {
+            toDate: validateVariable(toDate)
+        })
+        .andWhere('booking.status in (:...status)', {
+            status: [Status.ACT, Status.PEN]
+        })
+        .getRawOne()
+
+    return { totalRevenue, totalUser, totalOrder }
+}
+
+const revenueByYear = async (criteria: StatisticalCriteria) => {
+    const { year } = criteria
+    const bookings = await Booking.createQueryBuilder('booking')
+        .select('EXTRACT(MONTH FROM booking.createdAt) AS month')
+        .addSelect('EXTRACT(YEAR FROM booking.createdAt) AS year')
+        .addSelect('SUM(booking.amountTotal) AS totalAmount')
+        .where('EXTRACT(YEAR FROM booking.createdAt) = :year', { year })
+        .andWhere('booking.status in (:...status)', {
+            status: [Status.ACT, Status.PEN]
+        })
+        .groupBy('year, month')
+        .orderBy('year', 'ASC')
+        .addOrderBy('month', 'ASC')
+        .getRawMany()
+
+    const currentMonth = new Date().getMonth() + 1
+    const months: string[] = [
+        'January',
+        'February',
+        'March',
+        'April',
+        'May',
+        'June',
+        'July',
+        'August',
+        'September',
+        'October',
+        'November',
+        'December'
+    ]
+    let yearDetail: { [key: string]: number } = {}
+    let medium: number
+    let maxNumber: number
+    let minNumber: number
+
+    medium = 0
+    const firstBookingTwo = bookings.find(
+        (b) => Number(b.month) === Number(1) && Number(b.year) === Number(new Date().getFullYear())
+    )
+    maxNumber = firstBookingTwo ? firstBookingTwo.totalamount : 0
+    minNumber = firstBookingTwo ? firstBookingTwo.totalamount : 0
+    for (const month in months) {
+        const year = new Date().getFullYear()
+        const match = bookings.find((b) => Number(b.month) === Number(month) + 1 && Number(b.year) === Number(year))
+        bookings.forEach((b) => {
+            if (
+                Number(b.month) === Number(month) + 1 &&
+                Number(b.year) === Number(year) &&
+                Number(b.month) <= currentMonth
+            ) {
+                medium += b.totalamount
+                if (b.totalamount > maxNumber) {
+                    maxNumber = b.totalamount
+                }
+                if (b.totalamount < minNumber) {
+                    minNumber = b.totalamount
+                }
+            }
+        })
+
+        yearDetail = {
+            ...yearDetail,
+            [months[month]]: match ? match.totalamount : 0
+        }
+    }
+
+    return {
+        ...yearDetail,
+        medium:
+            new Date().getFullYear() === Number(year)
+                ? Number((medium / currentMonth).toFixed(2))
+                : Number((medium / 12).toFixed(2)),
+        maxNumber,
+        minNumber
+    }
+}
+
+const revenueBySeatAndYear = async () => {
+    const query = await Booking.createQueryBuilder('booking').innerJoinAndSelect('booking.seat', 'seat')
+}
+
+export const AdminService = { reportClient, bookingsLimitTen, revenueInTwoYear, statisticalClient, revenueByYear }
