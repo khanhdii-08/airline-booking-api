@@ -20,5 +20,19 @@ router
 router
     .route('/statistical-revenue-by-year')
     .get(CheckAuth, CheckRole([UserType.ADMIN, UserType.MANAGER, UserType.EMPLOYEE]), AdminController.revenueByYear)
+router
+    .route('/statistical-total-booking-by-year')
+    .get(
+        CheckAuth,
+        CheckRole([UserType.ADMIN, UserType.MANAGER, UserType.EMPLOYEE]),
+        AdminController.totalBookingByYear
+    )
+router
+    .route('/statistical-revenue-seat')
+    .get(
+        CheckAuth,
+        CheckRole([UserType.ADMIN, UserType.MANAGER, UserType.EMPLOYEE]),
+        AdminController.statisticalRevenueSeat
+    )
 
 export const AdminRoutes = router
