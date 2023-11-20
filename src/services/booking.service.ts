@@ -625,8 +625,12 @@ const bookingsCancel = async (status: string, criteria: BookingCriteria, paginat
         .leftJoinAndSelect('booking.flightReturn', 'flightReturn')
         .innerJoinAndSelect('flightAway.sourceAirport', 'sourceAirportAway')
         .innerJoinAndSelect('flightAway.destinationAirport', 'destinationAirportAway')
+        .innerJoinAndSelect('sourceAirportAway.city', 'sourceCityAway')
+        .innerJoinAndSelect('destinationAirportAway.city', 'destinationCityAway')
         .leftJoinAndSelect('flightReturn.sourceAirport', 'sourceAirportReturn')
         .leftJoinAndSelect('flightReturn.destinationAirport', 'destinationAirportReturn')
+        .innerJoinAndSelect('sourceAirportReturn.city', 'sourceCityReturn')
+        .innerJoinAndSelect('destinationAirportReturn.city', 'destinationCity')
         .where('(coalesce(:bookingCode) IS NULL OR booking.bookingCode = :bookingCode)', {
             bookingCode: validateVariable(bookingCode)
         })
@@ -775,8 +779,12 @@ const bookings = async (criteria: BookingCriteria, pagination: Pagination) => {
         .leftJoinAndSelect('booking.flightReturn', 'flightReturn')
         .innerJoinAndSelect('flightAway.sourceAirport', 'sourceAirportAway')
         .innerJoinAndSelect('flightAway.destinationAirport', 'destinationAirportAway')
+        .innerJoinAndSelect('sourceAirportAway.city', 'sourceCityAway')
+        .innerJoinAndSelect('destinationAirportAway.city', 'destinationCityAway')
         .leftJoinAndSelect('flightReturn.sourceAirport', 'sourceAirportReturn')
         .leftJoinAndSelect('flightReturn.destinationAirport', 'destinationAirportReturn')
+        .innerJoinAndSelect('sourceAirportReturn.city', 'sourceCityReturn')
+        .innerJoinAndSelect('destinationAirportReturn.city', 'destinationCity')
         .where('booking.status = :status', {
             status: Status.ACT
         })
@@ -833,6 +841,7 @@ const updateBookingByAdmin = async (id: string, passengersInput: PassengerInput[
                 passengerSave.lastName && (passenger.lastName = passengerSave.lastName)
                 passengerSave.dateOfBirth && (passenger.dateOfBirth = passengerSave.dateOfBirth)
                 passengerSave.country && (passenger.country = passengerSave.country)
+                passengerSave.gender && (passenger.gender = passengerSave.gender)
                 passengerSave.phoneNumber && (passenger.phoneNumber = passengerSave.phoneNumber)
                 passengerSave.email && (passenger.email = passengerSave.email)
                 passengerSave.address && (passenger.address = passengerSave.address)
@@ -841,6 +850,7 @@ const updateBookingByAdmin = async (id: string, passengersInput: PassengerInput[
                 passengerSave.firstName && (passenger.firstName = passengerSave.firstName)
                 passengerSave.lastName && (passenger.lastName = passengerSave.lastName)
                 passengerSave.dateOfBirth && (passenger.dateOfBirth = passengerSave.dateOfBirth)
+                passengerSave.gender && (passenger.gender = passengerSave.gender)
                 passenger.save()
             }
         }

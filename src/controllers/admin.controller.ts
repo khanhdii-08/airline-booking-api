@@ -33,4 +33,26 @@ const revenueByYear = async (req: Request<ParamsDictionary, any, any, any>, res:
     return res.status(HttpStatus.OK).json(result)
 }
 
-export const AdminController = { reportClient, bookingsLimitTen, revenueInTwoYear, statisticalClient, revenueByYear }
+const totalBookingByYear = async (req: Request<ParamsDictionary, any, any, any>, res: Response) => {
+    const { year } = req.query
+    const criteria: StatisticalCriteria = { year }
+    const result = await AdminService.totalBookingByYear(criteria)
+    return res.status(HttpStatus.OK).json(result)
+}
+
+const statisticalRevenueSeat = async (req: Request<ParamsDictionary, any, any, any>, res: Response) => {
+    const { fromDate, toDate } = req.query
+    const criteria: StatisticalCriteria = { fromDate, toDate }
+    const result = await AdminService.statisticalRevenueSeat(criteria)
+    return res.status(HttpStatus.OK).json(result)
+}
+
+export const AdminController = {
+    reportClient,
+    bookingsLimitTen,
+    revenueInTwoYear,
+    statisticalClient,
+    revenueByYear,
+    totalBookingByYear,
+    statisticalRevenueSeat
+}

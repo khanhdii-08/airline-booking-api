@@ -1,12 +1,12 @@
 import { StatisticalCriteria } from './../types/criterias/StatisticalCriteria'
-import { Booking, Passenger, User } from '~/entities'
+import { Booking, Passenger, Seat, User } from '~/entities'
 import { validateVariable } from '~/utils/common.utils'
 import { Status, UserType } from '~/utils/enums'
 
 const reportClient = async () => {
     const { totalRevenue } = await Booking.createQueryBuilder('booking')
         .select('COALESCE(sum(booking.amountTotal), 0)', 'totalRevenue')
-        .where('date(booking.bookingDate) = :now', {
+        .where('date(booking.bookingDate) = date(:now)', {
             now: new Date()
         })
         .andWhere('booking.status in (:...status)', {
@@ -31,7 +31,7 @@ const reportClient = async () => {
 
     const { totalOrderInDay } = await Booking.createQueryBuilder('booking')
         .select('count(booking.id)', 'totalOrderInDay')
-        .where('date(booking.bookingDate) = :now', {
+        .where('date(booking.bookingDate) = date(:now)', {
             now: new Date()
         })
         .andWhere('booking.status in (:...status)', {
@@ -255,11 +255,11 @@ const revenueByYear = async (criteria: StatisticalCriteria) => {
     let minNumber: number
 
     medium = 0
-    const firstBookingTwo = bookings.find(
+    const firstBooking = bookings.find(
         (b) => Number(b.month) === Number(1) && Number(b.year) === Number(new Date().getFullYear())
     )
-    maxNumber = firstBookingTwo ? firstBookingTwo.totalamount : 0
-    minNumber = firstBookingTwo ? firstBookingTwo.totalamount : 0
+    maxNumber = firstBooking ? firstBooking.totalamount : 0
+    minNumber = firstBooking ? firstBooking.totalamount : 0
     for (const month in months) {
         const year = new Date().getFullYear()
         const match = bookings.find((b) => Number(b.month) === Number(month) + 1 && Number(b.year) === Number(year))
@@ -296,8 +296,138 @@ const revenueByYear = async (criteria: StatisticalCriteria) => {
     }
 }
 
-const revenueBySeatAndYear = async () => {
-    const query = await Booking.createQueryBuilder('booking').innerJoinAndSelect('booking.seat', 'seat')
+const totalBookingByYear = async (criteria: StatisticalCriteria) => {
+    const { year } = criteria
+
+    const bookings = await Booking.createQueryBuilder('booking')
+        .select('EXTRACT(MONTH FROM booking.createdAt) AS month')
+        .addSelect('EXTRACT(YEAR FROM booking.createdAt) AS year')
+        .addSelect('count(booking.id) AS totalBooking')
+        .where('EXTRACT(YEAR FROM booking.createdAt) = :year', { year })
+        .andWhere('booking.status in (:...status)', {
+            status: [Status.ACT, Status.PEN]
+        })
+        .groupBy('year, month')
+        .orderBy('year', 'ASC')
+        .addOrderBy('month', 'ASC')
+        .getRawMany()
+
+    const currentMonth = new Date().getMonth() + 1
+    const months: string[] = [
+        'January',
+        'February',
+        'March',
+        'April',
+        'May',
+        'June',
+        'July',
+        'August',
+        'September',
+        'October',
+        'November',
+        'December'
+    ]
+    let yearDetail: { [key: string]: number } = {}
+    let medium: number
+    let maxNumber: number
+    let minNumber: number
+
+    medium = 0
+    const firstBookingTwo = bookings.find(
+        (b) => Number(b.month) === Number(1) && Number(b.year) === Number(new Date().getFullYear())
+    )
+    maxNumber = firstBookingTwo ? firstBookingTwo.totalamount : 0
+    minNumber = firstBookingTwo ? firstBookingTwo.totalamount : 0
+    for (const month in months) {
+        const year = new Date().getFullYear()
+        const match = bookings.find((b) => Number(b.month) === Number(month) + 1 && Number(b.year) === Number(year))
+        bookings.forEach((b) => {
+            if (
+                Number(b.month) === Number(month) + 1 &&
+                Number(b.year) === Number(year) &&
+                Number(b.month) <= currentMonth
+            ) {
+                medium += b.totalbooking
+                if (b.totalbooking > maxNumber) {
+                    maxNumber = b.totalbooking
+                }
+                if (b.totalbooking < minNumber) {
+                    minNumber = b.totalbooking
+                }
+            }
+        })
+
+        yearDetail = {
+            ...yearDetail,
+            [months[month]]: match ? match.totalbooking : 0
+        }
+    }
+    return {
+        ...yearDetail,
+        medium:
+            new Date().getFullYear() === Number(year)
+                ? Number((medium / currentMonth).toFixed(2))
+                : Number((medium / 12).toFixed(2)),
+        maxNumber,
+        minNumber
+    }
 }
 
-export const AdminService = { reportClient, bookingsLimitTen, revenueInTwoYear, statisticalClient, revenueByYear }
+const statisticalRevenueSeat = async (criteria: StatisticalCriteria) => {
+    const { fromDate, toDate } = criteria
+
+    const queryResult = await Seat.createQueryBuilder('seat')
+        .select(
+            'seat.id, seat.seatClass as seatClass, seat.seatName as seatName, COUNT(booking.id) as totalBooking, sum(booking.amountTotal) as amountTotal'
+        )
+        .leftJoin('seat.bookings', 'booking')
+        .where('(coalesce(:fromDate) is null or DATE(booking.bookingDate) >= DATE(:fromDate))', {
+            fromDate: validateVariable(fromDate)
+        })
+        .andWhere('(coalesce(:toDate) is null or DATE(booking.bookingDate) <= DATE(:toDate))', {
+            toDate: validateVariable(toDate)
+        })
+        .andWhere('booking.status in (:...status)', {
+            status: [Status.ACT, Status.PEN]
+        })
+        .groupBy('seat.id')
+        .getRawMany()
+
+    const seats = await Seat.find()
+
+    const result: any = []
+
+    seats.forEach((seat) => {
+        let data = queryResult.find((e) => e.id === seat.id)
+        if (data) {
+            data = {
+                id: seat.id,
+                seatClass: data.seatclass,
+                seatName: data.seatname,
+                totalBooking: data.totalbooking,
+                amountTotal: data.amounttotal
+            }
+        } else {
+            data = {
+                id: seat.id,
+                seatClass: seat.seatClass,
+                seatName: seat.seatName,
+                totalBooking: 0,
+                amountTotal: 0
+            }
+        }
+        result.push(data)
+    })
+
+    return result
+}
+
+export const AdminService = {
+    reportClient,
+    bookingsLimitTen,
+    revenueInTwoYear,
+    statisticalClient,
+    revenueByYear,
+    totalBookingByYear,
+    statisticalRevenueSeat
+}
