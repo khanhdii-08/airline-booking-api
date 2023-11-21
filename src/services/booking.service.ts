@@ -629,8 +629,8 @@ const bookingsCancel = async (status: string, criteria: BookingCriteria, paginat
         .innerJoinAndSelect('destinationAirportAway.city', 'destinationCityAway')
         .leftJoinAndSelect('flightReturn.sourceAirport', 'sourceAirportReturn')
         .leftJoinAndSelect('flightReturn.destinationAirport', 'destinationAirportReturn')
-        .innerJoinAndSelect('sourceAirportReturn.city', 'sourceCityReturn')
-        .innerJoinAndSelect('destinationAirportReturn.city', 'destinationCity')
+        .leftJoinAndSelect('sourceAirportReturn.city', 'sourceCityReturn')
+        .leftJoinAndSelect('destinationAirportReturn.city', 'destinationCity')
         .where('(coalesce(:bookingCode) IS NULL OR booking.bookingCode = :bookingCode)', {
             bookingCode: validateVariable(bookingCode)
         })
@@ -783,8 +783,8 @@ const bookings = async (criteria: BookingCriteria, pagination: Pagination) => {
         .innerJoinAndSelect('destinationAirportAway.city', 'destinationCityAway')
         .leftJoinAndSelect('flightReturn.sourceAirport', 'sourceAirportReturn')
         .leftJoinAndSelect('flightReturn.destinationAirport', 'destinationAirportReturn')
-        .innerJoinAndSelect('sourceAirportReturn.city', 'sourceCityReturn')
-        .innerJoinAndSelect('destinationAirportReturn.city', 'destinationCity')
+        .leftJoinAndSelect('sourceAirportReturn.city', 'sourceCityReturn')
+        .leftJoinAndSelect('destinationAirportReturn.city', 'destinationCity')
         .where('booking.status = :status', {
             status: Status.ACT
         })
