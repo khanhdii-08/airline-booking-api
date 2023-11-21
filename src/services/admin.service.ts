@@ -1,6 +1,7 @@
+import { Pagination } from './../types/Pagination'
 import { StatisticalCriteria } from './../types/criterias/StatisticalCriteria'
-import { Booking, Passenger, Seat, User } from '~/entities'
-import { validateVariable } from '~/utils/common.utils'
+import { Airport, Booking, Flight, Passenger, Seat, User } from '~/entities'
+import { createPageable, validateVariable } from '~/utils/common.utils'
 import { Status, UserType } from '~/utils/enums'
 
 const reportClient = async () => {
@@ -296,6 +297,60 @@ const revenueByYear = async (criteria: StatisticalCriteria) => {
     }
 }
 
+const popularFlight = async (criteria: StatisticalCriteria, pagination: Pagination) => {
+    const { fromDate, toDate } = criteria
+    const result = await Flight.createQueryBuilder('f')
+        .leftJoin(Booking, 'b', 'f.id = b.flightAway.id OR f.id = b.flightReturn.id')
+        .select([
+            'f.sourceAirport as sourceAirport',
+            'f.destinationAirport as destinationAirport',
+            'f.flightType as flightType',
+            'SUM(b.amountTotal) as totalAmount',
+            'count(b.id) as totalBooking'
+        ])
+        .where('f.status = :flightStatus AND b.status in (:...bookingStatus)', {
+            flightStatus: Status.ACT,
+            bookingStatus: [Status.ACT, Status.PEN]
+        })
+        .andWhere('(coalesce(:fromDate) is null or DATE(f.departureTime) >= DATE(:fromDate))', {
+            fromDate: validateVariable(fromDate)
+        })
+        .andWhere('(coalesce(:toDate) is null or DATE(f.departureTime) <= DATE(:toDate))', {
+            toDate: validateVariable(toDate)
+        })
+        .groupBy('f.sourceAirport, f.destinationAirport, f.flightType')
+        .orderBy('totalAmount', 'DESC')
+        .getRawMany()
+
+    const sourceAirportIds = result.map((e) => e.sourceairport)
+    const destinationAirportIds = result.map((e) => e.destinationairport)
+
+    if ([...sourceAirportIds, ...destinationAirportIds].length > 0) {
+        const airports = await Airport.createQueryBuilder('airport')
+            .innerJoinAndSelect('airport.city', 'city')
+            .where('airport.id In (:...ids)', {
+                ids: [...sourceAirportIds, ...destinationAirportIds]
+            })
+            .getMany()
+
+        const data = result.map((e) => {
+            const sourceAirport = airports.find((airport) => airport.id === e.sourceairport)
+            const destinationAirport = airports.find((airport) => airport.id === e.destinationairport)
+            return {
+                sourceAirport,
+                destinationAirport,
+                flightType: e.flighttype,
+                totalAmount: e.totalamount,
+                totalBooking: Number(e.totalbooking)
+            }
+        })
+
+        return createPageable(data, pagination)
+    } else {
+        return createPageable([], pagination)
+    }
+}
+
 const totalBookingByYear = async (criteria: StatisticalCriteria) => {
     const { year } = criteria
 
@@ -404,8 +459,8 @@ const statisticalRevenueSeat = async (criteria: StatisticalCriteria) => {
                 id: seat.id,
                 seatClass: data.seatclass,
                 seatName: data.seatname,
-                totalBooking: data.totalbooking,
-                amountTotal: data.amounttotal
+                totalBooking: Number(data.totalbooking),
+                amountTotal: Number(data.amounttotal)
             }
         } else {
             data = {
@@ -428,6 +483,7 @@ export const AdminService = {
     revenueInTwoYear,
     statisticalClient,
     revenueByYear,
+    popularFlight,
     totalBookingByYear,
     statisticalRevenueSeat
 }

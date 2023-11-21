@@ -2,6 +2,7 @@ import { StatisticalCriteria } from './../types/criterias/StatisticalCriteria'
 import { Request, Response } from 'express'
 import { ParamsDictionary } from 'express-serve-static-core'
 import { AdminService } from '~/services/admin.service'
+import { Pagination } from '~/types/Pagination'
 import { HttpStatus } from '~/utils/httpStatus'
 
 const reportClient = async (req: Request, res: Response) => {
@@ -33,6 +34,14 @@ const revenueByYear = async (req: Request<ParamsDictionary, any, any, any>, res:
     return res.status(HttpStatus.OK).json(result)
 }
 
+const popularFlight = async (req: Request<ParamsDictionary, any, any, any>, res: Response) => {
+    const { fromDate, toDate, page, size, sort } = req.query
+    const criteria: StatisticalCriteria = { fromDate, toDate }
+    const pagination: Pagination = { page, size, sort }
+    const result = await AdminService.popularFlight(criteria, pagination)
+    return res.status(HttpStatus.OK).json(result)
+}
+
 const totalBookingByYear = async (req: Request<ParamsDictionary, any, any, any>, res: Response) => {
     const { year } = req.query
     const criteria: StatisticalCriteria = { year }
@@ -53,6 +62,7 @@ export const AdminController = {
     revenueInTwoYear,
     statisticalClient,
     revenueByYear,
+    popularFlight,
     totalBookingByYear,
     statisticalRevenueSeat
 }

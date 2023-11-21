@@ -34,5 +34,8 @@ router
         CheckRole([UserType.ADMIN, UserType.MANAGER, UserType.EMPLOYEE]),
         AdminController.statisticalRevenueSeat
     )
+router
+    .route('/statistical-popular-flight')
+    .get(CheckAuth, CheckRole([UserType.ADMIN, UserType.MANAGER, UserType.EMPLOYEE]), AdminController.popularFlight)
 
 export const AdminRoutes = router
