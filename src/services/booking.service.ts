@@ -649,18 +649,6 @@ const bookingsCancel = async (status: string, criteria: BookingCriteria, paginat
         .andWhere('(coalesce(:arrivalDate) is null or DATE(flightAway.arrivalTime) = DATE(:arrivalDate))', {
             arrivalDate: validateVariable(arrivalDate)
         })
-        .andWhere('(coalesce(:sourceAirportId) is null or sourceAirportReturn.id = :sourceAirportId)', {
-            sourceAirportId: validateVariable(sourceAirportId)
-        })
-        .andWhere('(coalesce(:destinationAirportId) is null or destinationAirportReturn.id = :destinationAirportId)', {
-            destinationAirportId: validateVariable(destinationAirportId)
-        })
-        .andWhere('(coalesce(:departureDate) is null or DATE(flightReturn.departureTime) = DATE(:departureDate))', {
-            departureDate: validateVariable(departureDate)
-        })
-        .andWhere('(coalesce(:arrivalDate) is null or DATE(flightReturn.arrivalTime) = DATE(:arrivalDate))', {
-            arrivalDate: validateVariable(arrivalDate)
-        })
         .orderBy('booking.updatedAt', 'DESC')
         .getMany()
 
@@ -801,18 +789,6 @@ const bookings = async (criteria: BookingCriteria, pagination: Pagination) => {
             departureDate: validateVariable(departureDate)
         })
         .andWhere('(coalesce(:arrivalDate) is null or DATE(flightAway.arrivalTime) = DATE(:arrivalDate))', {
-            arrivalDate: validateVariable(arrivalDate)
-        })
-        .andWhere('(coalesce(:sourceAirportId) is null or sourceAirportReturn.id = :sourceAirportId)', {
-            sourceAirportId: validateVariable(sourceAirportId)
-        })
-        .andWhere('(coalesce(:destinationAirportId) is null or destinationAirportReturn.id = :destinationAirportId)', {
-            destinationAirportId: validateVariable(destinationAirportId)
-        })
-        .andWhere('(coalesce(:departureDate) is null or DATE(flightReturn.departureTime) = DATE(:departureDate))', {
-            departureDate: validateVariable(departureDate)
-        })
-        .andWhere('(coalesce(:arrivalDate) is null or DATE(flightReturn.arrivalTime) = DATE(:arrivalDate))', {
             arrivalDate: validateVariable(arrivalDate)
         })
         .orderBy('booking.bookingDate', 'DESC')
