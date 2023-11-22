@@ -82,28 +82,22 @@ const passenger = async (id: string) => {
 }
 
 const updateStatus = async (id: string, status: Status) => {
-    const passenger = await Passenger.findOne({ where: { id }, relations: { user: true } })
+    const passenger = await Passenger.findOneBy({ id })
     if (!passenger) {
         throw new NotFoundException({ message: i18n.__(MessageKeys.E_PASSENGER_R000_NOTFOUND) })
     }
     if (status === Status.PEN) {
         if (passenger.status !== Status.ACT) {
-            throw new BadRequestException({ error: { message: 'không nằm ở trạng thái hoạt động' } })
+            throw new BadRequestException({ error: { message: 'Không nằm ở trạng thái hoạt động' } })
         }
         passenger.status = Status.PEN
-        const { user } = passenger
-        user.isActived = false
         passenger.save()
-        user.save()
     } else if (status === Status.ACT) {
         if (passenger.status !== Status.PEN) {
-            throw new BadRequestException({ error: { message: 'không nằm ở trạng thái tạm ngưng' } })
+            throw new BadRequestException({ error: { message: 'Không nằm ở trạng thái tạm ngưng' } })
         }
         passenger.status = Status.ACT
-        const { user } = passenger
-        user.isActived = true
         passenger.save()
-        user.save()
     }
     return passenger
 }

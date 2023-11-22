@@ -115,7 +115,7 @@ const verify = async (userId: string, source: string, otp: string) => {
     const user: User = await User.findOneOrFail({ where: { id: userId } })
     user.isActived = true
     await user.save()
-    const passenger = await Passenger.findOneOrFail({ where: { user: true } })
+    const passenger = await Passenger.findOneOrFail({ where: { user: { id: user.id } } })
 
     passenger.status = Status.ACT
     passenger.save()
@@ -137,11 +137,18 @@ const login = async (source: string, loginInput: LoginInput) => {
     const user = await User.findOneBy({ phoneNumber, isActived: true })
 
     if (!user) {
-        throw new BadRequestException({ error: { message: 'sdt ko đúng' } })
+        throw new BadRequestException({ error: { message: 'Số điện thoại không đúng.' } })
     }
     const checkPassword = user && (await argon2.verify(user.password, password))
     if (!checkPassword) {
-        throw new BadRequestException({ error: { message: 'mật khẩu ko đúng' } })
+        throw new BadRequestException({ error: { message: 'Mật khẩu không đúng.' } })
+    }
+
+    const passenger = await Passenger.findOneOrFail({ where: { user: { id: user.id } } })
+    if (passenger.status !== Status.ACT) {
+        throw new BadRequestException({
+            error: { message: 'Tài khoản đã bị khóa hoặc đã bị xóa. Xin vui lòng liên hệ quản trị viên.' }
+        })
     }
 
     const payload: JwtPayload = { _id: user.id, role: user.userType }
