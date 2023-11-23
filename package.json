@@ -14,7 +14,11 @@
         "lint": "eslint .",
         "lint:fix": "eslint . --fix",
         "prettier": "prettier --check .",
-        "prettier:fix": "prettier --write ."
+        "prettier:fix": "prettier --write .",
+        "docker:db:down": "docker-compose -f src/docker/postgresql.yml down -v",
+        "docker:db:up": "docker-compose -f src/docker/postgresql.yml up -d",
+        "docker:rd:down": "docker-compose -f src/docker/redis.yml down -v",
+        "docker:rd:up": "docker-compose -f src/docker/redis.yml up -d"
     },
     "dependencies": {
         "argon2": "^0.31.1",
