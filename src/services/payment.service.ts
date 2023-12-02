@@ -9,6 +9,8 @@ import { PaymentInput } from '~/types/inputs/PaymentInput'
 import { Booking, PaymentTransaction } from '~/entities'
 import { PaymentMethod, PaymentStatus, PaymentTransactionType } from '~/utils/enums'
 import { BadRequestException } from '~/exceptions/BadRequestException'
+import i18n from '~/config/i18n.config'
+import { MessageKeys } from '~/messages/MessageKeys'
 
 const paymentVNPay = async (paymentInput: PaymentInput) => {
     const { amount, ipAddr, language, returnUrl } = paymentInput
@@ -22,7 +24,7 @@ const paymentVNPay = async (paymentInput: PaymentInput) => {
     const createDate = moment(date).format('YYYYMMDDHHmmss')
     if (bookingCode) {
         Booking.findOneByOrFail({ bookingCode, paymentStatus: PaymentStatus.SUCCESSFUL }).catch(
-            () => new BadRequestException({ error: { message: 'đã đc thanh toán' } })
+            () => new BadRequestException({ error: { message: i18n.__(MessageKeys.E_BOOKING_B003_BOOKINGPAID) } })
         )
     } else {
         do {

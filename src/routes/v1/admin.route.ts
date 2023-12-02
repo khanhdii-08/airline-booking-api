@@ -7,7 +7,7 @@ const router: Router = express.Router()
 
 router
     .route('/report-client')
-    .get(CheckAuth, CheckRole([UserType.ADMIN, UserType.MANAGER, UserType.CUSTOMER]), AdminController.reportClient)
+    .get(CheckAuth, CheckRole([UserType.ADMIN, UserType.MANAGER, UserType.EMPLOYEE]), AdminController.reportClient)
 router
     .route('/booking-limit-ten')
     .get(CheckAuth, CheckRole([UserType.ADMIN, UserType.MANAGER, UserType.EMPLOYEE]), AdminController.bookingsLimitTen)

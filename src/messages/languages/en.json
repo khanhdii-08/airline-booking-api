@@ -1,40 +1,86 @@
 {
     "e.express.v000.isEmpty": "Field %s cannot be empty.",
     "e.express.v001.notString": "Field %s must be a string.",
-    "e.express.v002.notNumber": "Field %s must be numeric.",
+    "e.express.v002.notNumber": "Field %s must be a number.",
     "e.express.v003.notDate": "Field %s must be a date.",
     "e.express.v004.isMin": "Field %s cannot be less than %s.",
     "e.express.v005.isMax": "Field %s cannot be greater than %s.",
 
-    "e.enum.v000.invalid": "The %s value passed is not valid.",
+    "e.enum.v000.invalid": "Invalid value %s passed.",
 
-    "e.passenger.v000.firstNameBlank": "First Name cannot be blank.",
-    "e.passenger.v001.firstNameTooLong": "First Name must be less than 60 characters.",
-    "e.passenger.v002.lastNameBlank": "Last Name cannot be blank.",
-    "e.passenger.v003.lastNameTooLong": "Last Name must be less than 60 characters.",
-    "e.passenger.v004.dateOfBirthBlank": "Date Of Birth cannot be blank.",
-    "e.passenger.v005.dateOfBirthCorrectFormat": "Date Of Birth is not in correct format.",
+    "e.auth.v000.OTPBlank": "OTP cannot be blank.",
+    "e.auth.v001.OTPInvalid": "Invalid OTP.",
+    "e.auth.v002.OTPExp": "OTP has expired.",
+
+    "e.auth.b000.OTPNoSend": "Unable to send OTP.",
+    "e.auth.b001.Account": "Unable to authenticate account.",
+    "e.auth.b002.phoneNumberInvalid": "Invalid phone number.",
+    "e.auth.b003.passwordInvalid": "Incorrect password.",
+    "e.auth.b004.accoutNotActive": "Account is locked or deleted. Please contact the administrator.",
+    "e.auth.b005.passOldInvalid": "Current password is incorrect.",
+    "e.auth.b006.passNewConflict": "New password must not match the current password.",
+
+    "e.passenger.v000.firstNameBlank": "First name and last name cannot be blank.",
+    "e.passenger.v001.firstNameTooLong": "First name and last name must be less than 60 characters.",
+    "e.passenger.v002.lastNameBlank": "Last name cannot be blank.",
+    "e.passenger.v003.lastNameTooLong": "Last name must be less than 60 characters.",
+    "e.passenger.v004.dateOfBirthBlank": "Date of birth cannot be blank.",
+    "e.passenger.v005.dateOfBirthCorrectFormat": "Date of birth is not in the correct format.",
     "e.passenger.v006.countryBlank": "Country cannot be blank.",
     "e.passenger.v007.countryExist": "Country does not exist.",
-    "e.passenger.v008.phonenumberBlank": "Phone number can not be left blank.",
+    "e.passenger.v008.phonenumberBlank": "Phone number cannot be blank.",
     "e.passenger.v009.phonenumberCorrectFormat": "Phone number is not in the correct format.",
     "e.passenger.v010.emailBlank": "Email cannot be blank.",
-    "e.passenger.v011.emailCorrectFormat": "Email is not in correct format.",
-    "e.passenger.v012.passwordBlank": "Password can not be blank.",
-    "e.passenger.V013.passwordLength": "Password must be longer than 8 characters.",
+    "e.passenger.v011.emailCorrectFormat": "Email is not in the correct format.",
+    "e.passenger.v012.passwordBlank": "Password cannot be blank.",
+    "e.passenger.V013.passwordLength": "Password must be at least 8 characters long.",
     "e.passenger.v014.passwordTooLong": "Password must be less than 60 characters.",
 
-    "e.passenger.b000.phoneDuplicated": "The phone number was used for previous registration.",
-    "e.passenger.b001.emailDuplicated": "Email was used for previous registration.",
-    "e.passenger.b002.optInvalid": "Invalid Otp",
-    "e.passenger.b003.phoneDuplicatedNotActive": "The phone number has been registered but has not been activated. Please enable.",
-    "e.passenger.b004.emailDuplicatedNotActive": "Email is registered but not activated. Please enable.",
+    "e.passenger.b000.phoneDuplicated": "Phone number has already been used for previous registration.",
+    "e.passenger.b001.emailDuplicated": "Email has already been used for previous registration.",
+    "e.passenger.b002.optInvalid": "Invalid OTP.",
+    "e.passenger.b003.phoneDuplicatedNotActive": "Phone number has been registered but not activated. Please activate.",
+    "e.passenger.b004.emailDuplicatedNotActive": "Email has been registered but not activated. Please activate.",
+    "e.passenger.b005.notActive": "Passenger is not in active status.",
+    "e.passenger.b006.notPending": "Passenger is not in pending status.",
 
     "e.passenger.r000.notfound": "Passenger not found.",
+
+    "e.user.r000.notfound": "Account not found.",
+
+    "e.booking.r000.notfound": "Booking not found.",
+
+    "e.booking.b000.bookingExist": "Booking already exists.",
+    "e.booking.b001.bookingNotActive": "Booking is not in active status.",
+    "e.booking.b002.bookingNotCancel": "Cannot cancel the booking.",
+    "e.booking.b002.bookingNotScheduleChange": "Cannot change the schedule for the booking.",
+    "e.booking.b003.bookingNotWaitCancel": "Booking is not in wait cancel status.",
+    "e.booking.b003.bookingPaid": "Booking has already been paid.",
+    "e.booking.b004.bookingIsPen": "Booking has already submitted a cancellation request.",
+    "e.booking.b004.bookingIsDel": "Booking has already been canceled.",
 
     "e.airline.r000.notfound": "Airline not found.",
 
     "e.flight.r000.notfound": "Flight not found.",
 
-    "e.seat.r000.notfound": "Seat not found."
+    "e.flight.b000.notActive": "Flight is not in active status.",
+    "e.flight.b000.notPending": "Flight is not in pending status.",
+
+    "e.seat.r000.notfound": "Seat not found.",
+
+    "e.checkIn.b000.checkInExist": "Passenger in this flight's booking has already been checked in.",
+
+    "e.employee.r000.notfound": "Employee not found.",
+
+    "e.employee.b000.phoneDuplicated": "Phone number has already been used for previous registration.",
+    "e.employee.b001.phoneNotActive": "The currently registered phone number is locked or deleted. Please contact the administrator to unlock.",
+    "e.employee.b002.notActive": "Employee is not in active status.",
+    "e.employee.b003.notPending": "Employee is not in pending status.",
+    "e.employee.b004.createByCustomer": "This phone number has been registered by a customer.",
+
+    "e.tax.r000.notfound": "Service tax not found.",
+
+    "e.flightSeatPrice.r000.notfound": "Flight seat price not found.",
+
+    "e.file.r000.notfound": "File not found."
 }

@@ -12,7 +12,6 @@ import { Gender } from '~/utils/enums'
 import { CountryEn, CountryVi } from '~/utils/enums/country.enum'
 import { BadRequestException } from '~/exceptions/BadRequestException'
 import { TokenContext } from '~/utils/TokenContext'
-import { UnauthorizedException } from '~/exceptions/UnauthorizedException'
 import { redisClient } from '~/config/redis.config'
 import { OTP_KEY } from '~/utils/constants'
 
@@ -43,14 +42,13 @@ const register = async (req: Request<ParamsDictionary, any, RegisterInput>, res:
         throw new ValidationException(i18n.__(MessageKeys.E_PASSENGER_V008_PHONENUMBERBLANK))
     } else if (!validator.isMobilePhone(phoneNumber, 'vi-VN')) {
         throw new ValidationException(i18n.__(MessageKeys.E_PASSENGER_V009_PHONENUMBERCORRECTFORMAT))
-    } else if (email && !validator.isEmpty(email)) {
-        if (!validator.isEmail(email))
-            throw new ValidationException(i18n.__(MessageKeys.E_PASSENGER_V011_EMAILCORRECTFORMAT))
+    } else if (email && !validator.isEmpty(email) && !validator.isEmail(email)) {
+        throw new ValidationException(i18n.__(MessageKeys.E_PASSENGER_V011_EMAILCORRECTFORMAT))
     } else if (!password || validator.isEmpty(password)) {
         throw new ValidationException(i18n.__(MessageKeys.E_PASSENGER_V012_PASSWORDBLANK))
-    } else if (!validator.isLength(password, { min: 8 })) {
+    } else if (password.length < 8) {
         throw new ValidationException(i18n.__(MessageKeys.E_PASSENGER_V013_PASSWORDLENGTH))
-    } else if (!validator.isLength(password, { max: 60 })) {
+    } else if (password.length > 60) {
         throw new ValidationException(i18n.__(MessageKeys.E_PASSENGER_V014_PASSWORDTOOLONG))
     }
 
@@ -87,11 +85,16 @@ const verify = async (req: Request<ParamsDictionary, any, any, { otp: string }>,
     const { otp } = req.query
 
     if (!otp || validator.isEmpty(otp)) {
-        throw new BadRequestException({ error: { message: 'ss' } })
+        throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_AUTH_V000_OTPBLANK) } })
     }
 
     const jwtPayload = TokenContext.jwtPayload(req)
-    await User.findOneByOrFail({ id: jwtPayload._id }).catch(() => new UnauthorizedException('dđ'))
+    const user = await User.findOneBy({ id: jwtPayload._id })
+    if (!user) {
+        throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_AUTH_B001_ACCOUNT) } })
+    } else if (user.isActived) {
+        throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_AUTH_B001_ACCOUNT) } })
+    }
 
     next()
 }
@@ -100,7 +103,7 @@ const sendOTP = async (req: Request, res: Response, next: NextFunction) => {
     const jwtPayload = TokenContext.jwtPayload(req)
     const savedOtp = await redisClient.get(`${OTP_KEY}:${jwtPayload._id}`)
     if (!savedOtp) {
-        throw new BadRequestException({ error: { message: 'dsds' } })
+        throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_AUTH_B000_OTPNOSEND) } })
     }
 
     next()

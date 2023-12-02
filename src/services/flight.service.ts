@@ -10,6 +10,8 @@ import { createPageable, genUUID, generateFlightNumber, validateVariable } from 
 import { NotFoundException } from '~/exceptions/NotFoundException'
 import { AppDataSource } from '~/config/database.config'
 import { BadRequestException } from '~/exceptions/BadRequestException'
+import i18n from '~/config/i18n.config'
+import { MessageKeys } from '~/messages/MessageKeys'
 
 const search = async (criteria: FlightCriteria) => {
     const queryFlightResult = await Flight.createQueryBuilder('flight')
@@ -51,6 +53,7 @@ const search = async (criteria: FlightCriteria) => {
             numAdults: criteria.numAdults,
             numChildren: criteria.numChildren
         })
+        .andWhere('flight.status = :status', { status: Status.ACT })
         .getMany()
 
     const result = queryFlightResult.map((value) => {
@@ -85,12 +88,12 @@ const create = async (flightInput: FlightInput) => {
 
     const airline = await Airline.find()
     if (!airline) {
-        throw new NotFoundException({ message: 'dsds' })
+        throw new NotFoundException({ message: i18n.__(MessageKeys.E_AIRLINE_R000_NOTFOUND) })
     }
 
     const taxService = await TaxService.findOneBy({ flightType })
     if (!taxService) {
-        throw new NotFoundException({ message: 'dsds' })
+        throw new NotFoundException({ message: i18n.__(MessageKeys.E_TAX_R000_NOTFOUND) })
     }
 
     const newFlight = Flight.create({
@@ -110,7 +113,7 @@ const create = async (flightInput: FlightInput) => {
     flightSeatPrices.forEach(async (fsp) => {
         const seat = await Seat.findOneBy({ id: fsp.seatId })
         if (!seat) {
-            throw new NotFoundException({ message: 'dsds' })
+            throw new NotFoundException({ message: i18n.__(MessageKeys.E_SEAT_R000_NOTFOUND) })
         }
         const newFlightSeatPrice = FlightSeatPrice.create({
             flight: newFlight,
@@ -169,7 +172,7 @@ const updateFlight = async (id: string, flightInput: FlightInput) => {
 
     const flight = await Flight.findOne({ where: { id, status: Status.ACT }, relations: { aircraft: true } })
     if (!flight) {
-        throw new NotFoundException({ message: 'không tìm thấy' })
+        throw new NotFoundException({ message: i18n.__(MessageKeys.E_FLIGHT_R000_NOTFOUND) })
     }
 
     aircraftId && (flight.aircraft.id = aircraftId)
@@ -181,7 +184,7 @@ const updateFlight = async (id: string, flightInput: FlightInput) => {
         relations: { seat: true }
     })
     if (!flightSeatPricesInDb) {
-        throw new NotFoundException({ message: 'không tìm thấy' })
+        throw new NotFoundException({ message: i18n.__(MessageKeys.E_FLIGHTSEATPRICE_R000_NOTFOUND) })
     }
 
     flightSeatPrices.forEach((fsp) => {
@@ -204,7 +207,7 @@ const flight = async (id: string) => {
         relations: { sourceAirport: true, destinationAirport: true, aircraft: true, flightSeatPrices: true }
     })
     if (!flight) {
-        throw new NotFoundException({ message: 'không tìm thấy' })
+        throw new NotFoundException({ message: i18n.__(MessageKeys.E_FLIGHT_R000_NOTFOUND) })
     }
 
     return flight
@@ -215,12 +218,12 @@ const updateStatus = async (id: string, status: Status) => {
         where: { id }
     })
     if (!flight) {
-        throw new NotFoundException({ message: 'không tìm thấy' })
+        throw new NotFoundException({ message: i18n.__(MessageKeys.E_FLIGHT_R000_NOTFOUND) })
     }
 
     if (status === Status.PEN) {
         if (flight.status !== Status.ACT) {
-            throw new BadRequestException({ error: { message: 'không ở trạng thái hoạt động' } })
+            throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_FLIGHT_B000_NOTACTIVE) } })
         }
         flight.status = Status.PEN
         const bookings = await Booking.find({
@@ -250,7 +253,7 @@ const updateStatus = async (id: string, status: Status) => {
         return flight
     } else if (status === Status.ACT) {
         if (flight.status !== Status.PEN) {
-            throw new BadRequestException({ error: { message: 'không ở trạng thái tạm ngưng' } })
+            throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_FLIGHT_B000_NOTPENDING) } })
         }
         flight.status = Status.ACT
         await AppDataSource.manager.transaction(async (transactionalEntityManager) => {

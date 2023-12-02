@@ -3,6 +3,7 @@ import {
     Booking,
     BookingSeat,
     BookingServiceOpt,
+    CheckIn,
     Flight,
     FlightSeatPrice,
     Passenger,
@@ -22,12 +23,13 @@ import { PassengerType } from '~/utils/enums/passengerType'
 import { In } from 'typeorm'
 import { BadRequestException } from '~/exceptions/BadRequestException'
 import { redisClient } from '~/config/redis.config'
-import { UnauthorizedException } from '~/exceptions/UnauthorizedException'
 import { MESSAGE_CANCEL_BOOKING, OTP_TIME_BOOKING_CANCEL_KEY, OTP_TIME_BOOKING_UPDATE_KEY } from '~/utils/constants'
 import { MailProvider } from '~/providers/mail.provider'
 import { Pagination } from '~/types/Pagination'
 import { ErrorResponse } from '~/types/ErrorResponse'
 import { PassengerInput } from '~/types/inputs/PassengerInput'
+import { MessageKeys } from '~/messages/MessageKeys'
+import i18n from '~/config/i18n.config'
 
 const booking = async (bookingInput: BookingInput) => {
     const { userId, flightAwayId, flightReturnId, seatId, passengers, ...booking } = bookingInput
@@ -40,7 +42,7 @@ const booking = async (bookingInput: BookingInput) => {
         relations: { aircraft: true, sourceAirport: { city: true }, destinationAirport: { city: true } }
     })
     if (!flightAway) {
-        throw new NotFoundException({ message: 'null' })
+        throw new NotFoundException({ message: i18n.__(MessageKeys.E_FLIGHT_R000_NOTFOUND) })
     }
     flights.push(flightAway)
     let flightReturn = null
@@ -50,7 +52,7 @@ const booking = async (bookingInput: BookingInput) => {
             relations: { aircraft: true, sourceAirport: { city: true }, destinationAirport: { city: true } }
         })
         if (!flightReturn) {
-            throw new NotFoundException({ message: 'null' })
+            throw new NotFoundException({ message: i18n.__(MessageKeys.E_FLIGHT_R000_NOTFOUND) })
         }
         flights.push(flightReturn)
     }
@@ -72,7 +74,10 @@ const booking = async (bookingInput: BookingInput) => {
     if (bookingCode) {
         const booking = await Booking.findOneBy({ bookingCode })
         if (booking) {
-            throw new AppError({ status: HttpStatus.CONFLICT, error: { message: 'tồn tại' } })
+            throw new AppError({
+                status: HttpStatus.CONFLICT,
+                error: { message: MessageKeys.E_BOOKING_B000_BOOKINGEXIST }
+            })
         }
     } else {
         do {
@@ -179,8 +184,13 @@ const bookingDetail = async (criteria: BookingCriteria) => {
         .getOne()
 
     if (!booking) {
-        throw new NotFoundException({ message: 'ko tìm thấy chuyến bay' })
+        throw new NotFoundException({ message: MessageKeys.E_BOOKING_R000_NOTFOUND })
     }
+
+    const checkIns = await CheckIn.find({
+        where: { booking: { id: booking.id } },
+        relations: { passenger: true, flight: true }
+    })
 
     const { flightAway, flightReturn, seat, ...bookingDetail } = booking
 
@@ -277,11 +287,16 @@ const bookingDetail = async (criteria: BookingCriteria) => {
                 }
             })
 
+        const checkIn = checkIns.find(
+            (checkIn) => checkIn.passenger.id === passengerAway.id && checkIn.flight.id === booking.flightAway.id
+        )
+
         return {
             ...passengerAway,
             seat,
             taxService,
-            serviceOpts
+            serviceOpts,
+            checkIn: checkIn ? true : false
         }
     })
 
@@ -379,11 +394,17 @@ const bookingDetail = async (criteria: BookingCriteria) => {
                     }
                 })
 
+            const checkIn = checkIns.find(
+                (checkIn) =>
+                    checkIn.passenger.id === passengerReturn.id && checkIn.flight.id === booking.flightReturn.id
+            )
+
             return {
                 ...passengerReturn,
                 seat,
                 taxService,
-                serviceOpts
+                serviceOpts,
+                checkIn: checkIn ? true : false
             }
         })
     }
@@ -406,15 +427,17 @@ const bookingCancel = async (bookingInput: BookingInput) => {
     const booking = await Booking.findOneBy({ id: bookingId })
 
     if (!booking) {
-        throw new NotFoundException({ message: 'không tìm thấy chuyến bay' })
+        throw new NotFoundException({ message: MessageKeys.E_BOOKING_R000_NOTFOUND })
     }
     if (booking && booking.status !== Status.ACT) {
-        throw new BadRequestException({ error: { message: 'kho phải là active', data: booking } })
+        throw new BadRequestException({
+            error: { message: i18n.__(MessageKeys.E_BOOKING_B001_BOOKINGNOTACTIVE), data: booking }
+        })
     }
 
     const savedOtp = await redisClient.get(`${OTP_TIME_BOOKING_CANCEL_KEY}:${booking.id}`)
     if (!savedOtp) {
-        throw new UnauthorizedException('yêu cầu không thể thực hiện')
+        throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_BOOKING_B002_BOOKINGNOTCANCEL) } })
     }
 
     booking.note = note
@@ -435,14 +458,18 @@ const updateBooking = async (bookingInput: BookingInput) => {
     })
 
     if (!booking) {
-        throw new NotFoundException({ message: 'không tìm thấy chuyến bay' })
+        throw new NotFoundException({ message: i18n.__(MessageKeys.E_BOOKING_R000_NOTFOUND) })
     }
     if (booking && booking.status !== Status.ACT) {
-        throw new BadRequestException({ error: { message: 'kho phải là active', data: booking } })
+        throw new BadRequestException({
+            error: { message: i18n.__(MessageKeys.E_BOOKING_B001_BOOKINGNOTACTIVE), data: booking }
+        })
     }
     const savedOtp = await redisClient.get(`${OTP_TIME_BOOKING_UPDATE_KEY}:${booking.id}`)
     if (!savedOtp) {
-        throw new UnauthorizedException('yêu cầu không thể thực hiện')
+        throw new BadRequestException({
+            error: { message: i18n.__(MessageKeys.E_BOOKING_B002_BOOKINGNOTSCHEDULECHANGE) }
+        })
     }
 
     const bookingSeats = await BookingSeat.find({
@@ -502,10 +529,12 @@ const bookingAddService = async (bookingInput: BookingInput) => {
         relations: { flightAway: true, flightReturn: true }
     })
     if (!booking) {
-        throw new NotFoundException({ message: 'không tìm thấy chuyến bay' })
+        throw new NotFoundException({ message: i18n.__(MessageKeys.E_BOOKING_R000_NOTFOUND) })
     }
     if (booking && booking.status !== Status.ACT) {
-        throw new BadRequestException({ error: { message: 'kho phải là active', data: booking } })
+        throw new BadRequestException({
+            error: { message: i18n.__(MessageKeys.E_BOOKING_B001_BOOKINGNOTACTIVE), data: booking }
+        })
     }
 
     booking.amountTotal = amountTotal
@@ -680,10 +709,13 @@ const upadateStatus = async (ids: string[], status: Status) => {
                         })
                         booking.status = Status.DEL
                     } else {
-                        errors.push({ message: 'không ở trạng thái chờ hủy', data: booking })
+                        errors.push({
+                            message: i18n.__(MessageKeys.E_BOOKING_B003_BOOKINGNOTWAITCANCEL),
+                            data: booking
+                        })
                     }
                 } else {
-                    errors.push({ message: 'không tìm thấy', data: id })
+                    errors.push({ message: i18n.__(MessageKeys.E_BOOKING_R000_NOTFOUND), data: id })
                 }
             })
         } else if (status === Status.ACT) {
@@ -693,15 +725,18 @@ const upadateStatus = async (ids: string[], status: Status) => {
                     if (booking.status === Status.PEN) {
                         booking.status = Status.ACT
                     } else {
-                        errors.push({ message: 'không ở trạng thái chờ hủy', data: booking })
+                        errors.push({
+                            message: i18n.__(MessageKeys.E_BOOKING_B003_BOOKINGNOTWAITCANCEL),
+                            data: booking
+                        })
                     }
                 } else {
-                    errors.push({ message: 'không tìm thấy', data: id })
+                    errors.push({ message: i18n.__(MessageKeys.E_BOOKING_R000_NOTFOUND), data: id })
                 }
             })
         }
     } else {
-        errors.push({ message: 'không tìm thấy', data: ids })
+        errors.push({ message: i18n.__(MessageKeys.E_BOOKING_R000_NOTFOUND), data: ids })
     }
 
     if (errors.length > 0) {
@@ -739,14 +774,14 @@ const cancelBookings = async (ids: string[]) => {
                     booking.status = Status.DEL
                     booking.note = MESSAGE_CANCEL_BOOKING
                 } else {
-                    errors.push({ message: 'không ở trạng thái hoạt động', data: booking })
+                    errors.push({ message: i18n.__(MessageKeys.E_BOOKING_B001_BOOKINGNOTACTIVE), data: booking })
                 }
             } else {
-                errors.push({ message: 'không tìm thấy', data: id })
+                errors.push({ message: i18n.__(MessageKeys.E_BOOKING_R000_NOTFOUND), data: id })
             }
         })
     } else {
-        errors.push({ message: 'không tìm thấy', data: ids })
+        errors.push({ message: i18n.__(MessageKeys.E_BOOKING_R000_NOTFOUND), data: ids })
     }
 
     if (errors.length > 0) {
@@ -803,9 +838,9 @@ const updateBookingByAdmin = async (id: string, passengersInput: PassengerInput[
         relations: { passengers: true }
     })
     if (!booking) {
-        throw new NotFoundException({ message: 'không tìm thấy chuyến bay' })
+        throw new NotFoundException({ message: i18n.__(MessageKeys.E_BOOKING_R000_NOTFOUND) })
     } else if (booking.status !== Status.ACT) {
-        throw new BadRequestException({ error: { message: 'không ở trạng thái hoạt động' } })
+        throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_BOOKING_B001_BOOKINGNOTACTIVE) } })
     }
 
     const { passengers } = booking

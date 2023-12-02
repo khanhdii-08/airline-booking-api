@@ -12,17 +12,18 @@ import { CLOUDINARY_AVATARS } from '~/utils/constants'
 import { Gender, Status, UserType } from '~/utils/enums'
 import { AppDataSource } from '~/config/database.config'
 import argon2 from 'argon2'
+import i18n from '~/config/i18n.config'
 
 const uploadAvatar = async (file: MulterFile, userId: string) => {
     if (!file) {
-        throw new BadRequestException({ error: { message: 'ko có file' } })
+        throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_FILE_R000_NOTFOUND) } })
     }
 
     const result = await UploadProvider.uploadImage(file, CLOUDINARY_AVATARS)
 
     const passenger = await Passenger.findOneBy({ user: { id: userId }, status: Status.ACT, isPasserby: false })
     if (!passenger) {
-        throw new NotFoundException({ message: 'ko tìm thấy hành khách' })
+        throw new NotFoundException({ message: i18n.__(MessageKeys.E_PASSENGER_R000_NOTFOUND) })
     }
     passenger.imageUrl = result.url
 
@@ -35,7 +36,7 @@ const update = async (userId: string, passengerInput: PassengerInput) => {
     const passenger = await Passenger.findOneBy({ user: { id: userId }, status: Status.ACT, isPasserby: false })
 
     if (!passenger) {
-        throw new NotFoundException({ message: 'ko tìm thấy hành khách' })
+        throw new NotFoundException({ message: i18n.__(MessageKeys.E_PASSENGER_R000_NOTFOUND) })
     }
 
     passengerInput.firstName && (passenger.firstName = passengerInput.firstName)
@@ -59,8 +60,9 @@ const passengers = async (criteria: PassengerCriteria, pagination: Pagination) =
                 searchText: `%${removeAccents(searchText)}%`
             }
         )
-        .andWhere('(coalesce(:status) is null or passenger.status = :status)', {
-            status: validateVariable(status)
+        .andWhere('((coalesce(:status) is null and passenger.status != :notStatus ) or passenger.status = :status)', {
+            status: validateVariable(status),
+            notStatus: Status.TEMP
         })
         .andWhere('(coalesce(:fromDate) IS NULL OR (DATE(passenger.createdAt) >= DATE(:fromDate)))', {
             fromDate: validateVariable(fromDate)
@@ -88,13 +90,13 @@ const updateStatus = async (id: string, status: Status) => {
     }
     if (status === Status.PEN) {
         if (passenger.status !== Status.ACT) {
-            throw new BadRequestException({ error: { message: 'Không nằm ở trạng thái hoạt động' } })
+            throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_PASSENGER_B005_NOTACTIVE) } })
         }
         passenger.status = Status.PEN
         passenger.save()
     } else if (status === Status.ACT) {
         if (passenger.status !== Status.PEN) {
-            throw new BadRequestException({ error: { message: 'Không nằm ở trạng thái tạm ngưng' } })
+            throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_PASSENGER_B006_NOTPENDING) } })
         }
         passenger.status = Status.ACT
         passenger.save()

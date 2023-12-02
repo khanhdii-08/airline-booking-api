@@ -16,18 +16,25 @@ import {
 import { CountryEn, CountryVi, UserType } from '~/utils/enums'
 import { AppError } from '~/exceptions/AppError'
 import { HttpStatus } from '~/utils/httpStatus'
-import { ValidationException } from '~/exceptions/ValidationException'
 import { NotFoundException } from '~/exceptions/NotFoundException'
 import { BadRequestException } from '~/exceptions/BadRequestException'
+import { MessageKeys } from '~/messages/MessageKeys'
+import i18n from '~/config/i18n.config'
 
 const create = async (employeeInput: EmployeeInput) => {
     const { phoneNumber, password } = employeeInput
 
-    const employee = await Employee.findOneBy({ phoneNumber })
-    if (employee && employee.status === Status.ACT) {
-        throw new AppError({ status: HttpStatus.CONFLICT, error: { message: 'sdt đã được đăng ký' } })
-    } else if (employee && employee.status !== Status.ACT) {
-        throw new ValidationException('sdt đăng ký hiện tại đã bị khóa hoặc xóa. liên hệ quản trị viên để được mở lại')
+    const existingUser = await User.findOneBy({ phoneNumber })
+    if (existingUser && existingUser.isActived && existingUser.userType !== UserType.CUSTOMER) {
+        throw new AppError({
+            status: HttpStatus.CONFLICT,
+            error: { message: i18n.__(MessageKeys.E_EMPLOYEE_B000_PHONEDUPLICATED) }
+        })
+    } else if (existingUser && existingUser.userType === UserType.CUSTOMER) {
+        throw new AppError({
+            status: HttpStatus.CONFLICT,
+            error: { message: i18n.__(MessageKeys.E_EMPLOYEE_B004_CREATEBYCUSTOMER) }
+        })
     }
 
     const hashedPassword = await argon2.hash(password)
@@ -66,7 +73,7 @@ const create = async (employeeInput: EmployeeInput) => {
 const employeeInfo = async (userId: string, language: string) => {
     const employeeInfo = await Employee.findOneBy({ user: { id: userId }, status: Status.ACT })
     if (!employeeInfo) {
-        throw new NotFoundException({ message: 'ko tìm thấy' })
+        throw new NotFoundException({ message: i18n.__(MessageKeys.E_EMPLOYEE_R000_NOTFOUND) })
     }
 
     const { createdAt, updatedAt, status, ...info } = employeeInfo
@@ -125,7 +132,7 @@ const employee = async (id: string) => {
         relations: { user: true }
     })
     if (!employee) {
-        throw new NotFoundException({ message: 'ko tìm thấy' })
+        throw new NotFoundException({ message: i18n.__(MessageKeys.E_EMPLOYEE_R000_NOTFOUND) })
     }
 
     return employee
@@ -138,7 +145,7 @@ const updateEmployee = async (id: string, employeeInput: EmployeeInput) => {
         relations: { user: true }
     })
     if (!employee) {
-        throw new NotFoundException({ message: 'ko tìm thấy' })
+        throw new NotFoundException({ message: i18n.__(MessageKeys.E_EMPLOYEE_R000_NOTFOUND) })
     }
 
     const { user, ...employeeNotUser } = employee
@@ -164,10 +171,10 @@ const pending = async (id: string) => {
         relations: { user: true }
     })
     if (!employee) {
-        throw new NotFoundException({ message: 'ko tìm thấy' })
+        throw new NotFoundException({ message: i18n.__(MessageKeys.E_EMPLOYEE_R000_NOTFOUND) })
     }
     if (employee.status !== Status.ACT) {
-        throw new BadRequestException({ error: { message: 'không nằm ở trạng thái hoạt động' } })
+        throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_EMPLOYEE_B002_NOTACTIVE) } })
     }
     const { user, ...employeeNotUser } = employee
 
@@ -186,10 +193,10 @@ const open = async (id: string) => {
         relations: { user: true }
     })
     if (!employee) {
-        throw new NotFoundException({ message: 'ko tìm thấy' })
+        throw new NotFoundException({ message: i18n.__(MessageKeys.E_EMPLOYEE_R000_NOTFOUND) })
     }
     if (employee.status !== Status.PEN) {
-        throw new BadRequestException({ error: { message: 'không nằm ở trạng thái tạm ngưng' } })
+        throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_EMPLOYEE_B003_NOTPENDING) } })
     }
     const { user, ...employeeNotUser } = employee
 
@@ -208,10 +215,10 @@ const deleteEmployee = async (id: string) => {
         relations: { user: true }
     })
     if (!employee) {
-        throw new NotFoundException({ message: 'ko tìm thấy' })
+        throw new NotFoundException({ message: i18n.__(MessageKeys.E_EMPLOYEE_R000_NOTFOUND) })
     }
     if (employee.status !== Status.PEN) {
-        throw new BadRequestException({ error: { message: 'không nằm ở trạng thái tạm ngưng' } })
+        throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_EMPLOYEE_B003_NOTPENDING) } })
     }
     const { user, ...employeeNotUser } = employee
 

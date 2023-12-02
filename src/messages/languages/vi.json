@@ -8,6 +8,18 @@
 
     "e.enum.v000.invalid": "Giá trị %s được truyền không hợp lệ.",
 
+    "e.auth.v000.OTPBlank": "OTP không được để trống.",
+    "e.auth.v001.OTPInvalid": "OTP không hợp lệ.",
+    "e.auth.v002.OTPExp": "OTP hết hạn.",
+
+    "e.auth.b000.OTPNoSend": "Bạn không thể gửi OTP.",
+    "e.auth.b001.Account": "Bạn không thể xác thực tài khoản.",
+    "e.auth.b002.phoneNumberInvalid": "Số điện thoại không đúng.",
+    "e.auth.b003.passwordInvalid": "Mật khẩu không đúng.",
+    "e.auth.b004.accoutNotActive": "Tài khoản đã bị khóa hoặc đã bị xóa. Xin vui lòng liên hệ quản trị viên.",
+    "e.auth.b005.passOldInvalid": "Mật khẩu hiện tại không đúng",
+    "e.auth.b006.passNewConflict": "Mật khẩu mới không được trùng mật khẩu hiện tại",
+
     "e.passenger.v000.firstNameBlank": "Tên đệm và Tên không được để trống.",
     "e.passenger.v001.firstNameTooLong": "Tên đệm và Tên phải bé hơn 60 ký tự.",
     "e.passenger.v002.lastNameBlank": "Họ không được để trống.",
@@ -21,20 +33,54 @@
     "e.passenger.v010.emailBlank": "Email không được để trống.",
     "e.passenger.v011.emailCorrectFormat": "Email  không đúng định dạng.",
     "e.passenger.v012.passwordBlank": "Mật khẩu không được để trống.",
-    "e.passenger.V013.passwordLength": "Mật khẩu phải dài hơn 8 ký tự.",
+    "e.passenger.V013.passwordLength": "Mật khẩu phải dài hơn hoặc bằng 8 ký tự.",
     "e.passenger.v014.passwordTooLong": "Mật khẩu phải bé hơn 60 ký tự.",
 
     "e.passenger.b000.phoneDuplicated": "Số điện thoại đã được sử dụng để đăng ký trước đó.",
     "e.passenger.b001.emailDuplicated": "Email đã được sử dụng để đăng ký trước đó.",
     "e.passenger.b002.optInvalid": "Otp không hợp lệ.",
-    "e.passenger.b003.phoneDuplicatedNotActive": "Số điện đã được đăng ký nhưng chưa được kích hoạt. Xin vui lòng kích hoạt.",
+    "e.passenger.b003.phoneDuplicatedNotActive": "Số điện thoại đã được đăng ký nhưng chưa được kích hoạt. Xin vui lòng kích hoạt.",
     "e.passenger.b004.emailDuplicatedNotActive": "Email được đăng ký nhưng chưa được kích hoạt. Xin vui lòng kích hoạt.",
+    "e.passenger.b005.notActive": "Hành khách không ở trạng thái hoạt động.",
+    "e.passenger.b006.notPending": "Hành khách không ở trạng thái tạm ngưng.",
 
     "e.passenger.r000.notfound": "Không tìm thấy hành khách.",
+
+    "e.user.r000.notfound": "Không tìm thấy tài khoản.",
+
+    "e.booking.r000.notfound": "Không tìm thấy đặt vé.",
+
+    "e.booking.b000.bookingExist": "Đặt chuyến bay đã tồn tại.",
+    "e.booking.b001.bookingNotActive": "Đặt vé không nằm ở trạng thái hoạt động.",
+    "e.booking.b002.bookingNotCancel": "Bạn không thể thực hiện hủy chuyến.",
+    "e.booking.b002.bookingNotScheduleChange": "Bạn không thể thực hiện thay đổi lịch trình.",
+    "e.booking.b003.bookingNotWaitCancel": "Đặt vé không ở trạng thái chờ hủy.",
+    "e.booking.b003.bookingPaid": "Đặt vé đã được thanh toán.",
+    "e.booking.b004.bookingIsPen": "Đặt vé đã gửi yêu cầu hủy trước đó.",
+    "e.booking.b004.bookingIsDel": "Đặt vé đã được hủy trước đó.",
 
     "e.airline.r000.notfound": "Không tìm thấy hãng hàng không.",
 
     "e.flight.r000.notfound": "Không tìm thấy chuyến bay.",
 
-    "e.seat.r000.notfound": "Không tìm thấy ghế."
+    "e.flight.b000.notActive": "Chuyến bay không ở trạng thái hoạt động.",
+    "e.flight.b000.notPending": "Chuyến bay không ở trạng thái tạm ngưng.",
+
+    "e.seat.r000.notfound": "Không tìm thấy ghế.",
+
+    "e.checkIn.b000.checkInExist": "Hành khách trong đặt vé của chuyến bay này đã được Check In rồi !!!.",
+
+    "e.employee.r000.notfound": "Không tìm thấy nhân viên.",
+
+    "e.employee.b000.phoneDuplicated": "Số điện thoại đã được sử dụng để đăng ký trước đó.",
+    "e.employee.b001.phoneNotActive": "Số điện thoại đã đăng ký hiện tại đã bị khóa hoặc xóa. Xin vui lòng liên hệ quản trị viên để được mở lại.",
+    "e.employee.b002.notActive": "Nhân viên không ở trạng thái hoạt động.",
+    "e.employee.b003.notPending": "Nhân viên không ở trạng thái tạm ngưng.",
+    "e.employee.b004.createByCustomer": "Số điện thoại này đã đăng ký bên khách hàng.",
+
+    "e.tax.r000.notfound": "Không tìm thấy thuế dịch vụ.",
+
+    "e.flightSeatPrice.r000.notfound": "Không tìm thấy giá tiền của chuyến bay.",
+
+    "e.file.r000.notfound": "Không tìm thấy file tải lên."
 }
