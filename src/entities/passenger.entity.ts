@@ -65,6 +65,6 @@ export class Passenger extends Model {
     @Column({ name: 'is_passerby', nullable: true })
     isPasserby: boolean
 
-    @Column({ name: 'status', default: 'PEN' })
+    @Column({ name: 'status' })
     status: Status
 }

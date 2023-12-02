@@ -6,6 +6,8 @@ const viJson = JSON.parse(fs.readFileSync('src/messages/languages/vi.json', 'utf
 
 const commonKeys = Object.keys(enJson).filter((key) => Object.keys(viJson).includes(key))
 
+// const commonKeys = Object.keys(viJson)
+
 try {
     const messageKeysObject: { [key: string]: string } = {}
     commonKeys.forEach((key) => {

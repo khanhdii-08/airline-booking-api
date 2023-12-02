@@ -8,15 +8,17 @@ import { generateTicketCode } from '~/utils/common.utils'
 import { AppError } from '~/exceptions/AppError'
 import { HttpStatus } from '~/utils/httpStatus'
 import { AppDataSource } from '~/config/database.config'
+import { MessageKeys } from '~/messages/MessageKeys'
+import i18n from '~/config/i18n.config'
 
 const checkIn = async (checkInInput: CheckInInput) => {
     const { bookingId, flightId, passengerId, seatId, seatCode } = checkInInput
 
     const booking = await Booking.findOneBy({ id: bookingId })
     if (!booking) {
-        throw new NotFoundException({ message: 'khong tim thay booking' })
+        throw new NotFoundException({ message: i18n.__(MessageKeys.E_BOOKING_R000_NOTFOUND) })
     } else if (booking.status !== Status.ACT) {
-        throw new BadRequestException({ error: { message: 'booking khong phai active' } })
+        throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_BOOKING_B001_BOOKINGNOTACTIVE) } })
     }
 
     const flight = await Flight.findOne({
@@ -24,17 +26,17 @@ const checkIn = async (checkInInput: CheckInInput) => {
         relations: { destinationAirport: true, sourceAirport: true }
     })
     if (!flight) {
-        throw new NotFoundException({ message: 'khong tim thay chuyen bay' })
+        throw new NotFoundException({ message: i18n.__(MessageKeys.E_FLIGHT_R000_NOTFOUND) })
     }
 
     const passenger = await Passenger.findOneBy({ id: passengerId })
     if (!passenger) {
-        throw new NotFoundException({ message: 'khong tim thay hanh khach' })
+        throw new NotFoundException({ message: i18n.__(MessageKeys.E_PASSENGER_R000_NOTFOUND) })
     }
 
     const seat = await Seat.findOneBy({ id: seatId })
     if (!seat) {
-        throw new NotFoundException({ message: 'khong tim thay ghe' })
+        throw new NotFoundException({ message: i18n.__(MessageKeys.E_SEAT_R000_NOTFOUND) })
     }
 
     const checkIn = await CheckIn.findOneBy({
@@ -45,7 +47,10 @@ const checkIn = async (checkInInput: CheckInInput) => {
     })
 
     if (checkIn) {
-        throw new AppError({ status: HttpStatus.CONFLICT, error: { message: 'đã được check in' } })
+        throw new AppError({
+            status: HttpStatus.CONFLICT,
+            error: { message: i18n.__(MessageKeys.E_CHECKIN_B000_CHECKINEXIST) }
+        })
     }
 
     const doorTime = new Date(flight.departureTime.setMinutes(flight.departureTime.getMinutes() - 30))

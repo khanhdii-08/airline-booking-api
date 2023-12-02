@@ -1,9 +1,9 @@
-import { getValueByKey } from './../utils/common.utils'
+import { getValueByKey } from '~/utils/common.utils'
 import jwt from 'jsonwebtoken'
 import { generateCode, randomColor } from '~/utils/common.utils'
 import { createRefreshToken, createToken } from '~/utils/auth.utils'
 import argon2 from 'argon2'
-import { Booking, Passenger } from '~/entities'
+import { Booking, Employee, Passenger } from '~/entities'
 import { User } from '~/entities/user.entity'
 import { RegisterInput } from '~/types/inputs/RegisterInput'
 import { CountryEn, CountryVi, Gender, Status, UserType } from '~/utils/enums'
@@ -54,6 +54,7 @@ const register = async (registerInput: RegisterInput) => {
     const newPassenger = await Passenger.create({
         ...passenger,
         ...registerInput,
+        status: Status.TEMP,
         passengerCode,
         gender: gender as Gender,
         color: randomColor(),
@@ -84,14 +85,14 @@ const sendOTP = async ({ userId }: { userId: string }) => {
 }
 
 const generateOTP = async (keyId: string) => {
-    const otp = Math.floor(100000 + Math.random() * 900000).toString()
+    const otp = '123456' //Math.floor(100000 + Math.random() * 900000).toString()
     const hashedOtp = await argon2.hash(otp)
 
     const otpTime = new Date()
     otpTime.setMinutes(otpTime.getMinutes() + Number(env.OTP_EXPIRE_MINUTE))
 
     redisClient.set(`${OTP_KEY}:${keyId}`, hashedOtp)
-    redisClient.set(`${OTP_TIME_KEY}:${keyId}`, otpTime.toString())
+    redisClient.set(`${OTP_TIME_KEY}:${keyId}`, otpTime.toISOString())
 
     return otp
 }
@@ -106,7 +107,7 @@ const verify = async (userId: string, source: string, otp: string) => {
 
     const expOtp = await redisClient.get(`${OTP_TIME_KEY}:${userId}`)
     if (expOtp !== null && new Date() > new Date(expOtp)) {
-        throw new BadRequestException({ error: { message: 'hết hạn' } })
+        throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_AUTH_V002_OTPEXP) } })
     }
 
     await redisClient.del(`${OTP_KEY}:${userId}`)
@@ -137,17 +138,24 @@ const login = async (source: string, loginInput: LoginInput) => {
     const user = await User.findOneBy({ phoneNumber, isActived: true })
 
     if (!user) {
-        throw new BadRequestException({ error: { message: 'Số điện thoại không đúng.' } })
+        throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_AUTH_B002_PHONENUMBERINVALID) } })
     }
     const checkPassword = user && (await argon2.verify(user.password, password))
     if (!checkPassword) {
-        throw new BadRequestException({ error: { message: 'Mật khẩu không đúng.' } })
+        throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_AUTH_B003_PASSWORDINVALID) } })
     }
 
-    const passenger = await Passenger.findOneOrFail({ where: { user: { id: user.id } } })
-    if (passenger.status !== Status.ACT) {
+    const passenger = await Passenger.findOne({ where: { user: { id: user.id } } })
+    if (passenger && passenger.status !== Status.ACT) {
         throw new BadRequestException({
-            error: { message: 'Tài khoản đã bị khóa hoặc đã bị xóa. Xin vui lòng liên hệ quản trị viên.' }
+            error: { message: i18n.__(MessageKeys.E_AUTH_B004_ACCOUTNOTACTIVE) }
+        })
+    }
+
+    const employee = await Employee.findOne({ where: { user: { id: user.id } } })
+    if (employee && employee.status !== Status.ACT) {
+        throw new BadRequestException({
+            error: { message: i18n.__(MessageKeys.E_AUTH_B004_ACCOUTNOTACTIVE) }
         })
     }
 
@@ -190,7 +198,7 @@ const sendOtpBooking = async (bookingId: string, phoneNumber: string) => {
     })
 
     if (!booking) {
-        throw new NotFoundException({ message: 'không tìm thấy booking' })
+        throw new NotFoundException({ message: i18n.__(MessageKeys.E_BOOKING_R000_NOTFOUND) })
     }
 
     const otp = await generateOTP(bookingId)
@@ -210,7 +218,7 @@ const verifyOptBooking = async (name: string, bookingId: string, otp: string) =>
 
     const expOtp = await redisClient.get(`${OTP_TIME_KEY}:${bookingId}`)
     if (expOtp !== null && new Date() > new Date(expOtp)) {
-        throw new BadRequestException({ error: { message: 'hết hạn' } })
+        throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_AUTH_V002_OTPEXP) } })
     }
 
     await redisClient.del(`${OTP_KEY}:${bookingId}`)
@@ -220,10 +228,10 @@ const verifyOptBooking = async (name: string, bookingId: string, otp: string) =>
     otpTime.setMinutes(otpTime.getMinutes() + 5)
 
     if (name === 'cancel') {
-        redisClient.set(`${OTP_TIME_BOOKING_CANCEL_KEY}:${bookingId}`, otpTime.toString())
+        redisClient.set(`${OTP_TIME_BOOKING_CANCEL_KEY}:${bookingId}`, otpTime.toISOString())
         redisClient.expire(`${OTP_TIME_BOOKING_CANCEL_KEY}:${bookingId}`, 300)
     } else if (name === 'update') {
-        redisClient.set(`${OTP_TIME_BOOKING_UPDATE_KEY}:${bookingId}`, otpTime.toString())
+        redisClient.set(`${OTP_TIME_BOOKING_UPDATE_KEY}:${bookingId}`, otpTime.toISOString())
         redisClient.expire(`${OTP_TIME_BOOKING_UPDATE_KEY}:${bookingId}`, 300)
     }
 
@@ -234,17 +242,17 @@ const changePassword = async (userId: string, passwordInput: PasswordInput) => {
     const { currentPassword, newPassword } = passwordInput
     const user = await User.findOneBy({ id: userId, isActived: true, userType: UserType.CUSTOMER })
     if (!user) {
-        throw new NotFoundException({ message: 'Không tìm thấy user' })
+        throw new NotFoundException({ message: i18n.__(MessageKeys.E_USER_R000_NOTFOUND) })
     }
 
     const checkCurrenPass = await argon2.verify(user.password, currentPassword)
     if (!checkCurrenPass) {
-        throw new BadRequestException({ error: { message: 'Mật khẩu hiện tại không đúng' } })
+        throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_AUTH_B005_PASSOLDINVALID) } })
     }
 
     const checkNewPass = await argon2.verify(user.password, newPassword)
     if (checkNewPass) {
-        throw new BadRequestException({ error: { message: 'Mật khẩu mới không được trùng mật khẩu hiện tại' } })
+        throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_AUTH_B006_PASSNEWCONFLICT) } })
     }
 
     const hashedPassword = await argon2.hash(newPassword)
