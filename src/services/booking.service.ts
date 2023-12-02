@@ -3,6 +3,7 @@ import {
     Booking,
     BookingSeat,
     BookingServiceOpt,
+    CheckIn,
     Flight,
     FlightSeatPrice,
     Passenger,
@@ -22,13 +23,13 @@ import { PassengerType } from '~/utils/enums/passengerType'
 import { In } from 'typeorm'
 import { BadRequestException } from '~/exceptions/BadRequestException'
 import { redisClient } from '~/config/redis.config'
-import { UnauthorizedException } from '~/exceptions/UnauthorizedException'
 import { MESSAGE_CANCEL_BOOKING, OTP_TIME_BOOKING_CANCEL_KEY, OTP_TIME_BOOKING_UPDATE_KEY } from '~/utils/constants'
 import { MailProvider } from '~/providers/mail.provider'
 import { Pagination } from '~/types/Pagination'
 import { ErrorResponse } from '~/types/ErrorResponse'
 import { PassengerInput } from '~/types/inputs/PassengerInput'
 import { MessageKeys } from '~/messages/MessageKeys'
+import i18n from '~/config/i18n.config'
 
 const booking = async (bookingInput: BookingInput) => {
     const { userId, flightAwayId, flightReturnId, seatId, passengers, ...booking } = bookingInput
@@ -186,6 +187,11 @@ const bookingDetail = async (criteria: BookingCriteria) => {
         throw new NotFoundException({ message: MessageKeys.E_BOOKING_R000_NOTFOUND })
     }
 
+    const checkIns = await CheckIn.find({
+        where: { booking: { id: booking.id } },
+        relations: { passenger: true, flight: true }
+    })
+
     const { flightAway, flightReturn, seat, ...bookingDetail } = booking
 
     const passengerAways = await Passenger.findBy({
@@ -281,11 +287,16 @@ const bookingDetail = async (criteria: BookingCriteria) => {
                 }
             })
 
+        const checkIn = checkIns.find(
+            (checkIn) => checkIn.passenger.id === passengerAway.id && checkIn.flight.id === booking.flightAway.id
+        )
+
         return {
             ...passengerAway,
             seat,
             taxService,
-            serviceOpts
+            serviceOpts,
+            checkIn: checkIn ? true : false
         }
     })
 
@@ -383,11 +394,17 @@ const bookingDetail = async (criteria: BookingCriteria) => {
                     }
                 })
 
+            const checkIn = checkIns.find(
+                (checkIn) =>
+                    checkIn.passenger.id === passengerReturn.id && checkIn.flight.id === booking.flightReturn.id
+            )
+
             return {
                 ...passengerReturn,
                 seat,
                 taxService,
-                serviceOpts
+                serviceOpts,
+                checkIn: checkIn ? true : false
             }
         })
     }

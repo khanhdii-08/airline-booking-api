@@ -19,19 +19,21 @@ import { HttpStatus } from '~/utils/httpStatus'
 import { NotFoundException } from '~/exceptions/NotFoundException'
 import { BadRequestException } from '~/exceptions/BadRequestException'
 import { MessageKeys } from '~/messages/MessageKeys'
+import i18n from '~/config/i18n.config'
 
 const create = async (employeeInput: EmployeeInput) => {
     const { phoneNumber, password } = employeeInput
 
-    const employee = await Employee.findOneBy({ phoneNumber })
-    if (employee && employee.status === Status.ACT) {
+    const existingUser = await User.findOneBy({ phoneNumber })
+    if (existingUser && existingUser.isActived && existingUser.userType !== UserType.CUSTOMER) {
         throw new AppError({
             status: HttpStatus.CONFLICT,
             error: { message: i18n.__(MessageKeys.E_EMPLOYEE_B000_PHONEDUPLICATED) }
         })
-    } else if (employee && employee.status !== Status.ACT) {
-        throw new BadRequestException({
-            error: { message: i18n.__(MessageKeys.E_EMPLOYEE_B002_PHONENOTACTIVE) }
+    } else if (existingUser && existingUser.userType === UserType.CUSTOMER) {
+        throw new AppError({
+            status: HttpStatus.CONFLICT,
+            error: { message: i18n.__(MessageKeys.E_EMPLOYEE_B004_CREATEBYCUSTOMER) }
         })
     }
 
@@ -172,7 +174,7 @@ const pending = async (id: string) => {
         throw new NotFoundException({ message: i18n.__(MessageKeys.E_EMPLOYEE_R000_NOTFOUND) })
     }
     if (employee.status !== Status.ACT) {
-        throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_EMPLOYEE_V003_NOTACTIVE) } })
+        throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_EMPLOYEE_B002_NOTACTIVE) } })
     }
     const { user, ...employeeNotUser } = employee
 
@@ -194,7 +196,7 @@ const open = async (id: string) => {
         throw new NotFoundException({ message: i18n.__(MessageKeys.E_EMPLOYEE_R000_NOTFOUND) })
     }
     if (employee.status !== Status.PEN) {
-        throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_EMPLOYEE_V003_NOTPENDING) } })
+        throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_EMPLOYEE_B003_NOTPENDING) } })
     }
     const { user, ...employeeNotUser } = employee
 
@@ -216,7 +218,7 @@ const deleteEmployee = async (id: string) => {
         throw new NotFoundException({ message: i18n.__(MessageKeys.E_EMPLOYEE_R000_NOTFOUND) })
     }
     if (employee.status !== Status.PEN) {
-        throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_EMPLOYEE_V003_NOTPENDING) } })
+        throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_EMPLOYEE_B003_NOTPENDING) } })
     }
     const { user, ...employeeNotUser } = employee
 

@@ -17,8 +17,10 @@ const checkIn = async (checkInInput: CheckInInput) => {
     const booking = await Booking.findOneBy({ id: bookingId })
     if (!booking) {
         throw new NotFoundException({ message: i18n.__(MessageKeys.E_BOOKING_R000_NOTFOUND) })
-    } else if (booking.status !== Status.ACT) {
-        throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_BOOKING_B001_BOOKINGNOTACTIVE) } })
+    } else if (booking.status === Status.PEN) {
+        throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_BOOKING_B004_BOOKINGISPEN) } })
+    } else if (booking.status === Status.DEL) {
+        throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_BOOKING_B004_BOOKINGISDEL) } })
     }
 
     const flight = await Flight.findOne({
@@ -55,19 +57,6 @@ const checkIn = async (checkInInput: CheckInInput) => {
 
     const doorTime = new Date(flight.departureTime.setMinutes(flight.departureTime.getMinutes() - 30))
 
-    const newCheckIn = CheckIn.create({
-        booking,
-        bookingCode: booking.bookingCode,
-        ticketCode: generateTicketCode(),
-        checkInTime: new Date(),
-        doorNumber: 1,
-        doorTime,
-        flight,
-        passenger,
-        seat,
-        seatCode
-    })
-
     let bookingSeat = await BookingSeat.findOneBy({
         booking: { id: bookingId },
         seat: { id: seatId },
@@ -88,6 +77,19 @@ const checkIn = async (checkInInput: CheckInInput) => {
             seatPrice: seat.servicePrice
         })
     }
+
+    const newCheckIn = CheckIn.create({
+        booking,
+        bookingCode: booking.bookingCode,
+        ticketCode: generateTicketCode(),
+        checkInTime: new Date(),
+        doorNumber: 1,
+        doorTime,
+        flight,
+        passenger,
+        seat,
+        seatCode: bookingSeat.seatCode
+    })
 
     await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
         await transactionalEntityManager.save(newCheckIn)

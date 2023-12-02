@@ -193,12 +193,15 @@ const userInfo = async (userId: string, language: string) => {
 const sendOtpBooking = async (bookingId: string, phoneNumber: string) => {
     const booking = await Booking.findOneBy({
         id: bookingId,
-        status: Status.ACT,
         passengers: { phoneNumber }
     })
 
     if (!booking) {
         throw new NotFoundException({ message: i18n.__(MessageKeys.E_BOOKING_R000_NOTFOUND) })
+    } else if (booking.status === Status.PEN) {
+        throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_BOOKING_B004_BOOKINGISPEN) } })
+    } else if (booking.status === Status.DEL) {
+        throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_BOOKING_B004_BOOKINGISDEL) } })
     }
 
     const otp = await generateOTP(bookingId)

@@ -12,6 +12,7 @@ import { CLOUDINARY_AVATARS } from '~/utils/constants'
 import { Gender, Status, UserType } from '~/utils/enums'
 import { AppDataSource } from '~/config/database.config'
 import argon2 from 'argon2'
+import i18n from '~/config/i18n.config'
 
 const uploadAvatar = async (file: MulterFile, userId: string) => {
     if (!file) {

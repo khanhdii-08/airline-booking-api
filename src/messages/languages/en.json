@@ -6,17 +6,17 @@
     "e.express.v004.isMin": "Field %s cannot be less than %s.",
     "e.express.v005.isMax": "Field %s cannot be greater than %s.",
 
-    "e.enum.v000.invalid": "Value %s passed is invalid.",
+    "e.enum.v000.invalid": "Invalid value %s passed.",
 
     "e.auth.v000.OTPBlank": "OTP cannot be blank.",
     "e.auth.v001.OTPInvalid": "Invalid OTP.",
     "e.auth.v002.OTPExp": "OTP has expired.",
 
     "e.auth.b000.OTPNoSend": "Unable to send OTP.",
-    "e.auth.b001.Account": "Unable to verify the account.",
+    "e.auth.b001.Account": "Unable to authenticate account.",
     "e.auth.b002.phoneNumberInvalid": "Invalid phone number.",
     "e.auth.b003.passwordInvalid": "Incorrect password.",
-    "e.auth.b004.accoutNotActive": "Account is either locked or deleted. Please contact the administrator.",
+    "e.auth.b004.accoutNotActive": "Account is locked or deleted. Please contact the administrator.",
     "e.auth.b005.passOldInvalid": "Current password is incorrect.",
     "e.auth.b006.passNewConflict": "New password must not match the current password.",
 
@@ -39,10 +39,10 @@
     "e.passenger.b000.phoneDuplicated": "Phone number has already been used for previous registration.",
     "e.passenger.b001.emailDuplicated": "Email has already been used for previous registration.",
     "e.passenger.b002.optInvalid": "Invalid OTP.",
-    "e.passenger.b003.phoneDuplicatedNotActive": "Phone number is registered but not yet activated. Please activate it.",
-    "e.passenger.b004.emailDuplicatedNotActive": "Email is registered but not yet activated. Please activate it.",
-    "e.passenger.b005.notActive": "Passenger is not in an active state.",
-    "e.passenger.b006.notPending": "Passenger is not in a pending state.",
+    "e.passenger.b003.phoneDuplicatedNotActive": "Phone number has been registered but not activated. Please activate.",
+    "e.passenger.b004.emailDuplicatedNotActive": "Email has been registered but not activated. Please activate.",
+    "e.passenger.b005.notActive": "Passenger is not in active status.",
+    "e.passenger.b006.notPending": "Passenger is not in pending status.",
 
     "e.passenger.r000.notfound": "Passenger not found.",
 
@@ -50,19 +50,21 @@
 
     "e.booking.r000.notfound": "Booking not found.",
 
-    "e.booking.b000.bookingExist": "Flight booking already exists.",
-    "e.booking.b001.bookingNotActive": "Booking is not in an active state.",
-    "e.booking.b002.bookingNotCancel": "You cannot cancel the booking.",
-    "e.booking.b002.bookingNotScheduleChange": "You cannot change the schedule.",
-    "e.booking.b003.bookingNotWaitCancel": "Booking is not in a waiting-for-cancellation state.",
+    "e.booking.b000.bookingExist": "Booking already exists.",
+    "e.booking.b001.bookingNotActive": "Booking is not in active status.",
+    "e.booking.b002.bookingNotCancel": "Cannot cancel the booking.",
+    "e.booking.b002.bookingNotScheduleChange": "Cannot change the schedule for the booking.",
+    "e.booking.b003.bookingNotWaitCancel": "Booking is not in wait cancel status.",
     "e.booking.b003.bookingPaid": "Booking has already been paid.",
+    "e.booking.b004.bookingIsPen": "Booking has already submitted a cancellation request.",
+    "e.booking.b004.bookingIsDel": "Booking has already been canceled.",
 
     "e.airline.r000.notfound": "Airline not found.",
 
     "e.flight.r000.notfound": "Flight not found.",
 
-    "e.flight.b000.notActive": "Flight is not in an active state.",
-    "e.flight.b000.notPending": "Flight is not in a pending state.",
+    "e.flight.b000.notActive": "Flight is not in active status.",
+    "e.flight.b000.notPending": "Flight is not in pending status.",
 
     "e.seat.r000.notfound": "Seat not found.",
 
@@ -71,9 +73,10 @@
     "e.employee.r000.notfound": "Employee not found.",
 
     "e.employee.b000.phoneDuplicated": "Phone number has already been used for previous registration.",
-    "e.employee.b002.phoneNotActive": "The currently registered phone number is either locked or deleted. Please contact the administrator to unlock.",
-    "e.employee.v003.notActive": "Employee is not in an active state.",
-    "e.employee.v003.notPending": "Employee is not in a pending state.",
+    "e.employee.b001.phoneNotActive": "The currently registered phone number is locked or deleted. Please contact the administrator to unlock.",
+    "e.employee.b002.notActive": "Employee is not in active status.",
+    "e.employee.b003.notPending": "Employee is not in pending status.",
+    "e.employee.b004.createByCustomer": "This phone number has been registered by a customer.",
 
     "e.tax.r000.notfound": "Service tax not found.",
 

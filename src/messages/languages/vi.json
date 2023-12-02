@@ -56,6 +56,8 @@
     "e.booking.b002.bookingNotScheduleChange": "Bạn không thể thực hiện thay đổi lịch trình.",
     "e.booking.b003.bookingNotWaitCancel": "Đặt vé không ở trạng thái chờ hủy.",
     "e.booking.b003.bookingPaid": "Đặt vé đã được thanh toán.",
+    "e.booking.b004.bookingIsPen": "Đặt vé đã gửi yêu cầu hủy trước đó.",
+    "e.booking.b004.bookingIsDel": "Đặt vé đã được hủy trước đó.",
 
     "e.airline.r000.notfound": "Không tìm thấy hãng hàng không.",
 
@@ -66,14 +68,15 @@
 
     "e.seat.r000.notfound": "Không tìm thấy ghế.",
 
-    "e.checkIn.b000.checkInExist": "Hành khách trong đặt vé của chuyến bay này đã được Check In.",
+    "e.checkIn.b000.checkInExist": "Hành khách trong đặt vé của chuyến bay này đã được Check In rồi !!!.",
 
     "e.employee.r000.notfound": "Không tìm thấy nhân viên.",
 
     "e.employee.b000.phoneDuplicated": "Số điện thoại đã được sử dụng để đăng ký trước đó.",
-    "e.employee.b002.phoneNotActive": "Số điện thoại đã đăng ký hiện tại đã bị khóa hoặc xóa. Xin vui lòng liên hệ quản trị viên để được mở lại.",
-    "e.employee.v003.notActive": "Nhân viên không ở trạng thái hoạt động.",
-    "e.employee.v003.notPending": "Nhân viên không ở trạng thái tạm ngưng.",
+    "e.employee.b001.phoneNotActive": "Số điện thoại đã đăng ký hiện tại đã bị khóa hoặc xóa. Xin vui lòng liên hệ quản trị viên để được mở lại.",
+    "e.employee.b002.notActive": "Nhân viên không ở trạng thái hoạt động.",
+    "e.employee.b003.notPending": "Nhân viên không ở trạng thái tạm ngưng.",
+    "e.employee.b004.createByCustomer": "Số điện thoại này đã đăng ký bên khách hàng.",
 
     "e.tax.r000.notfound": "Không tìm thấy thuế dịch vụ.",
 
