@@ -167,8 +167,7 @@ const updateEmployee = async (id: string, employeeInput: EmployeeInput) => {
 
 const pending = async (id: string) => {
     const employee = await Employee.findOne({
-        where: { id },
-        relations: { user: true }
+        where: { id }
     })
     if (!employee) {
         throw new NotFoundException({ message: i18n.__(MessageKeys.E_EMPLOYEE_R000_NOTFOUND) })
@@ -176,21 +175,16 @@ const pending = async (id: string) => {
     if (employee.status !== Status.ACT) {
         throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_EMPLOYEE_B002_NOTACTIVE) } })
     }
-    const { user, ...employeeNotUser } = employee
 
     employee.status = Status.PEN
-    user.isActived = false
-
     employee.save()
-    user.save()
 
-    return employeeNotUser
+    return employee
 }
 
 const open = async (id: string) => {
     const employee = await Employee.findOne({
-        where: { id },
-        relations: { user: true }
+        where: { id }
     })
     if (!employee) {
         throw new NotFoundException({ message: i18n.__(MessageKeys.E_EMPLOYEE_R000_NOTFOUND) })
@@ -198,21 +192,16 @@ const open = async (id: string) => {
     if (employee.status !== Status.PEN) {
         throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_EMPLOYEE_B003_NOTPENDING) } })
     }
-    const { user, ...employeeNotUser } = employee
 
     employee.status = Status.ACT
-    user.isActived = true
-
     employee.save()
-    user.save()
 
-    return employeeNotUser
+    return employee
 }
 
 const deleteEmployee = async (id: string) => {
     const employee = await Employee.findOne({
-        where: { id },
-        relations: { user: true }
+        where: { id }
     })
     if (!employee) {
         throw new NotFoundException({ message: i18n.__(MessageKeys.E_EMPLOYEE_R000_NOTFOUND) })
@@ -220,15 +209,11 @@ const deleteEmployee = async (id: string) => {
     if (employee.status !== Status.PEN) {
         throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_EMPLOYEE_B003_NOTPENDING) } })
     }
-    const { user, ...employeeNotUser } = employee
 
     employee.status = Status.DEL
-    user.isActived = false
-
     employee.save()
-    user.save()
 
-    return employeeNotUser
+    return employee
 }
 
 export const EmployeeService = {
