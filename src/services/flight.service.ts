@@ -86,6 +86,21 @@ const create = async (flightInput: FlightInput) => {
         flightSeatPrices
     } = flightInput
 
+    const aircraft = await Aircraft.findOneBy({ id: aircraftId })
+    if (!aircraft) {
+        throw new NotFoundException({ message: i18n.__(MessageKeys.E_AIRCRAFT_R000_NOTFOUND) })
+    }
+
+    const sourceAirport = Airport.findOneBy({ id: sourceAirportId })
+    if (!sourceAirport) {
+        throw new NotFoundException({ message: i18n.__(MessageKeys.E_AIRPORT_R000_SOURCENOTFOUND) })
+    }
+
+    const destinationAirport = Airport.findOneBy({ id: destinationAirportId })
+    if (!destinationAirport) {
+        throw new NotFoundException({ message: i18n.__(MessageKeys.E_AIRPORT_R002_DESTINATIONNOTFOUND) })
+    }
+
     const airline = await Airline.find()
     if (!airline) {
         throw new NotFoundException({ message: i18n.__(MessageKeys.E_AIRLINE_R000_NOTFOUND) })
@@ -98,7 +113,7 @@ const create = async (flightInput: FlightInput) => {
 
     const newFlight = Flight.create({
         id: genUUID(),
-        flightCode: generateFlightNumber(),
+        flightCode: aircraft.aircraftCode,
         aircraft: Aircraft.create({ id: aircraftId }),
         airline: airline[0],
         sourceAirport: Airport.create({ id: sourceAirportId }),
@@ -162,6 +177,7 @@ const flights = async (status: string, criteria: FlightCriteria, pagination: Pag
         .andWhere('(coalesce(:arrivalDate) is null or DATE(flight.arrivalTime) = DATE(:arrivalDate))', {
             arrivalDate: validateVariable(arrivalDate)
         })
+        .orderBy('flight.updatedAt', 'DESC')
         .getMany()
 
     return createPageable(flights, pagination)

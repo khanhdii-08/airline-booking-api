@@ -70,6 +70,7 @@ const passengers = async (criteria: PassengerCriteria, pagination: Pagination) =
         .andWhere('(coalesce(:toDate) IS NULL OR (DATE(passenger.createdAt) <= DATE(:toDate)))', {
             toDate: validateVariable(toDate)
         })
+        .orderBy('passenger.updatedAt', 'DESC')
         .getMany()
 
     return createPageable(passengers, pagination)

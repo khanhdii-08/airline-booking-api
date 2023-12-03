@@ -120,6 +120,7 @@ const employees = async (role: UserType, criteria: EmployeeCriteria, pagination:
                 admin: UserType.ADMIN
             }
         )
+        .orderBy('employee.updatedAt', 'DESC')
         .getMany()
 
     return createPageable(employees, pagination)

@@ -64,5 +64,9 @@ export const MessageKeys = {
     E_EMPLOYEE_B004_CREATEBYCUSTOMER: 'e.employee.b004.createByCustomer',
     E_TAX_R000_NOTFOUND: 'e.tax.r000.notfound',
     E_FLIGHTSEATPRICE_R000_NOTFOUND: 'e.flightSeatPrice.r000.notfound',
-    E_FILE_R000_NOTFOUND: 'e.file.r000.notfound'
+    E_FILE_R000_NOTFOUND: 'e.file.r000.notfound',
+    E_PAYMENT_B001_PAYMENTEXIST: 'e.payment.b001.paymentExist',
+    E_AIRCRAFT_R000_NOTFOUND: 'e.aircraft.r000.notfound',
+    E_AIRPORT_R000_SOURCENOTFOUND: 'e.airport.r000.sourceNotFound',
+    E_AIRPORT_R002_DESTINATIONNOTFOUND: 'e.airport.r002.destinationNotFound'
 }

@@ -82,5 +82,12 @@
 
     "e.flightSeatPrice.r000.notfound": "Không tìm thấy giá tiền của chuyến bay.",
 
-    "e.file.r000.notfound": "Không tìm thấy file tải lên."
+    "e.file.r000.notfound": "Không tìm thấy file tải lên.",
+
+    "e.payment.b001.paymentExist": "Đã được thanh toán rồi.",
+
+    "e.aircraft.r000.notfound": "Không tìm thấy máy bay.",
+
+    "e.airport.r000.sourceNotFound": "Không tìm thấy địa điểm đi.",
+    "e.airport.r002.destinationNotFound": "Không tìm thấy địa điểm đến."
 }
