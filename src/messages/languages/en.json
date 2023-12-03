@@ -82,5 +82,12 @@
 
     "e.flightSeatPrice.r000.notfound": "Flight seat price not found.",
 
-    "e.file.r000.notfound": "File not found."
+    "e.file.r000.notfound": "File not found.",
+
+    "e.payment.b001.paymentExist": "Payment has already been made.",
+
+    "e.aircraft.r000.notfound": "Aircraft not found.",
+
+    "e.airport.r000.sourceNotFound": "Departure location not found.",
+    "e.airport.r002.destinationNotFound": "Destination location not found."
 }
