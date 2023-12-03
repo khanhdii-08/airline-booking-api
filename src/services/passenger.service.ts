@@ -94,6 +94,13 @@ const updateStatus = async (id: string, status: Status) => {
         }
         passenger.status = Status.PEN
         passenger.save()
+    }
+    if (status === Status.PEN) {
+        if (passenger.status !== Status.ACT) {
+            throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_PASSENGER_B006_NOTPENDING) } })
+        }
+        passenger.status = Status.DEL
+        passenger.save()
     } else if (status === Status.ACT) {
         if (passenger.status !== Status.PEN) {
             throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_PASSENGER_B006_NOTPENDING) } })
