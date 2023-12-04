@@ -34,7 +34,8 @@ const paymentMomo = async (req: Request<ParamsDictionary, any, any, PaymentInput
 
 const momoReturn = async (req: Request, res: Response) => {
     const momo_Params = req.query as { [key: string]: any }
-    const result = await PaymentService.momoReturn(momo_Params)
+    const signature = momo_Params['signature']
+    const result = await PaymentService.momoReturn(momo_Params, signature)
     return res.status(HttpStatus.OK).json(result)
 }
 

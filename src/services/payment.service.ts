@@ -59,24 +59,6 @@ const VnPayReturn = async (vnp_Params: { [key: string]: any }, secureHash: strin
     if (secureHash === signed) {
         const vnp_ResponseCode = vnp_Params['vnp_ResponseCode']
         if (vnp_ResponseCode == '00') {
-            // const paymentTransaction = await PaymentTransaction.findOneBy({
-            //     bookingCode: vnp_Params['vnp_TxnRef'],
-            //     paymentTransactionType: PaymentTransactionType.PAYMENT
-            // })
-            // if (!paymentTransaction) {
-            //     const newPaymentTransaction = PaymentTransaction.create({
-            //         transactionCode: vnp_Params['vnp_TransactionNo'],
-            //         bookingCode: vnp_Params['vnp_TxnRef'],
-            //         transactionDate: moment(vnp_Params['vnp_PayDate'], 'YYYYMMDDHHmmss').toDate(),
-            //         transactionInfo: vnp_Params['vnp_OrderInfo'],
-            //         transactionAmount: vnp_Params['vnp_Amount'] / 100,
-            //         paymentMethod: PaymentMethod.VNPAY,
-            //         paymentTransactionType: PaymentTransactionType.PAYMENT
-            //     })
-
-            //     await newPaymentTransaction.save()
-            // }
-
             return {
                 status: 'success',
                 code: vnp_ResponseCode
@@ -90,7 +72,7 @@ const VnPayReturn = async (vnp_Params: { [key: string]: any }, secureHash: strin
 }
 
 const paymentMomo = async (paymentInput: PaymentInput) => {
-    const { amount, ipAddr, language, returnUrl } = paymentInput
+    const { amount, returnUrl } = paymentInput
 
     const momoUrl = env.MOMO_URL
     const partnerCode = env.MOMO_PARTNER_CODE
@@ -105,7 +87,7 @@ const paymentMomo = async (paymentInput: PaymentInput) => {
     const momo_Params: { [key: string]: any } = {}
 
     momo_Params['accessKey'] = accessKey
-    momo_Params['amount'] = 1000
+    momo_Params['amount'] = amount
     momo_Params['extraData'] = ''
     momo_Params['ipnUrl'] = '192.168.1.3'
     momo_Params['orderId'] = orderId
@@ -130,7 +112,7 @@ const paymentMomo = async (paymentInput: PaymentInput) => {
     return { paymentLink: res.data.payUrl }
 }
 
-const momoReturn = async (momo_Params: { [key: string]: any }) => {
+const momoReturn = async (momo_Params: { [key: string]: any }, signature: string) => {
     const resultCode = momo_Params['resultCode']
     if (resultCode == '0') {
         return {

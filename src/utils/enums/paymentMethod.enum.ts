@@ -1,4 +1,5 @@
 export enum PaymentMethod {
     CASH = 'CASH',
-    VNPAY = 'VNPAY'
+    VNPAY = 'VNPAY',
+    MOMO = 'MOMO'
 }
