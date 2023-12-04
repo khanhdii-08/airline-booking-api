@@ -26,4 +26,16 @@ const VnPayReturn = async (req: Request, res: Response) => {
     return res.status(HttpStatus.OK).json(result)
 }
 
-export const PaymentController = { paymentVnPay, VnPayReturn }
+const paymentMomo = async (req: Request<ParamsDictionary, any, any, PaymentInput>, res: Response) => {
+    const paymentInput: PaymentInput = req.body
+    const result = await PaymentService.paymentMomo(paymentInput)
+    return res.status(HttpStatus.OK).json(result)
+}
+
+const momoReturn = async (req: Request, res: Response) => {
+    const momo_Params = req.query as { [key: string]: any }
+    const result = await PaymentService.momoReturn(momo_Params)
+    return res.status(HttpStatus.OK).json(result)
+}
+
+export const PaymentController = { paymentVnPay, VnPayReturn, paymentMomo, momoReturn }
