@@ -34,9 +34,12 @@ const booking = async (bookingInput: BookingInput) => {
     const flights: Flight[] = []
 
     const { orderId, paymentTransactionType } = payment
-    const paymentTransaction = await PaymentTransaction.findOneBy({
-        orderId,
-        paymentTransactionType
+    const paymentTransaction = await PaymentTransaction.findOne({
+        where: {
+            orderId,
+            paymentTransactionType
+        },
+        relations: { booking: true }
     })
 
     if (!paymentTransaction) {
@@ -150,9 +153,12 @@ const booking = async (bookingInput: BookingInput) => {
         })
 
         await MailProvider.sendMailBooking({ bookingCode, flights, passengers })
+
+        return newBooking
     }
 
-    return bookingInput
+    const bookingResult = paymentTransaction?.booking
+    return bookingResult
 }
 
 const bookingDetail = async (criteria: BookingCriteria) => {
