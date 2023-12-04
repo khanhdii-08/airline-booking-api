@@ -160,8 +160,8 @@ const updateEmployee = async (id: string, employeeInput: EmployeeInput) => {
     address && (employee.address = address)
     status && (employee.status = status)
 
-    user.save()
-    employee.save()
+    await user.save()
+    await employee.save()
 
     return employeeNotUser
 }
@@ -173,12 +173,15 @@ const pending = async (id: string) => {
     if (!employee) {
         throw new NotFoundException({ message: i18n.__(MessageKeys.E_EMPLOYEE_R000_NOTFOUND) })
     }
+    if (employee.status === Status.PEN) {
+        throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_EMPLOYEE_B006_ISPENDING) } })
+    }
     if (employee.status !== Status.ACT) {
         throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_EMPLOYEE_B002_NOTACTIVE) } })
     }
 
     employee.status = Status.PEN
-    employee.save()
+    await employee.save()
 
     return employee
 }
@@ -190,12 +193,12 @@ const open = async (id: string) => {
     if (!employee) {
         throw new NotFoundException({ message: i18n.__(MessageKeys.E_EMPLOYEE_R000_NOTFOUND) })
     }
-    if (employee.status !== Status.PEN) {
-        throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_EMPLOYEE_B003_NOTPENDING) } })
+    if (employee.status === Status.ACT) {
+        throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_EMPLOYEE_B005_ISACTIVE) } })
     }
 
     employee.status = Status.ACT
-    employee.save()
+    await employee.save()
 
     return employee
 }
@@ -207,12 +210,15 @@ const deleteEmployee = async (id: string) => {
     if (!employee) {
         throw new NotFoundException({ message: i18n.__(MessageKeys.E_EMPLOYEE_R000_NOTFOUND) })
     }
+    if (employee.status === Status.DEL) {
+        throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_EMPLOYEE_B007_ISDELETE) } })
+    }
     if (employee.status !== Status.PEN) {
         throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_EMPLOYEE_B003_NOTPENDING) } })
     }
 
     employee.status = Status.DEL
-    employee.save()
+    await employee.save()
 
     return employee
 }

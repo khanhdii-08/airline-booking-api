@@ -27,7 +27,7 @@ const uploadAvatar = async (file: MulterFile, userId: string) => {
     }
     passenger.imageUrl = result.url
 
-    passenger.save()
+    await passenger.save()
 
     return passenger
 }
@@ -47,7 +47,7 @@ const update = async (userId: string, passengerInput: PassengerInput) => {
     passengerInput.email && (passenger.email = passengerInput.email)
     passengerInput.idCard && (passenger.idCard = passengerInput.idCard)
 
-    return passenger.save()
+    return await passenger.save()
 }
 
 const passengers = async (criteria: PassengerCriteria, pagination: Pagination) => {
@@ -90,24 +90,30 @@ const updateStatus = async (id: string, status: Status) => {
         throw new NotFoundException({ message: i18n.__(MessageKeys.E_PASSENGER_R000_NOTFOUND) })
     }
     if (status === Status.PEN) {
+        if (passenger.status === Status.PEN) {
+            throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_PASSENGER_B008_ISPENDING) } })
+        }
         if (passenger.status !== Status.ACT) {
             throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_PASSENGER_B005_NOTACTIVE) } })
         }
         passenger.status = Status.PEN
-        passenger.save()
+        await passenger.save()
     }
-    if (status === Status.PEN) {
-        if (passenger.status !== Status.ACT) {
-            throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_PASSENGER_B006_NOTPENDING) } })
+    if (status === Status.DEL) {
+        if (passenger.status === Status.DEL) {
+            throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_PASSENGER_B009_ISDELETE) } })
         }
-        passenger.status = Status.DEL
-        passenger.save()
-    } else if (status === Status.ACT) {
         if (passenger.status !== Status.PEN) {
             throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_PASSENGER_B006_NOTPENDING) } })
         }
+        passenger.status = Status.DEL
+        await passenger.save()
+    } else if (status === Status.ACT) {
+        if (passenger.status === Status.ACT) {
+            throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_PASSENGER_B007_ISACTIVE) } })
+        }
         passenger.status = Status.ACT
-        passenger.save()
+        await passenger.save()
     }
     return passenger
 }
@@ -127,7 +133,7 @@ const updatePassenger = async (id: string, passengerInput: PassengerInput) => {
     dateOfBirth && (passenger.dateOfBirth = dateOfBirth)
     email && (passenger.email = email)
 
-    passenger.save()
+    await passenger.save()
 
     return passenger
 }

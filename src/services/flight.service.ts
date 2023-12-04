@@ -6,12 +6,13 @@ import { FlightCriteria } from '~/types/criterias/FlightCriteria'
 import { Flight } from '~/entities/flight.entity'
 import { FlightType, Status } from '~/utils/enums'
 import { Aircraft, Airport, Booking, FlightSeatPrice, Seat } from '~/entities'
-import { createPageable, genUUID, generateFlightNumber, validateVariable } from '~/utils/common.utils'
+import { createPageable, genUUID, validateVariable } from '~/utils/common.utils'
 import { NotFoundException } from '~/exceptions/NotFoundException'
 import { AppDataSource } from '~/config/database.config'
 import { BadRequestException } from '~/exceptions/BadRequestException'
 import i18n from '~/config/i18n.config'
 import { MessageKeys } from '~/messages/MessageKeys'
+import { MESSAGE_CANCEL_BOOKING } from '~/utils/constants'
 
 const search = async (criteria: FlightCriteria) => {
     const queryFlightResult = await Flight.createQueryBuilder('flight')
@@ -203,16 +204,16 @@ const updateFlight = async (id: string, flightInput: FlightInput) => {
         throw new NotFoundException({ message: i18n.__(MessageKeys.E_FLIGHTSEATPRICE_R000_NOTFOUND) })
     }
 
-    flightSeatPrices.forEach((fsp) => {
+    flightSeatPrices.forEach(async (fsp) => {
         const flightSeatPrice = flightSeatPricesInDb.find((element) => fsp.seatId === element.seat.id)
         if (flightSeatPrice) {
             flightSeatPrice.adultPrice = fsp.seatPrice
             flightSeatPrice.childrenPrice = (fsp.seatPrice * 90) / 100
-            flightSeatPrice.save()
+            await flightSeatPrice.save()
         }
     })
 
-    flight.save()
+    await flight.save()
 
     return flight
 }
@@ -238,6 +239,9 @@ const updateStatus = async (id: string, status: Status) => {
     }
 
     if (status === Status.PEN) {
+        if (flight.status === Status.PEN) {
+            throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_FLIGHT_B003_ISPENDING) } })
+        }
         if (flight.status !== Status.ACT) {
             throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_FLIGHT_B000_NOTACTIVE) } })
         }
@@ -250,16 +254,17 @@ const updateStatus = async (id: string, status: Status) => {
         bookings &&
             bookings.forEach((booking) => {
                 booking.status = Status.DEL
+                booking.note = MESSAGE_CANCEL_BOOKING
                 const { bookingSeats, bookingServiceOpts } = booking
                 bookingSeats &&
-                    bookingSeats.forEach((bookingSeat) => {
+                    bookingSeats.forEach(async (bookingSeat) => {
                         bookingSeat.status = Status.DEL
-                        bookingSeat.save()
+                        await bookingSeat.save()
                     })
                 bookingServiceOpts &&
-                    bookingServiceOpts.forEach((bookingServiceOpt) => {
+                    bookingServiceOpts.forEach(async (bookingServiceOpt) => {
                         bookingServiceOpt.status = Status.DEL
-                        bookingServiceOpt.save()
+                        await bookingServiceOpt.save()
                     })
             })
         await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
@@ -268,8 +273,11 @@ const updateStatus = async (id: string, status: Status) => {
         })
         return flight
     } else if (status === Status.DEL) {
+        if (flight.status === Status.DEL) {
+            throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_FLIGHT_B004_ISDELETE) } })
+        }
         if (flight.status !== Status.PEN) {
-            throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_FLIGHT_B000_NOTPENDING) } })
+            throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_FLIGHT_B001_NOTPENDING) } })
         }
         flight.status = Status.DEL
         const bookings = await Booking.find({
@@ -280,16 +288,17 @@ const updateStatus = async (id: string, status: Status) => {
         bookings &&
             bookings.forEach((booking) => {
                 booking.status = Status.DEL
+                booking.note = MESSAGE_CANCEL_BOOKING
                 const { bookingSeats, bookingServiceOpts } = booking
                 bookingSeats &&
-                    bookingSeats.forEach((bookingSeat) => {
+                    bookingSeats.forEach(async (bookingSeat) => {
                         bookingSeat.status = Status.DEL
-                        bookingSeat.save()
+                        await bookingSeat.save()
                     })
                 bookingServiceOpts &&
-                    bookingServiceOpts.forEach((bookingServiceOpt) => {
+                    bookingServiceOpts.forEach(async (bookingServiceOpt) => {
                         bookingServiceOpt.status = Status.DEL
-                        bookingServiceOpt.save()
+                        await bookingServiceOpt.save()
                     })
             })
         await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
@@ -298,8 +307,11 @@ const updateStatus = async (id: string, status: Status) => {
         })
         return flight
     } else if (status === Status.ACT) {
-        if (flight.status !== Status.PEN) {
-            throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_FLIGHT_B000_NOTPENDING) } })
+        if (flight.status === Status.ACT) {
+            throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_FLIGHT_B002_ISACTIVE) } })
+        }
+        if (flight.status === Status.DEL) {
+            throw new BadRequestException({ error: { message: i18n.__(MessageKeys.E_FLIGHT_B005_CANNOTACTIVE) } })
         }
         flight.status = Status.ACT
         await AppDataSource.manager.transaction(async (transactionalEntityManager) => {

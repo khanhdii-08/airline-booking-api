@@ -43,6 +43,10 @@
     "e.passenger.b004.emailDuplicatedNotActive": "Email được đăng ký nhưng chưa được kích hoạt. Xin vui lòng kích hoạt.",
     "e.passenger.b005.notActive": "Hành khách không ở trạng thái hoạt động.",
     "e.passenger.b006.notPending": "Hành khách không ở trạng thái tạm ngưng.",
+    "e.passenger.b007.isActive": "Hành khách hiện tại đang ở trạng thái hoạt động.",
+    "e.passenger.b008.isPending": "Hành khách hiện tại đang ở trạng thái tạm ngưng.",
+    "e.passenger.b009.isDelete": "Hành khách hiện tại đang ở trạng thái đã xóa.",
+    "e.passenger.b010.idCardBlank": "CMND/CCCD không được rỗng.",
 
     "e.passenger.r000.notfound": "Không tìm thấy hành khách.",
 
@@ -64,7 +68,11 @@
     "e.flight.r000.notfound": "Không tìm thấy chuyến bay.",
 
     "e.flight.b000.notActive": "Chuyến bay không ở trạng thái hoạt động.",
-    "e.flight.b000.notPending": "Chuyến bay không ở trạng thái tạm ngưng.",
+    "e.flight.b001.notPending": "Chuyến bay không ở trạng thái tạm ngưng.",
+    "e.flight.b002.isActive": "Chuyến bay hiện tại đang ở trạng thái hoạt động.",
+    "e.flight.b003.isPending": "Chuyến bay hiện tại đang ở trạng thái tạm ngưng.",
+    "e.flight.b004.isDelete": "Chuyến bay hiện tại đang ở trạng thái đã xóa.",
+    "e.flight.b005.canNotActive": "Chuyến bay hiện tại đang ở trạng thái đã xóa, không thể mở lại.",
 
     "e.seat.r000.notfound": "Không tìm thấy ghế.",
 
@@ -77,6 +85,9 @@
     "e.employee.b002.notActive": "Nhân viên không ở trạng thái hoạt động.",
     "e.employee.b003.notPending": "Nhân viên không ở trạng thái tạm ngưng.",
     "e.employee.b004.createByCustomer": "Số điện thoại này đã đăng ký bên khách hàng.",
+    "e.employee.b005.isActive": "Nhân viên hiện tại đang ở trạng thái hoạt động.",
+    "e.employee.b006.isPending": "Nhân viên hiện tại đang ở trạng thái tạm ngưng.",
+    "e.employee.b007.isDelete": "Nhân viên hiện tại đang ở trạng thái đã xóa.",
 
     "e.tax.r000.notfound": "Không tìm thấy thuế dịch vụ.",
 

@@ -187,7 +187,7 @@ const bookingDetail = async (criteria: BookingCriteria) => {
         .getOne()
 
     if (!booking) {
-        throw new NotFoundException({ message: MessageKeys.E_BOOKING_R000_NOTFOUND })
+        throw new NotFoundException({ message: i18n.__(MessageKeys.E_BOOKING_R000_NOTFOUND) })
     }
 
     const checkIns = await CheckIn.find({
@@ -430,7 +430,7 @@ const bookingCancel = async (bookingInput: BookingInput) => {
     const booking = await Booking.findOneBy({ id: bookingId })
 
     if (!booking) {
-        throw new NotFoundException({ message: MessageKeys.E_BOOKING_R000_NOTFOUND })
+        throw new NotFoundException({ message: i18n.__(MessageKeys.E_BOOKING_R000_NOTFOUND) })
     }
     if (booking && booking.status !== Status.ACT) {
         throw new BadRequestException({
@@ -608,6 +608,7 @@ const bookingAddService = async (bookingInput: BookingInput) => {
         })
     })
 
+    await booking.save()
     await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
         await transactionalEntityManager.save(bookingSeatsToSave)
         await transactionalEntityManager.save(bookingServiceOptsToSave)
@@ -702,13 +703,13 @@ const upadateStatus = async (ids: string[], status: Status) => {
                 if (booking) {
                     if (booking.status === Status.PEN) {
                         const { bookingSeats, bookingServiceOpts } = booking
-                        bookingSeats.forEach((bookingSeat) => {
+                        bookingSeats.forEach(async (bookingSeat) => {
                             bookingSeat.status = Status.DEL
-                            bookingSeat.save()
+                            await bookingSeat.save()
                         })
-                        bookingServiceOpts.forEach((bookingServiceOpt) => {
+                        bookingServiceOpts.forEach(async (bookingServiceOpt) => {
                             bookingServiceOpt.status = Status.DEL
-                            bookingServiceOpt.save()
+                            await bookingServiceOpt.save()
                         })
                         booking.status = Status.DEL
                     } else {
@@ -766,13 +767,13 @@ const cancelBookings = async (ids: string[]) => {
             if (booking) {
                 if (booking.status === Status.ACT) {
                     const { bookingSeats, bookingServiceOpts } = booking
-                    bookingSeats.forEach((bookingSeat) => {
+                    bookingSeats.forEach(async (bookingSeat) => {
                         bookingSeat.status = Status.DEL
-                        bookingSeat.save()
+                        await bookingSeat.save()
                     })
-                    bookingServiceOpts.forEach((bookingServiceOpt) => {
+                    bookingServiceOpts.forEach(async (bookingServiceOpt) => {
                         bookingServiceOpt.status = Status.DEL
-                        bookingServiceOpt.save()
+                        await bookingServiceOpt.save()
                     })
                     booking.status = Status.DEL
                     booking.note = MESSAGE_CANCEL_BOOKING
@@ -847,7 +848,7 @@ const updateBookingByAdmin = async (id: string, passengersInput: PassengerInput[
     }
 
     const { passengers } = booking
-    passengers.forEach((passenger) => {
+    passengers.forEach(async (passenger) => {
         const passengerSave = passengersInput.find((p) => p.passengerId === passenger.id)
         if (passengerSave) {
             if (passenger.passengerType === PassengerType.ADULT) {
@@ -859,13 +860,13 @@ const updateBookingByAdmin = async (id: string, passengersInput: PassengerInput[
                 passengerSave.phoneNumber && (passenger.phoneNumber = passengerSave.phoneNumber)
                 passengerSave.email && (passenger.email = passengerSave.email)
                 passengerSave.address && (passenger.address = passengerSave.address)
-                passenger.save()
+                await passenger.save()
             } else {
                 passengerSave.firstName && (passenger.firstName = passengerSave.firstName)
                 passengerSave.lastName && (passenger.lastName = passengerSave.lastName)
                 passengerSave.dateOfBirth && (passenger.dateOfBirth = passengerSave.dateOfBirth)
                 passengerSave.gender && (passenger.gender = passengerSave.gender)
-                passenger.save()
+                await passenger.save()
             }
         }
     })

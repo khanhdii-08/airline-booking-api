@@ -7,7 +7,6 @@ import { AppError } from '~/exceptions/AppError'
 import { HttpStatus } from '~/utils/httpStatus'
 import { PaymentInput } from '~/types/inputs/PaymentInput'
 import axios from 'axios'
-import { logger } from '~/config/logger.config'
 
 const paymentVNPay = async (paymentInput: PaymentInput) => {
     const { amount, ipAddr, language, returnUrl } = paymentInput

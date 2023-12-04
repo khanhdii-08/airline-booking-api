@@ -43,6 +43,10 @@
     "e.passenger.b004.emailDuplicatedNotActive": "Email has been registered but not activated. Please activate.",
     "e.passenger.b005.notActive": "Passenger is not in active status.",
     "e.passenger.b006.notPending": "Passenger is not in pending status.",
+    "e.passenger.b007.isActive": "Current passenger is in an active state.",
+    "e.passenger.b008.isPending": "Current passenger is in a pending state.",
+    "e.passenger.b009.isDelete": "Current passenger is in a deleted state.",
+    "e.passenger.b010.idCardBlank": "ID card/ Citizen card cannot be blank.",
 
     "e.passenger.r000.notfound": "Passenger not found.",
 
@@ -64,7 +68,11 @@
     "e.flight.r000.notfound": "Flight not found.",
 
     "e.flight.b000.notActive": "Flight is not in active status.",
-    "e.flight.b000.notPending": "Flight is not in pending status.",
+    "e.flight.b001.notPending": "Flight is not in pending status.",
+    "e.flight.b002.isActive": "Current flight is in an active state.",
+    "e.flight.b003.isPending": "Current flight is in a pending state.",
+    "e.flight.b004.isDelete": "Current flight is in a deleted state.",
+    "e.flight.b005.canNotActive": "The current flight is in a deleted state and cannot be reopened.",
 
     "e.seat.r000.notfound": "Seat not found.",
 
@@ -77,6 +85,9 @@
     "e.employee.b002.notActive": "Employee is not in active status.",
     "e.employee.b003.notPending": "Employee is not in pending status.",
     "e.employee.b004.createByCustomer": "This phone number has been registered by a customer.",
+    "e.employee.b005.isActive": "Current employee is in an active state.",
+    "e.employee.b006.isPending": "Current employee is in a pending state.",
+    "e.employee.b007.isDelete": "Current employee is in a deleted state.",
 
     "e.tax.r000.notfound": "Service tax not found.",
 

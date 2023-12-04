@@ -38,7 +38,7 @@ const create = async (req: Request<ParamsDictionary, any, PassengerInput>, res: 
     } else if (!validator.isMobilePhone(phoneNumber, 'vi-VN')) {
         throw new ValidationException(i18n.__(MessageKeys.E_PASSENGER_V009_PHONENUMBERCORRECTFORMAT))
     } else if (!idCard || validator.isEmpty(idCard)) {
-        throw new ValidationException('idCard')
+        throw new ValidationException(i18n.__(MessageKeys.E_PASSENGER_B010_IDCARDBLANK))
     } else if (email && !validator.isEmpty(email)) {
         if (!validator.isEmail(email))
             throw new ValidationException(i18n.__(MessageKeys.E_PASSENGER_V011_EMAILCORRECTFORMAT))
