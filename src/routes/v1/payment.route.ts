@@ -7,4 +7,8 @@ router.route('/vnpay').post(PaymentController.paymentVnPay)
 
 router.route('/vnpay-return').get(PaymentController.VnPayReturn)
 
+router.route('/momo').post(PaymentController.paymentMomo)
+
+router.route('/momo-return').get(PaymentController.momoReturn)
+
 export const PaymentRoutes = router

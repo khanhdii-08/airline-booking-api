@@ -1,5 +1,6 @@
 import { JourneyType } from '~/utils/enums'
 import { PassengerInput } from './PassengerInput'
+import { PaymentInput } from './PaymentInput'
 
 export class BookingInput {
     bookingId: string
@@ -25,4 +26,6 @@ export class BookingInput {
     journeyType: JourneyType
 
     passengers: PassengerInput[]
+
+    payment: PaymentInput
 }

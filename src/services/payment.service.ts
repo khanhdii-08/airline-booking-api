@@ -2,19 +2,15 @@ import moment from 'moment'
 import crypto from 'crypto'
 import qs from 'qs'
 import { env } from '~/config/environment.config'
-import { generateBookingCode, generateCode } from '~/utils/common.utils'
+import { genUUID } from '~/utils/common.utils'
 import { AppError } from '~/exceptions/AppError'
 import { HttpStatus } from '~/utils/httpStatus'
 import { PaymentInput } from '~/types/inputs/PaymentInput'
-import { Booking, PaymentTransaction } from '~/entities'
-import { PaymentMethod, PaymentStatus, PaymentTransactionType } from '~/utils/enums'
-import { BadRequestException } from '~/exceptions/BadRequestException'
-import i18n from '~/config/i18n.config'
-import { MessageKeys } from '~/messages/MessageKeys'
+import axios from 'axios'
+import { logger } from '~/config/logger.config'
 
 const paymentVNPay = async (paymentInput: PaymentInput) => {
     const { amount, ipAddr, language, returnUrl } = paymentInput
-    let bookingCode = paymentInput.bookingCode
 
     const vnpUrl = env.VNP_URL
     const tmnCode = env.VNP_TMNCODE
@@ -22,19 +18,8 @@ const paymentVNPay = async (paymentInput: PaymentInput) => {
 
     const date = new Date()
     const createDate = moment(date).format('YYYYMMDDHHmmss')
-    if (bookingCode) {
-        Booking.findOneByOrFail({ bookingCode, paymentStatus: PaymentStatus.SUCCESSFUL }).catch(
-            () => new BadRequestException({ error: { message: i18n.__(MessageKeys.E_BOOKING_B003_BOOKINGPAID) } })
-        )
-    } else {
-        do {
-            bookingCode = generateBookingCode()
-            const booking = await Booking.findOneBy({ bookingCode })
-            if (booking) {
-                bookingCode = ''
-            }
-        } while (!bookingCode)
-    }
+
+    const orderId = moment(date).format('DDHHmmss')
 
     let vnp_Params: { [key: string]: any } = {}
 
@@ -47,9 +32,9 @@ const paymentVNPay = async (paymentInput: PaymentInput) => {
     vnp_Params['vnp_IpAddr'] = ipAddr
     vnp_Params['vnp_OrderType'] = 'other'
     vnp_Params['vnp_Locale'] = language === 'en' ? language : 'vn'
-    vnp_Params['vnp_OrderInfo'] = `Thanh toan ve may bay cho ma dat ve ${bookingCode} tai Vivu Airline`
+    vnp_Params['vnp_OrderInfo'] = `Thanh toan ve may bay cho ma dat ve ${orderId} tai Vivu Airline`
     vnp_Params['vnp_ReturnUrl'] = returnUrl
-    vnp_Params['vnp_TxnRef'] = bookingCode
+    vnp_Params['vnp_TxnRef'] = orderId
 
     vnp_Params = sortObject(vnp_Params)
 
@@ -74,25 +59,28 @@ const VnPayReturn = async (vnp_Params: { [key: string]: any }, secureHash: strin
     if (secureHash === signed) {
         const vnp_ResponseCode = vnp_Params['vnp_ResponseCode']
         if (vnp_ResponseCode == '00') {
-            const paymentTransaction = await PaymentTransaction.findOneBy({
-                bookingCode: vnp_Params['vnp_TxnRef'],
-                paymentTransactionType: PaymentTransactionType.PAYMENT
-            })
-            if (!paymentTransaction) {
-                const newPaymentTransaction = PaymentTransaction.create({
-                    transactionCode: vnp_Params['vnp_TransactionNo'],
-                    bookingCode: vnp_Params['vnp_TxnRef'],
-                    transactionDate: moment(vnp_Params['vnp_PayDate'], 'YYYYMMDDHHmmss').toDate(),
-                    transactionInfo: vnp_Params['vnp_OrderInfo'],
-                    transactionAmount: vnp_Params['vnp_Amount'] / 100,
-                    paymentMethod: PaymentMethod.VNPAY,
-                    paymentTransactionType: PaymentTransactionType.PAYMENT
-                })
+            // const paymentTransaction = await PaymentTransaction.findOneBy({
+            //     bookingCode: vnp_Params['vnp_TxnRef'],
+            //     paymentTransactionType: PaymentTransactionType.PAYMENT
+            // })
+            // if (!paymentTransaction) {
+            //     const newPaymentTransaction = PaymentTransaction.create({
+            //         transactionCode: vnp_Params['vnp_TransactionNo'],
+            //         bookingCode: vnp_Params['vnp_TxnRef'],
+            //         transactionDate: moment(vnp_Params['vnp_PayDate'], 'YYYYMMDDHHmmss').toDate(),
+            //         transactionInfo: vnp_Params['vnp_OrderInfo'],
+            //         transactionAmount: vnp_Params['vnp_Amount'] / 100,
+            //         paymentMethod: PaymentMethod.VNPAY,
+            //         paymentTransactionType: PaymentTransactionType.PAYMENT
+            //     })
 
-                await newPaymentTransaction.save()
+            //     await newPaymentTransaction.save()
+            // }
+
+            return {
+                status: 'success',
+                code: vnp_ResponseCode
             }
-
-            return { status: 'success', code: vnp_ResponseCode }
         } else {
             throw new AppError({ status: HttpStatus.PAYMENT_REQUIRED })
         }
@@ -101,41 +89,57 @@ const VnPayReturn = async (vnp_Params: { [key: string]: any }, secureHash: strin
     }
 }
 
-const paymentMomo = () => {
+const paymentMomo = async (paymentInput: PaymentInput) => {
+    const { amount, ipAddr, language, returnUrl } = paymentInput
+
     const momoUrl = env.MOMO_URL
     const partnerCode = env.MOMO_PARTNER_CODE
     const secretKey = env.MOMO_SECRET_KEY
-    // const  returnUrl = env.
+    const accessKey = env.MOMO_ACCESS_KEY
 
     const date = new Date()
-    const createDate = moment(date).format('YYYYMMDDHHmmss')
-    const requestId = moment(date).format('DDHHmmss')
+    const requestId = genUUID()
 
-    const orderId = generateCode('B')
+    const orderId = moment(date).format('DDHHmmss')
 
-    let momo_Params: { [key: string]: any } = {}
+    const momo_Params: { [key: string]: any } = {}
 
-    momo_Params['partnerCode'] = 'a'
-    momo_Params['requestId'] = requestId
-    momo_Params['amount'] = 1000000
+    momo_Params['accessKey'] = accessKey
+    momo_Params['amount'] = 1000
+    momo_Params['extraData'] = ''
+    momo_Params['ipnUrl'] = '192.168.1.3'
     momo_Params['orderId'] = orderId
     momo_Params['orderInfo'] = 'Thanh toan cho ma GD:' + orderId
-    momo_Params['redirectUrl'] = 'http://127.0.0.1:5173/test'
-    momo_Params['ipnUrl'] = '192.168.1.3'
+    momo_Params['partnerCode'] = partnerCode
+    momo_Params['redirectUrl'] = returnUrl
+    momo_Params['requestId'] = requestId
     momo_Params['requestType'] = 'captureWallet'
-    momo_Params['extraData'] = ''
-    momo_Params['lang'] = 'vi'
-
-    momo_Params = sortObject(momo_Params)
 
     const signData = qs.stringify(momo_Params, { encode: false })
-    const hmac = crypto.createHmac('sha512', secretKey)
+    const hmac = crypto.createHmac('sha256', secretKey)
     const signed = hmac.update(Buffer.from(signData, 'utf-8')).digest('hex')
     momo_Params['signature'] = signed
 
-    const redirectUrl = `${momoUrl}?${qs.stringify(momo_Params, { encode: false })}`
+    delete momo_Params['accessKey']
 
-    return redirectUrl
+    momo_Params['lang'] = 'vi'
+    momo_Params['storeName'] = 'VivuAirline'
+
+    const res = await axios.post(`${momoUrl}/v2/gateway/api/create`, momo_Params)
+
+    return { paymentLink: res.data.payUrl }
+}
+
+const momoReturn = async (momo_Params: { [key: string]: any }) => {
+    const resultCode = momo_Params['resultCode']
+    if (resultCode == '0') {
+        return {
+            status: 'success',
+            code: resultCode
+        }
+    } else {
+        throw new AppError({ status: HttpStatus.PAYMENT_REQUIRED })
+    }
 }
 
 const sortObject = (obj: { [key: string]: any }): { [key: string]: any } => {
@@ -158,4 +162,4 @@ const sortObject = (obj: { [key: string]: any }): { [key: string]: any } => {
     return sorted
 }
 
-export const PaymentService = { paymentVNPay, VnPayReturn, paymentMomo }
+export const PaymentService = { paymentVNPay, VnPayReturn, paymentMomo, momoReturn }

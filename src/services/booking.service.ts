@@ -17,8 +17,6 @@ import { PaymentStatus, Status } from '~/utils/enums'
 import { NotFoundException } from '~/exceptions/NotFoundException'
 import { AppDataSource } from '~/config/database.config'
 import { createPageable, genUUID, generateBookingCode, removeAccents, validateVariable } from '~/utils/common.utils'
-import { AppError } from '~/exceptions/AppError'
-import { HttpStatus } from '~/utils/httpStatus'
 import { PassengerType } from '~/utils/enums/passengerType'
 import { In } from 'typeorm'
 import { BadRequestException } from '~/exceptions/BadRequestException'
@@ -32,54 +30,44 @@ import { MessageKeys } from '~/messages/MessageKeys'
 import i18n from '~/config/i18n.config'
 
 const booking = async (bookingInput: BookingInput) => {
-    const { userId, flightAwayId, flightReturnId, seatId, passengers, ...booking } = bookingInput
+    const { userId, flightAwayId, flightReturnId, seatId, passengers, payment, ...booking } = bookingInput
     const flights: Flight[] = []
 
-    let bookingCode = bookingInput.bookingCode
-
-    const flightAway = await Flight.findOne({
-        where: { id: flightAwayId },
-        relations: { aircraft: true, sourceAirport: { city: true }, destinationAirport: { city: true } }
+    const { orderId, paymentTransactionType } = payment
+    const paymentTransaction = await PaymentTransaction.findOneBy({
+        orderId,
+        paymentTransactionType
     })
-    if (!flightAway) {
-        throw new NotFoundException({ message: i18n.__(MessageKeys.E_FLIGHT_R000_NOTFOUND) })
-    }
-    flights.push(flightAway)
-    let flightReturn = null
-    if (flightReturnId) {
-        flightReturn = await Flight.findOne({
-            where: { id: flightReturnId },
+
+    if (!paymentTransaction) {
+        const flightAway = await Flight.findOne({
+            where: { id: flightAwayId },
             relations: { aircraft: true, sourceAirport: { city: true }, destinationAirport: { city: true } }
         })
-        if (!flightReturn) {
+        if (!flightAway) {
             throw new NotFoundException({ message: i18n.__(MessageKeys.E_FLIGHT_R000_NOTFOUND) })
         }
-        flights.push(flightReturn)
-    }
-
-    let user = null
-    if (userId) {
-        user = await User.findOneBy({ id: userId })
-    }
-
-    let paymentStatus = PaymentStatus.SUCCESSFUL
-    if (bookingCode) {
-        paymentStatus = PaymentStatus.SUCCESSFUL
-        const paymentTransaction = await PaymentTransaction.findOneBy({ bookingCode })
-        if (!paymentTransaction) {
-            throw new NotFoundException({ message: 'null' })
-        }
-    }
-
-    if (bookingCode) {
-        const booking = await Booking.findOneBy({ bookingCode })
-        if (booking) {
-            throw new AppError({
-                status: HttpStatus.CONFLICT,
-                error: { message: MessageKeys.E_BOOKING_B000_BOOKINGEXIST }
+        flights.push(flightAway)
+        let flightReturn = null
+        if (flightReturnId) {
+            flightReturn = await Flight.findOne({
+                where: { id: flightReturnId },
+                relations: { aircraft: true, sourceAirport: { city: true }, destinationAirport: { city: true } }
             })
+            if (!flightReturn) {
+                throw new NotFoundException({ message: i18n.__(MessageKeys.E_FLIGHT_R000_NOTFOUND) })
+            }
+            flights.push(flightReturn)
         }
-    } else {
+
+        let user = null
+        if (userId) {
+            user = await User.findOneBy({ id: userId })
+        }
+
+        const paymentStatus = payment ? PaymentStatus.SUCCESSFUL : PaymentStatus.PENDING
+        let bookingCode
+
         do {
             bookingCode = generateBookingCode()
             const booking = await Booking.findOneBy({ bookingCode })
@@ -87,73 +75,82 @@ const booking = async (bookingInput: BookingInput) => {
                 bookingCode = ''
             }
         } while (!bookingCode)
-        paymentStatus = PaymentStatus.PENDING
-    }
 
-    const newBooking = await Booking.create({
-        id: genUUID(),
-        seat: Seat.create({ id: seatId }),
-        ...booking,
-        bookingCode,
-        flightAway,
-        bookingDate: new Date(),
-        paymentStatus,
-        status: Status.ACT
-    })
-
-    if (flightReturn) newBooking.flightReturn = flightReturn
-
-    if (user) newBooking.user = user
-
-    const passengersToSave: Passenger[] = []
-    const bookingSeatsToSave: BookingSeat[] = []
-    const bookingServiceOptsToSave: BookingServiceOpt[] = []
-
-    passengers.forEach(async (passenger) => {
-        const newPassenger = Passenger.create({
+        const newBooking = await Booking.create({
             id: genUUID(),
-            ...passenger,
-            isPasserby: true,
-            booking: newBooking
+            seat: Seat.create({ id: seatId }),
+            ...booking,
+            bookingCode,
+            flightAway,
+            bookingDate: new Date(),
+            paymentStatus,
+            status: Status.ACT
         })
 
-        passengersToSave.push(newPassenger)
+        if (flightReturn) newBooking.flightReturn = flightReturn
 
-        passenger.seats &&
-            passenger.seats.forEach(async (seat) => {
-                const newBookingSeat = BookingSeat.create({
-                    passenger: newPassenger,
-                    booking: newBooking,
-                    seat: Seat.create({ id: seat.seatId }),
-                    flight: Flight.create({ id: seat.flightId }),
-                    status: Status.ACT,
-                    ...seat
-                })
-                bookingSeatsToSave.push(newBookingSeat)
+        if (user) newBooking.user = user
+
+        const passengersToSave: Passenger[] = []
+        const bookingSeatsToSave: BookingSeat[] = []
+        const bookingServiceOptsToSave: BookingServiceOpt[] = []
+
+        passengers.forEach(async (passenger) => {
+            const newPassenger = Passenger.create({
+                id: genUUID(),
+                ...passenger,
+                isPasserby: true,
+                booking: newBooking,
+                status: Status.PEN
             })
-        passenger.serviceOpts &&
+
+            passengersToSave.push(newPassenger)
+
+            passenger.seats &&
+                passenger.seats.forEach(async (seat) => {
+                    const newBookingSeat = BookingSeat.create({
+                        passenger: newPassenger,
+                        booking: newBooking,
+                        seat: Seat.create({ id: seat.seatId }),
+                        flight: Flight.create({ id: seat.flightId }),
+                        status: Status.ACT,
+                        ...seat
+                    })
+                    bookingSeatsToSave.push(newBookingSeat)
+                })
             passenger.serviceOpts &&
-            passenger.serviceOpts.forEach(async (serviceOpt) => {
-                const newBookingServiceOpt = BookingServiceOpt.create({
-                    passenger: newPassenger,
-                    booking: newBooking,
-                    serviceOption: ServiceOption.create({ id: serviceOpt.serviceOptId }),
-                    flight: Flight.create({ id: serviceOpt.flightId }),
-                    status: Status.ACT,
-                    ...serviceOpt
+                passenger.serviceOpts &&
+                passenger.serviceOpts.forEach(async (serviceOpt) => {
+                    const newBookingServiceOpt = BookingServiceOpt.create({
+                        passenger: newPassenger,
+                        booking: newBooking,
+                        serviceOption: ServiceOption.create({ id: serviceOpt.serviceOptId }),
+                        flight: Flight.create({ id: serviceOpt.flightId }),
+                        status: Status.ACT,
+                        ...serviceOpt
+                    })
+                    bookingServiceOptsToSave.push(newBookingServiceOpt)
                 })
-                bookingServiceOptsToSave.push(newBookingServiceOpt)
+        })
+
+        let newPaymentTransaction: PaymentTransaction
+        if (payment) {
+            newPaymentTransaction = PaymentTransaction.create({
+                booking: newBooking,
+                ...payment
             })
-    })
+        }
 
-    await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
-        await transactionalEntityManager.save(newBooking)
-        await transactionalEntityManager.save(passengersToSave)
-        await transactionalEntityManager.save(bookingSeatsToSave)
-        await transactionalEntityManager.save(bookingServiceOptsToSave)
-    })
+        await AppDataSource.manager.transaction(async (transactionalEntityManager) => {
+            await transactionalEntityManager.save(newBooking)
+            await transactionalEntityManager.save(passengersToSave)
+            await transactionalEntityManager.save(bookingSeatsToSave)
+            await transactionalEntityManager.save(bookingServiceOptsToSave)
+            await transactionalEntityManager.save(newPaymentTransaction)
+        })
 
-    await MailProvider.sendMailBooking({ bookingCode, flights, passengers })
+        await MailProvider.sendMailBooking({ bookingCode, flights, passengers })
+    }
 
     return bookingInput
 }
