@@ -391,8 +391,8 @@ const totalBookingByYear = async (criteria: StatisticalCriteria) => {
     const firstBookingTwo = bookings.find(
         (b) => Number(b.month) === Number(1) && Number(b.year) === Number(new Date().getFullYear())
     )
-    maxNumber = firstBookingTwo ? firstBookingTwo.totalamount : 0
-    minNumber = firstBookingTwo ? firstBookingTwo.totalamount : 0
+    maxNumber = firstBookingTwo ? firstBookingTwo.totalbooking : 0
+    minNumber = firstBookingTwo ? firstBookingTwo.totalbooking : 0
     for (const month in months) {
         const year = new Date().getFullYear()
         const match = bookings.find((b) => Number(b.month) === Number(month) + 1 && Number(b.year) === Number(year))
@@ -402,19 +402,19 @@ const totalBookingByYear = async (criteria: StatisticalCriteria) => {
                 Number(b.year) === Number(year) &&
                 Number(b.month) <= currentMonth
             ) {
-                medium += b.totalbooking
-                if (b.totalbooking > maxNumber) {
-                    maxNumber = b.totalbooking
+                medium += Number(b.totalbooking)
+                if (Number(b.totalbooking) > Number(maxNumber)) {
+                    maxNumber = Number(b.totalbooking)
                 }
-                if (b.totalbooking < minNumber) {
-                    minNumber = b.totalbooking
+                if (Number(b.totalbooking) < Number(minNumber)) {
+                    minNumber = Number(b.totalbooking)
                 }
             }
         })
 
         yearDetail = {
             ...yearDetail,
-            [months[month]]: match ? match.totalbooking : 0
+            [months[month]]: match ? Number(match.totalbooking) : 0
         }
     }
     return {
