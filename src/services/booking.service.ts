@@ -644,7 +644,7 @@ const myBooking = async (userId: string, status: string, criteria: BookingCriter
         .andWhere('(coalesce(:toDate) IS NULL OR (booking.bookingDate <= DATE(:toDate)))', {
             toDate: validateVariable(toDate)
         })
-        .orderBy('booking.bookingCode', 'DESC')
+        .orderBy('booking.bookingDate', 'DESC')
         .getMany()
 
     return createPageable(bookings, pagination)
@@ -800,7 +800,8 @@ const cancelBookings = async (ids: string[]) => {
 }
 
 const bookings = async (criteria: BookingCriteria, pagination: Pagination) => {
-    const { bookingCode, sourceAirportId, destinationAirportId, departureDate, arrivalDate } = criteria
+    const { bookingCode, sourceAirportId, destinationAirportId, departureDate, arrivalDate, fromDate, toDate } =
+        criteria
     const bookings = await Booking.createQueryBuilder('booking')
         .innerJoinAndSelect('booking.flightAway', 'flightAway')
         .leftJoinAndSelect('booking.flightReturn', 'flightReturn')
@@ -812,6 +813,7 @@ const bookings = async (criteria: BookingCriteria, pagination: Pagination) => {
         .leftJoinAndSelect('flightReturn.destinationAirport', 'destinationAirportReturn')
         .leftJoinAndSelect('sourceAirportReturn.city', 'sourceCityReturn')
         .leftJoinAndSelect('destinationAirportReturn.city', 'destinationCity')
+        .innerJoinAndSelect('booking.seat', 'seat')
         .where('booking.status = :status', {
             status: Status.ACT
         })
@@ -829,6 +831,12 @@ const bookings = async (criteria: BookingCriteria, pagination: Pagination) => {
         })
         .andWhere('(coalesce(:arrivalDate) is null or DATE(flightAway.arrivalTime) = DATE(:arrivalDate))', {
             arrivalDate: validateVariable(arrivalDate)
+        })
+        .andWhere('(coalesce(:fromDate) IS NULL OR (booking.bookingDate >= DATE(:fromDate)))', {
+            fromDate: validateVariable(fromDate)
+        })
+        .andWhere('(coalesce(:toDate) IS NULL OR (booking.bookingDate <= DATE(:toDate)))', {
+            toDate: validateVariable(toDate)
         })
         .orderBy('booking.bookingDate', 'DESC')
         .getMany()

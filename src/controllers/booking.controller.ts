@@ -84,14 +84,26 @@ const cancelBookings = async (req: Request<ParamsDictionary, any, IdsInput>, res
 }
 
 const bookings = async (req: Request<ParamsDictionary, any, any, any>, res: Response) => {
-    const { bookingCode, sourceAirportId, destinationAirportId, departureDate, arrivalDate, page, size, sort } =
-        req.query
+    const {
+        bookingCode,
+        sourceAirportId,
+        destinationAirportId,
+        departureDate,
+        arrivalDate,
+        fromDate,
+        toDate,
+        page,
+        size,
+        sort
+    } = req.query
     const bookingCriteria: BookingCriteria = {
         bookingCode,
         sourceAirportId,
         destinationAirportId,
         departureDate,
-        arrivalDate
+        arrivalDate,
+        fromDate,
+        toDate
     }
     const pagination: Pagination = { page, size, sort }
     const result = await BookingService.bookings(bookingCriteria, pagination)
